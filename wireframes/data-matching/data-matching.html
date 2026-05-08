@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1280, initial-scale=1">
-  <title>Data matching review — lo-fi wireframe</title>
+  <title>Unmapped review — lo-fi wireframe</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,26 +12,14 @@
   <link rel="stylesheet" href="styles.css">
 
   <style>
-    /* ── Project-local additions for things the kit doesn't ship ──
-       Selectors are nested under .tbl so they beat the kit's
-       `table.tbl td { background: var(--color-bg) }` baseline. */
-    .tbl .cell-diff      { background: var(--color-highlight); }
-    .tbl .cell-missing   { color: var(--color-fg-muted); font-style: italic; }
-    .consensus-dot  { display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-                      background: var(--color-fg); margin-left: 5px; vertical-align: middle; }
-    .src-tag        { font-family: var(--font-mono); font-size: var(--text-xs);
-                      padding: 2px 6px; border: 1px solid var(--color-border-subtle);
-                      border-radius: var(--radius-xs); color: var(--color-fg-muted);
-                      display: inline-block; }
-    .kbd-hint       { font-family: var(--font-mono); font-size: var(--text-xs);
-                      padding: 1px 6px; background: var(--color-bg-muted);
-                      border: 1px solid var(--color-border-subtle); border-radius: var(--radius-xs);
-                      color: var(--color-fg-muted); margin-left: 6px; }
-    .mono           { font-family: var(--font-mono); }
+    .tbl .cell-missing  { color: var(--color-fg-muted); font-style: italic; }
+    .src-tag       { font-family: var(--font-mono); font-size: var(--text-xs);
+                     padding: 2px 6px; border: 1px solid var(--color-border-subtle);
+                     border-radius: var(--radius-xs); color: var(--color-fg-muted);
+                     display: inline-block; }
+    .mono          { font-family: var(--font-mono); }
+    .ibtn.muted    { border-color: var(--color-border); color: var(--color-fg-muted); }
 
-    .ibtn.muted { border-color: var(--color-border); color: var(--color-fg-muted); }
-
-    /* ── Data-matching wireframe layout ── */
     .dm-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 18px 24px; border-bottom: var(--border-2) solid var(--color-border);
@@ -40,73 +28,95 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 24px; border-bottom: var(--border-2) solid var(--color-border-subtle);
     }
-    .dm-body {
-      display: grid; grid-template-columns: 1fr; min-height: 700px;
-    }
+    .dm-body { display: grid; grid-template-columns: 1fr; min-height: 700px; }
     .dm-body.focus-open { grid-template-columns: 1fr 520px; }
-    .dm-master  { overflow: hidden; }
-    .dm-focus   { display: none;
-                  border-left: var(--border-2) solid var(--color-border);
-                  flex-direction: column; }
+    .dm-master { overflow: hidden; }
+    .dm-focus  { display: none;
+                 border-left: var(--border-2) solid var(--color-border);
+                 flex-direction: column; }
     .dm-body.focus-open .dm-focus { display: flex; }
 
-    .dm-master table.tbl,
-    .dm-focus table.tbl,
-    .subtbl { width: 100%; table-layout: fixed; }
+    .dm-master table.tbl { width: 100%; table-layout: fixed; }
     .dm-master table.tbl th,
-    .dm-master table.tbl td { min-width: 0; padding: 10px 10px; }
-    .subtbl th, .subtbl td   { min-width: 0; padding: 8px 10px; font-size: var(--text-sm); }
-    .dm-focus table.tbl th,
-    .dm-focus table.tbl td   { min-width: 0; padding: 8px 8px; font-size: var(--text-sm);
-                               vertical-align: middle; word-wrap: break-word; }
+    .dm-master table.tbl td {
+      min-width: 0; padding: 10px 10px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
 
-    /* row states */
-    tr.focused td  { background: var(--color-bg-tint);
-                     border-bottom-color: var(--color-bg-tint); }
+    tr.focused td  { background: var(--color-bg-tint); border-bottom-color: var(--color-bg-tint); }
     tr.detail td   { padding: 0; background: var(--color-bg-muted); }
-    .detail-inner  { padding: 8px 14px 14px; }
-    tr.anchor td   { background: var(--color-bg-muted);
-                     font-weight: var(--weight-semibold); }
+    .detail-inner  { padding: 12px 16px 16px; }
+    .detail-grid   { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 24px; }
+    .detail-grid .field { display: grid; grid-template-columns: 180px 1fr;
+                          gap: 10px; padding: 6px 0;
+                          border-bottom: 1px dashed var(--color-border-subtle);
+                          font-family: var(--font-hand); font-size: var(--text-base); }
+    .detail-grid .field:last-child,
+    .detail-grid .field:nth-last-child(2) { border-bottom: 0; }
+    .detail-grid .field .label {
+      font-family: var(--font-label); font-size: var(--text-xs);
+      color: var(--color-fg-muted); text-transform: lowercase;
+      letter-spacing: var(--tracking-wide);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .detail-grid .field .value { word-break: break-word; }
+    .detail-grid .field .value.empty { color: var(--color-fg-muted); font-style: italic; }
+    .detail-grid .field .value.mono  { font-family: var(--font-mono); font-size: var(--text-sm); }
 
-    .pmini td.anchor-col,
-    .pmini th.anchor-col { background: var(--color-bg-muted); font-weight: var(--weight-semibold); }
+    .chev      { display: inline-block; color: var(--color-fg-subtle); font-size: 16px;
+                 text-align: center; width: 100%; cursor: pointer; user-select: none;
+                 padding: 2px 0; }
+    .chev:hover { color: var(--color-fg); }
+    .chev.open { color: var(--color-fg); }
+    .check { cursor: pointer; }
 
-    .chev          { display: inline-block; color: var(--color-fg-subtle); font-size: 16px;
-                     text-align: center; width: 100%; cursor: pointer; user-select: none;
-                     padding: 2px 0; }
-    .chev:hover    { color: var(--color-fg); }
-    .chev.open     { color: var(--color-fg); }
-
-    .row-actions   { display: inline-flex; gap: 4px; }
-    .row-actions .ibtn.sm { width: 26px; height: 26px; font-family: var(--font-mono);
-                            font-size: var(--text-sm); }
-
-    .eye-btn       { display: inline-flex; align-items: center; justify-content: center; }
+    .eye-btn { display: inline-flex; align-items: center; justify-content: center; }
     .eye-btn .icon-eye-on  { display: none; }
     .eye-btn.active        { background: var(--color-primary);
-                              border-color: var(--color-primary);
-                              color: var(--color-primary-fg); }
+                             border-color: var(--color-primary);
+                             color: var(--color-primary-fg); }
     .eye-btn.active .icon-eye-on  { display: block; }
     .eye-btn.active .icon-eye-off { display: none; }
-    .eye-btn svg   { width: 16px; height: 16px; }
-
-    .focus-actions { display: flex; align-items: center; justify-content: space-between;
-                     padding: 14px 18px; border-top: var(--border-2) solid var(--color-border-subtle); }
+    .eye-btn svg { width: 16px; height: 16px; }
 
     .tabs > * .ct  { color: var(--color-fg-muted); font-size: var(--text-sm); margin-left: 6px; }
     .tabs > .on .ct { color: var(--color-primary); }
+    .tabs > * { cursor: pointer; }
 
-    .check { cursor: pointer; }
+    .dm-pager { display: flex; align-items: center; justify-content: space-between;
+                padding: 12px 24px; border-top: var(--border-2) solid var(--color-border-subtle);
+                background: var(--color-bg-muted); }
+    .dm-pager .summary { font-family: var(--font-hand); font-size: var(--text-base);
+                         color: var(--color-fg-muted); }
+    .dm-pager .nav { display: inline-flex; align-items: center; gap: 6px; }
+    .dm-pager .pages { display: inline-flex; gap: 4px; }
+    .pg { font-family: var(--font-hand); font-size: var(--text-sm);
+          padding: 4px 9px; border: 1.5px solid var(--color-border);
+          border-radius: var(--radius-xs); color: var(--color-fg-muted);
+          background: var(--color-bg); cursor: pointer; min-width: 28px; text-align: center; }
+    .pg.on { border-color: var(--color-primary); color: var(--color-primary-fg);
+             background: var(--color-primary); }
+    .pg.dots { border: 0; background: transparent; cursor: default; padding: 4px 4px; }
+    .pg[disabled] { opacity: 0.4; cursor: not-allowed; }
 
-    .match-line       { display: inline-flex; align-items: center; gap: 6px; }
-    .match-line .dot  { width: 8px; height: 8px; border-radius: 50%;
-                        background: var(--color-fg); }
-    .match-line.miss .dot { background: transparent;
-                            border: 1.5px solid var(--color-border); }
-
-    .empty-detail { padding: 28px 14px; color: var(--color-fg-muted);
-                    font-family: var(--font-hand); font-size: var(--text-md);
-                    text-align: center; }
+    .focus-actions { display: flex; align-items: center; justify-content: space-between;
+                     padding: 14px 18px; border-top: var(--border-2) solid var(--color-border-subtle); }
+    .panel-fields { display: flex; flex-direction: column; padding: 8px 18px 4px;
+                    overflow-y: auto; flex: 1; }
+    .panel-fields .field {
+      display: grid; grid-template-columns: 150px 1fr; gap: 12px;
+      padding: 8px 0; border-bottom: 1px dashed var(--color-border-subtle);
+      font-family: var(--font-hand); font-size: var(--text-base);
+    }
+    .panel-fields .field:last-child { border-bottom: 0; }
+    .panel-fields .field .label {
+      font-family: var(--font-label); font-size: var(--text-xs);
+      color: var(--color-fg-muted); text-transform: lowercase;
+      letter-spacing: var(--tracking-wide); padding-top: 2px;
+    }
+    .panel-fields .field .value { word-break: break-word; }
+    .panel-fields .field .value.empty { color: var(--color-fg-muted); font-style: italic; }
+    .panel-fields .field .value.mono  { font-family: var(--font-mono); font-size: var(--text-sm); }
   </style>
 </head>
 <body>
@@ -128,447 +138,364 @@
   </symbol>
 </svg>
 
+<script id="data" type="application/json">{"fields":["Original Track Title","Original Track Artist","Original ISRC","Original Contract ID","Source","Catalogue Type","Sales File ID","Contract ID","Track ID","Sale Date","Target Period","Transaction Date","Original Currency","Net Amount","Gross Amount","Net Amount in Currency","Gross Amount in Currency"],"rows":[["I DON T MISS YOU","DAY OLD JOHNSON","ABRAMUSIDONTMISSYOUDAYOLDJOHNSON","JASON THOMASMRAZI DON T MISS YOUABRAMUSIDONTMISSYOUDAYOLDJOHNSON","ABRAMUS BR","Contract","699c4541ed1693818c861fea","6720d82eb5dfc5a03c4e3f40","","2025-01-01","2026Q1DT","2025-03-01","BRL","11.35821867","11.35821867","69.1815","69.1815"],["Pay Trevor","GAD WHIP","PPLPayTrevorGADWHIP","Kryptic Media Limited","PPL UK","Contract","67ea9f2efa9de99fdcbb01a4","","","0101-01-01","2025Q1DT","2021-12-31","GBP","-0.0455928527","-0.0455928527","-0.0376278","-0.0376278"],["Pay Trevor","GAD WHIP","PPLPayTrevorGADWHIP","Kryptic Media Limited","PPL UK","Contract","67ea9f2efa9de99fdcbb01a4","","","0101-01-01","2025Q1DT","2020-12-31","GBP","-0.00275630543","-0.00275630543","-0.00227478","-0.00227478"],["WOMAN GO WILD","PIXIE GELDOF","PPLWOMANGOWILDPIXIEGELDOF","Stranger Records Ltd","PPL UK","Contract","67ea9f2efa9de99fdcbb01a4","66d03fdc63e2f2cf7805aa5f","","0101-01-01","2025Q1DT","2017-12-31","GBP","-0.01640824341","-0.01640824341","-0.01354173","-0.01354173"],["MOTHER NATURES SPIES","FILA BRAZILLIA","PPLMOTHERNATURESSPIESFILABRAZILLIA","Twentythree Records Ltd","PPL UK","Contract","67ea9f2efa9de99fdcbb01a4","66f42cb7290a326fdc402031","","0101-01-01","2025Q1DT","2014-12-31","GBP","-0.001744382995","-0.001744382995","-0.00143964","-0.00143964"],["Bodies","Drowning Pool (214253)","INTERBodiesDrowningPool(214253)","DOWNTOWN","INTERGRAM CZ","Contract","699c4cddbe2a233314011978","66f42cd9290a326fdc402340","","2024-01-01","2026Q1DT","2024-12-31","CZK","2.834122246","2.834122246","68.7893749","68.7893749"],["Divine","Harry Deborah Ann (12766), Blondie (11296), Bozewski Clement Anthony (433359), Stein Christopher (433384), Fradley Ken (431078), Dulfer Candy (127588), Destri Jimmy (141027)","INTERDivineHarryDeborahAnn(12766),Blondie(11296),BozewskiClementAnthony(433359),SteinChristopher(433384),FradleyKen(431078),DulferCandy(127588),DestriJimmy(141027)","DOWNTOWN","INTERGRAM CZ","Contract","699c4cddbe2a233314011978","66f42cd9290a326fdc402340","","2024-01-01","2026Q1DT","2024-12-31","CZK","0.3258614406","0.3258614406","7.909258267","7.909258267"],["Double Take","Harry Deborah Ann (12766), Pagano Frank (433518), Aaron Robert (299119), Blondie (11296), Bozewski Clement Anthony (433359), Stein Christopher (433384), Leon Webb Cassell (432363), Fradley Ken (431078), Dulfer Candy (127588), Destri Jimmy (141027)","INTERDoubleTakeHarryDeborahAnn(12766),PaganoFrank(433518),AaronRobert(299119),Blondie(11296),BozewskiClementAnthony(433359),SteinChristopher(433384),LeonWebbCassell(432363),FradleyKen(431078),DulferCandy(127588),DestriJimmy(141027)","DOWNTOWN","INTERGRAM CZ","Contract","699c4cddbe2a233314011978","66f42cd9290a326fdc402340","","2024-01-01","2026Q1DT","2024-12-31","CZK","0.1787991443","0.1787991443","4.339785057","4.339785057"],["DO YOU","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSDOYOUCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2020-03-01","2026Q1DT","2020-03-01","BRL","0.1224824317","0.1224824317","0.7460252877","0.7460252877"],["DO YOU","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSDOYOUCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2022-10-01","2026Q1DT","2022-12-01","BRL","1.031711489","1.031711489","6.284026611","6.284026611"],["DO YOU","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSDOYOUCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2022-08-01","2026Q1DT","2022-08-01","BRL","0.0316338418","0.0316338418","0.1926778037","0.1926778037"],["EVERYTHING A REASON","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSEVERYTHINGAREASONCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2021-08-01","2026Q1DT","2021-08-01","BRL","0.05746259434","0.05746259434","0.3499975292","0.3499975292"],["EVERYTHING A REASON","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSEVERYTHINGAREASONCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2020-01-01","2026Q1DT","2020-01-01","BRL","0.03724332912","0.03724332912","0.2268444946","0.2268444946"],["EVERYTHING A REASON","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSEVERYTHINGAREASONCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2020-06-01","2026Q1DT","2020-06-01","BRL","0.05844866244","0.05844866244","0.3560035475","0.3560035475"],["EVERYTHING A REASON","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSEVERYTHINGAREASONCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2021-07-01","2026Q1DT","2021-09-01","BRL","0.08923144808","0.08923144808","0.5434976738","0.5434976738"],["EVERYTHING A REASON","CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","ABRAMUSEVERYTHINGAREASONCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","DANIELBURNS","ABRAMUS BR","Contract","699c45448ee75ee2f6ad033d","66d0403563e2f2cf7805b559","","2023-04-01","2026Q1DT","2023-06-01","BRL","0.279240135","0.279240135","1.700817","1.700817"],["WISH YOU WERE HERE -LIVE","VELVET REVOLVER","AIEWISHYOUWEREHERELIVEVELVETREVOLVER","MCKAGAN MICHAEL ANDREW","AIE ES","Contract","68dfad6d3399e42cac02f2ac","66d04029fc08b5205fb45e15","","2019-01-01","2025Q3DT","2019-12-31","EUR","0.039044","0.039044","0.039044","0.039044"],["WISH YOU WERE HERE -LIVE","VELVET REVOLVER","AIEWISHYOUWEREHERELIVEVELVETREVOLVER","MCKAGAN MICHAEL ANDREW","AIE ES","Contract","68dfad6d3399e42cac02f2ac","66d04029fc08b5205fb45e15","","2020-01-01","2025Q3DT","2020-12-31","EUR","0.015335","0.015335","0.015335","0.015335"],["IT'S GOIN' DOWN","","ABRAMUSIT'SGOIN'DOWN","TIMOTHY JAMESPRICE","ABRAMUS BR","Contract","69034c2466337e26f41d9c16","66d0401888d6cb29f472af73","","2019-01-01","2025Q4DT","2019-12-01","BRL","3.4741795","3.4741795","21.6325","21.6325"],["GOT 2 LUV YA","RYAN BENJAMIN TEDDER-SEAN PAUL (US 3)-STORLEER ERIKSEN MIKKEL-TOR ERIK HERMANSEN","ABRAMUSGOT2LUVYARYANBENJAMINTEDDERSEANPAUL(US3)STORLEERERIKSENMIKKELTORERIKHERMANSEN","RYAN BENJAMINTEDDERGOT 2 LUV YAABRAMUSGOT2LUVYARYANBENJAMINTEDDERSEANPAUL(US3)STORLEERERIKSENMIKKELTORERIKHERMANSEN","ABRAMUS BR","Contract","69034c2466337e26f41d9c16","66d0402a63e2f2cf7805b3dc","","2024-07-01","2025Q4DT","2024-09-01","BRL","0.1269543","0.1269543","0.7905","0.7905"],["I CAN'T MAKE YOU LOVE ME","MARY COUGHLAN","IEAAR9400102","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2016-12-31","GBP","0.048252","0.048252","0.04","0.04"],["ANCHAR","IBRAHIM DJO EXPERIENCE","GBQRF1247091","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2017-12-31","GBP","0.060315","0.060315","0.05","0.05"],["BUMBLEHAUN","FILA BRAZILLIA","GBEEF0100081","Twentythree Records Ltd","PPL UK","Contract","67643e689b34e76843795276","66f42cb7290a326fdc402031","","0101-01-01","Q42024DT","2023-12-31","GBP","0.12063","0.12063","0.1","0.1"],["LADY ROLL BACK THE YEAR","RAGLANS","PPLRAGLANSLADYROLLBACKTHEYEAR","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2015-12-31","GBP","3.401766","3.401766","2.82","2.82"],["NATURE BOY","FILA BRAZILLIA","PPLFILABRAZILLIANATUREBOY","Twentythree Records Ltd","PPL UK","Contract","67643e689b34e76843795276","66f42cb7290a326fdc402031","","0101-01-01","Q42024DT","2023-12-31","GBP","2.907183","2.907183","2.41","2.41"],["LIGHTS ON THE VIBE","SOLID DOCTOR","PPLSOLIDDOCTORLIGHTSONTHEVIBE","Twentythree Records Ltd","PPL UK","Contract","67643e689b34e76843795276","66f42cb7290a326fdc402031","","0101-01-01","Q42024DT","2023-12-31","GBP","1.869765","1.869765","1.55","1.55"],["ARGHANE MANINE","TERAKAFT","USWR40708412","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2024-12-31","GBP","0.024126","0.024126","0.02","0.02"],["AFOURS AFOURS","TINARIWEN","FR9W10000492","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2023-12-31","GBP","0.036189","0.036189","0.03","0.03"],["WEST ALABAMA","JAPANIC","PPLJAPANICWESTALABAMA","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2023-12-31","GBP","0","0","0","0"],["SUBUHANALAII","JUSTIN ADAMS FEATURING JULDEH CAMARA","USWR40707607","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2023-12-31","GBP","0","0","0","0"],["HIGH ROAD","RAGLANS","GBGRJ1341531","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2023-12-31","GBP","0","0","0","0"],["EWOR IMDANE","TERAKAFT","USWR40708408","Independent Records Limited","PPL UK","Contract","67643e689b34e76843795276","66d03ebdfc08b5205fb3a2e3","","0101-01-01","Q42024DT","2024-12-31","GBP","0","0","0","0"],["ELEPHANT'S GRAVEYARD","DUKE SPECIAL","PPLDUKESPECIALELEPHANT'SGRAVEYARD","Stranger Records Ltd","PPL UK","Contract","67643e689b34e76843795276","66d03fdc63e2f2cf7805aa5f","","0101-01-01","Q42024DT","2023-12-31","GBP","0","0","0","0"],["ARMS OVER JORDAN","REDEYES","PPLREDEYESARMSOVERJORDAN","Global Vibes Ltd","PPL UK","Contract","67643e689b34e76843795276","66d03fdcb9ab5a956083af08","","0101-01-01","Q42024DT","2023-12-31","GBP","0","0","0","0"],["YOUR MOTHER'S SON-IN-LAW","THE SIX SWINGERS","GBN8H1207834","Global Vibes Ltd","PPL UK","Contract","67643e689b34e76843795276","66d03fdcb9ab5a956083af08","","0101-01-01","Q42024DT","2023-12-31","GBP","0","0","0","0"],["TUTTI FRUTTI","LITTLE RICHARD","EJITUTTIFRUTTILITTLERICHARD","JUSTIN ALEXANDER ADAMS","EJI HU","Contract","68e8d50050673a31e71f719b","66d04016b9ab5a956083b559","","2024-01-01","2025Q3DT","2024-12-31","HUF","0.7925478","0.7925478","313.26","313.26"],["YOU'VE GOT YOUR TROUBLES","THE FORTUNES","EJIYOU'VEGOTYOURTROUBLESTHEFORTUNES","ANDREW BROWNYOU'VE GOT YOUR TROUBLESTHE FORTUNES","EJI HU","Contract","68e8d50050673a31e71f719b","","","2024-01-01","2025Q3DT","2024-12-31","HUF","3.4013826","3.4013826","1344.42","1344.42"],["ON YOUR OWN","BAD POP","QMBZ91726945","","RMNZ NZ","Track","6900eb158c8b2782cd4309a8","","","2024-01-01","2025Q4FUGA","2024-12-31","NZD","0.0002723098899","0.0002723098899","0.0005496324274","0.0005496324274"],["WORLD OF THE FARMER","ISAACS, GREGORY","SENAWORLDOFTHEFARMERISAACS,GREGORY","Gregory Anthony Isaacs","SENA NL","Contract","68df970b4e7a8163320d3335","66d0400263e2f2cf7805ae82","","2024-01-01","2025Q3DT","2024-12-31","EUR","0.0348","0.0348","0.0348","0.0348"],["KHALGHI STOMPTHIEVERY CORPORATION REMIX","TRANSGLOBAL UNDERGROUND","SENAKHALGHISTOMPTHIEVERYCORPORATIONREMIXTRANSGLOBALUNDERGROUND","Richard Eric Hilton","SENA NL","Contract","68df970b4e7a8163320d3335","686f7ef68e18c4d963c06f2a","","2024-01-01","2025Q3DT","2024-12-31","EUR","0.0348","0.0348","0.0348","0.0348"],["Kids","Alexander Schroer","GVLKidsAlexanderSchroer","Andrew  BrownKidsAlexander Schroer","GVL DE","Contract","68e39b5d5449cd4c26d1ae90","66d03ffdfc08b5205fb458e7","","2023-01-01","2025Q3DT","2023-12-31","EUR","0.009255997781","0.009255997781","0.009255997781","0.009255997781"],["KOH END TITLE THEME","GREGSON HARRY-MARK STEITENFELD","ABRAMUSKOHENDTITLETHEMEGREGSONHARRYMARKSTEITENFELD","MARCSTREITENFELD","ABRAMUS BR","Contract","699c45428e986f03a128796a","66d04017fc08b5205fb45bec","","2025-01-01","2026Q1DT","2025-03-01","BRL","1.490641681","1.490641681","9.079313441","9.079313441"],["CATCHING FEELINGS","JUSTIN BIEBER","USUM71205333","JUSTIN DREWBIEBERCATCHING FEELINGSUSUM71205333","ABRAMUS BR","Contract","699c45428e986f03a128796a","","66d08979b3f7d33d0b102371","2025-01-01","2026Q1DT","2025-03-01","BRL","0.04738776325","0.04738776325","0.2886329836","0.2886329836"],["TAKE YOU","JUSTIN BIEBER","USUM71205350","JUSTIN DREWBIEBERTAKE YOUUSUM71205350","ABRAMUS BR","Contract","699c45428e986f03a128796a","","66d08e2788d6cb29f49606b2","2025-01-01","2026Q1DT","2025-03-01","BRL","0.03679814445","0.03679814445","0.22413293","0.22413293"],["THERE SHE GO","JUSTIN BIEBER-SYMERE WOODS","USUM72102642","JUSTIN DREWBIEBERTHERE SHE GOUSUM72102642","ABRAMUS BR","Contract","699c45428e986f03a128796a","","66d08a8574d512730aefebfa","2024-05-01","2026Q1DT","2025-03-01","BRL","0.03624290311","0.03624290311","0.2207510239","0.2207510239"],["Cum On Feel The Noize","SLADY","UKN492403085","","SoundExchange US","Track","6900eeec72ce74ef697e9f70","","","2025-01-01","2025Q4FUGA","2025-01-31","USD","0.0636846609","0.0636846609","0.074865","0.074865"],["CHIQUITITA","SINEAD O'CONNOR","PPLCHIQUITITASINEADO'CONNOR","Justin Alexander Adams","PPL UK","Contract","67643bd72d12e120c31b64a4","66d04016b9ab5a956083b559","","2024-01-01","Q42024DT","2024-12-31","GBP","6.477831","6.477831","5.37","5.37"],["RUMOURS","GREGORY ANTHONY ISAACS","GBCEN0900670","Gregory Anthony Isaacs","PPL UK","Contract","67643bd72d12e120c31b64a4","66d0400263e2f2cf7805ae82","","2024-01-01","Q42024DT","2024-12-31","GBP","5.042334","5.042334","4.18","4.18"],["WELCOME TO NEW YORK [TAYLORS VERSION]","TAYLOR SWIFT","USUG12306672","Ryan TedderWELCOME TO NEW YORK TAYLORS VERSIONTAYLOR SWIFT","PPL UK","Contract","67643bd72d12e120c31b64a4","","677f0502816e7ddc2522923b","2024-01-01","Q42024DT","2024-12-31","GBP","0.024126","0.024126","0.02","0.02"],["OTHER PEOPLE S LIVES","DURAN DURAN","PPLDURANDURANOTHERPEOPLESLIVES","Dominic BrownDURAN DURANOTHER PEOPLE S LIVESPPLDURANDURANOTHERPEOPLESLIVES","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","","","0101-01-01","Q42024DT","2023-12-31","GBP","0.12063","0.12063","0.1","0.1"],["FALLING DOWN","DURAN DURAN","PPLDURANDURANFALLINGDOWN","Dominic BrownDURAN DURANFALLING DOWNPPLDURANDURANFALLINGDOWN","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","","","0101-01-01","Q42024DT","2023-12-31","GBP","0.048252","0.048252","0.04","0.04"],["NO DATA PROVIDED","NO DATA PROVIDED","PPLChristopherBrownNODATAPROVIDEDNODATAPROVIDEDPPLChristopherBrownNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDED","Christopher BrownNO DATA PROVIDEDNO DATA PROVIDEDPPLChristopherBrownNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDED","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","","","0101-01-01","Q42024DT","2023-12-31","GBP","5.404224","5.404224","4.48","4.48"],["NO DATA PROVIDED","NO DATA PROVIDED","PPLSimeonListerNODATAPROVIDED","Simeon Lister","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","66d03ffeb9ab5a956083b283","","0101-01-01","Q42024DT","2023-12-31","GBP","0.024126","0.024126","0.02","0.02"],["NO DATA PROVIDED","NO DATA PROVIDED","PPLSudhaKheterpalNODATAPROVIDED","Sudha Kheterpal","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","66d0401c63e2f2cf7805b1dc","","0101-01-01","Q42024DT","2024-12-31","GBP","2.629734","2.629734","2.18","2.18"],["NO DATA PROVIDED","NO DATA PROVIDED","PPLSudhaKheterpalNODATAPROVIDED","Sudha Kheterpal","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","66d0401c63e2f2cf7805b1dc","","0101-01-01","Q42024DT","2016-12-31","GBP","0.096504","0.096504","0.08","0.08"],["TAKE THE LONG WAY HOME","NO DATA PROVIDED","PPLSudhaKheterpalNODATAPROVIDED","Sudha Kheterpal","PPL UK","Contract","67643cb2d8baf3d9b5e6a5e4","66d0401c63e2f2cf7805b1dc","","0101-01-01","Q42024DT","2019-12-31","GBP","0.289512","0.289512","0.24","0.24"],["Secrets Live From Zurich","OneRepublic","GVLSecretsLiveFromZurichOneRepublic","Andrew  BrownSecrets Live From ZurichOneRepublic","GVL DE","Contract","68e6347272c5504d4046965d","66d03ffdfc08b5205fb458e7","","2023-01-01","2025Q3DT","2023-12-31","EUR","0.217113228","0.217113228","0.217113228","0.217113228"],["5k Running Mix","Various Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","GVL5kRunningMixVariousArtists,OneRepublic,Alesso,Avicii,Bastille,EllieGoulding,LucasNord,ToveLo,OttoKnows,Klangkarussell,SamSmith","Andrew  Brown5k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","GVL DE","Contract","68e6347272c5504d4046965d","66d03ffdfc08b5205fb458e7","","2022-01-01","2025Q3DT","2022-12-31","EUR","1.089746866","1.089746866","1.089746866","1.089746866"],["TEARDROP","THE COLLECTIVE","HUZIPTEARDROPTHECOLLECTIVE","JAHMAAL NOEL FYFFE","HUZIP HR","Contract","6936bd12b87e4f75da19665a","66d0400dfc08b5205fb45a40","","2024-01-01","2025Q4DT","2024-12-31","EUR","0.1615","0.1615","0.1615","0.1615"],["Objectify (Live)","Guns N' Roses","PRObjectify(Live)GunsN'Roses","McKagan, Michael Andrew","PLAYRIGHT BE","Contract","692d6e81186e4ddef14ee9b9","66d04029fc08b5205fb45e15","","2024-01-01","2025Q4DT","2024-12-31","EUR","0.12","0.12","0.12","0.12"],["Superbloodmoon","Holly Humberstone feat. d4vd","PRSuperbloodmoonHollyHumberstonefeatd4vd","Burke, David Anthony","PLAYRIGHT BE","Contract","692d6e81186e4ddef14ee9b9","66d04031b9ab5a956083b9bb","","2024-01-01","2025Q4DT","2024-12-31","EUR","5.21","5.21","5.21","5.21"],["KIDS (SEEB REMIX)","ONEREPUBLIC","HUZIPKIDS(SEEBREMIX)ONEREPUBLIC","EDDIE RAY FISHERKIDS (SEEB REMIX)ONEREPUBLIC","HUZIP HR","Contract","6936bd133e2dfa560c6bb325","66d0402388d6cb29f472b05e","","2023-01-01","2025Q4DT","2023-12-31","EUR","0.0085","0.0085","0.0085","0.0085"],["Warm On A Cold Night","Honne","GVLWarmOnAColdNightHonne","Reuben  Butler","GVL DE","Contract","693014250f6c6d60dee9693b","66d0400efc08b5205fb45a99","","2021-01-01","2025Q4DT","2021-12-31","EUR","5.038639751","5.038639751","5.038639751","5.038639751"],["Hello In There","Joan Baez","GVLHelloInThereJoanBaez","David Malcolm  Kershenbaum","GVL DE","Contract","693013fdb5cdf48c77b1c965","6703e9d597174c89adaf851e","","2021-01-01","2025Q4DT","2021-12-31","EUR","0.2330246915","0.2330246915","0.2330246915","0.2330246915"],["10k Running Mix","Various Artists, OneRepublic, Alesso, Avicii, Afrojack, Wrabel, Bastille, Lady Gaga, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Zedd, Matthew Koma, Miriam Bryant, Chase & Status, Moko, Klangkarussell, 3LAU, Bright Lights, Sam Smith","GVL10kRunningMixVariousArtists,OneRepublic,Alesso,Avicii,Afrojack,Wrabel,Bastille,LadyGaga,EllieGoulding,LucasNord,ToveLo,OttoKnows,Zedd,MatthewKoma,MiriamBryant,ChaseStatus,Moko,Klangkarussell,3LAU,BrightLights,SamSmith","Zachary D  Filkins10k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Afrojack, Wrabel, Bastille, Lady Gaga, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Zedd, Matthew Koma, Miriam Bryant, Chase  Status, Moko, Klangkarussell, 3LAU, Bright Lights, Sam Smith","GVL DE","Contract","69301428b5cdf48c77b1cc64","66d03ffd88d6cb29f472acd0","","2021-01-01","2025Q4DT","2021-12-31","EUR","0.877753197","0.877753197","0.877753197","0.877753197"],["5k Running Mix","Various Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","GVL5kRunningMixVariousArtists,OneRepublic,Alesso,Avicii,Bastille,EllieGoulding,LucasNord,ToveLo,OttoKnows,Klangkarussell,SamSmith","Zachary D  Filkins5k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","GVL DE","Contract","69301428b5cdf48c77b1cc64","66d03ffd88d6cb29f472acd0","","2021-01-01","2025Q4DT","2021-12-31","EUR","0.1114175885","0.1114175885","0.1114175885","0.1114175885"],["Hit This","Ebhoni","GVLHitThisEbhoni","Andron  Cross","GVL DE","Contract","693013f57568654645f61f09","66d0402588d6cb29f472b0b1","","2021-01-01","2025Q4DT","2021-12-31","EUR","0.2247617532","0.2247617532","0.2247617532","0.2247617532"],["45987","Tax","PR45987Tax","Michael Aday","PLAYRIGHT BE","Contract","69300f5b74f60ac9c3bce8b6","66d03ffcb9ab5a956083b238","","","2025Q4DT","","EUR","-5.11","-5.11","-5.11","-5.11"],["AXMAN","ROBBIE ROBERTSON","HUZIPAXMANROBBIEROBERTSON","THOMAS BAPTIST MORELLO","HUZIP HR","Contract","6936bd15b87e4f75da1966b7","66d0403388d6cb29f472b22a","","2021-01-01","2025Q4DT","2021-12-31","EUR","0.005640719425","0.005640719425","0.005640719425","0.005640719425"],["Don't Stop Wembley, June 27, 1980","Fleetwood Mac","GVLDon'tStopWembley,June27,1980FleetwoodMac","Lindsey  Buckingham","GVL DE","Contract","69301416b5cdf48c77b1cae1","66d04006b9ab5a956083b3b1","","2021-01-01","2025Q4DT","2021-12-31","EUR","0.3487321353","0.3487321353","0.3487321353","0.3487321353"],["COME HOME","ONEREPUBLIC FT.SARA BAREILLES","HUZIPCOMEHOMEONEREPUBLICFTSARABAREILLES","EDDIE RAY FISHERCOME HOMEONEREPUBLIC FTSARA BAREILLES","HUZIP HR","Contract","6936bfd4b87e4f75da199533","66d0402388d6cb29f472b05e","","2024-01-01","2025Q4DT","2024-12-31","EUR","34","34","34","34"],["COME HOME","ONEREPUBLIC FT.SARA BAREILLES","HUZIPCOMEHOMEONEREPUBLICFTSARABAREILLES","ANDREW JOHN BROWNCOME HOMEONEREPUBLIC FTSARA BAREILLES","HUZIP HR","Contract","6936bfd4b87e4f75da199533","66d03ffdfc08b5205fb458e7","","2024-01-01","2025Q4DT","2024-12-31","EUR","34","34","34","34"],["LA VITA NUOVA","CHRISTINE AND THE QUEENS, CAROLINE POLACHEK","HUZIPLAVITANUOVACHRISTINEANDTHEQUEENS,CAROLINEPOLACHEK","CAROLINE ELIZABETH POLACHEK","HUZIP HR","Contract","6936bfd4b87e4f75da199533","66d04026b9ab5a956083b7e3","","2024-01-01","2025Q4DT","2024-12-31","EUR","68","68","68","68"],["Tis Autumn","Ella Fitzgerald","GDK'TisAutumnEllaFitzgerald","Ella Jane Fitzgerald","GRAMEX DK","Contract","69428108bb3ee8d0c74d4019","66d0402db13352ab5e8a176d","","2024-01-01","2025Q4DT","2024-12-31","DKK","31.5774263","31.5774263","235.84604","235.84604"],["Takako Takahashi","ETUDE NO. 5 IN G-FLAT MAJOR, `BLACK KEY' [HD]","SXTWENTYTHREERECORDSLTDTakakoTakahashi","TWENTYTHREE RECORDS LTD","SoundExchange US","Contract","6943c1b1d6b97522f99709be","66f42cb7290a326fdc402031","","2025-03-01","2025Q4DT","2025-03-31","USD","18.85854655","18.85854655","21.9502375","21.9502375"],["FILA BRAZILLIA","NUTTY SLACK","SXTWENTYTHREERECORDSLTDFILABRAZILLIA","TWENTYTHREE RECORDS LTD","SoundExchange US","Contract","6943c1b1d6b97522f99709be","66f42cb7290a326fdc402031","","2024-02-01","2025Q4DT","2024-02-29","USD","0.05042780925","0.05042780925","0.058695","0.058695"],["FILA BRAZILLIA","NUTTY SLACK","SXTWENTYTHREERECORDSLTDFILABRAZILLIA","TWENTYTHREE RECORDS LTD","SoundExchange US","Contract","6943c1b1d6b97522f99709be","66f42cb7290a326fdc402031","","2024-12-01","2025Q4DT","2024-12-31","USD","0.07604766225","0.07604766225","0.088515","0.088515"],["NIATIGI (HOST)","JUSTIN ADAMS & JULDEH CAMARA","RAAPNIATIGI(HOST)JUSTINADAMSJULDEHCAMARA","JUSTIN ALEXANDERADAMS","RAAP IE","Contract","694a937434b79c11b8231e27","66d04016b9ab5a956083b559","","2024-01-01","2025Q4DT","2024-12-31","EUR","0.83","0.83","0.83","0.83"],["CHIP","CLASH","RAAPCHIPCLASH","JAHMAALFYFFE","RAAP IE","Contract","694a937434b79c11b8231e27","66d0400dfc08b5205fb45a40","","2024-01-01","2025Q4DT","2024-12-31","EUR","0.83","0.83","0.83","0.83"],["DOWN AT THE WHISKY","MOTLEY CRUE","ACTDOWNATTHEWHISKYMOTLEYCRUE","FRANK CARLTON SERAFINO FERANNA","ACTRA RACS CA","Contract","694a9678b910ae8b80835b42","66d0401eb9ab5a956083b685","","2018-01-01","2025Q4DT","2018-12-31","CAD","0.026692736","0.026692736","0.0434","0.0434"],["I'M PUTTING ALL MY EGGS IN ONE BASKET","OSCAR PETERSON","ACTI'MPUTTINGALLMYEGGSINONEBASKETOSCARPETERSON","ELLA JANE FITZGERALD","ACTRA RACS CA","Contract","694a9678b910ae8b80835b42","66d0402db13352ab5e8a176d","","2018-01-01","2025Q4DT","2018-12-31","CAD","0.426591744","0.426591744","0.6936","0.6936"],["Archie Moore","Miles Davis","SWISSArchieMooreMilesDavis","Miles Davis","SWISSPERFORM CH","Contract","694aacba93c34671a8b2b68e","66d04030fc08b5205fb45f27","","2024-01-01","2025Q4DT","2024-12-31","CHF","0.4538526872","0.4538526872","0.423125326","0.423125326"],["ROBIN HOOD - AMBUSH","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODAMBUSHMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","6943be4ca19462ac47aa709c","66d04017fc08b5205fb45bec","","2001-02-01","2025Q4DT","2030-02-01","USD","0.2885771013","0.2885771013","0.33588675","0.33588675"],["I'm Sorry ft. Lil Durk & DaBaby","Kevin Gates","SOUNDEXCHANGEI'mSorryftLilDurkDaBabyKevinGates","Jonathan Lyndale Kirk","SoundExchange US","Contract","6943be4ca19462ac47aa709c","66d0402c63e2f2cf7805b437","","2001-02-01","2025Q4DT","2031-02-01","USD","0.03386044177","0.03386044177","0.03941156","0.03941156"],["THE IRISH ROVER","The Dubliners","GBGRJ1230781,GBRXC1215692","Independent Records Limited","PPL UK","Contract","68dfa5ffd805990c795f74a5","66d03ebdfc08b5205fb3a2e3","","0101-01-01","2025Q3DT","2024-12-31","GBP","0.07988813959","0.07988813959","0.06919897407","0.06919897407"],["TUNSTALL AND CALIFORNIAN HADDOCK","FILA BRAZILLIA","PPLTUNSTALLANDCALIFORNIANHADDOCKFILABRAZILLIA","Twentythree Records Ltd","PPL UK","Contract","68dfa5ffd805990c795f74a5","66f42cb7290a326fdc402031","","0101-01-01","2025Q3DT","2022-12-31","GBP","0.03909877044","0.03909877044","0.03386729013","0.03386729013"],["LA BALLATA DI DON GIOVANNI","BENITO MERLINO","PPLLABALLATADIDONGIOVANNIBENITOMERLINO","Downtown Music UK Limited","PPL UK","Contract","68651a6803a73ecb39d1f3bc","66f42cd9290a326fdc402340","","2024-01-01","2025Q2DT","2024-12-31","GBP","36.16324","36.16324","30.5","30.5"],["TAKE ME DOWN","VINCE GILL & LITTLE BIG TOWN","PPLTAKEMEDOWNVINCEGILLLITTLEBIGTOWN","Stephen Jordan","PPL UK","Contract","6867c2ad73b1592b13312df6","6745ad9f7e3c5fe4ff002b02","","2021-01-01","2025Q2DT","2021-12-31","GBP","0.06304939955","0.06304939955","0.05317573","0.05317573"],["GREEN ONIONS","BLUES BROTHERS","PPLGREENONIONSBLUESBROTHERS","Stephen Jordan","PPL UK","Contract","6867c2ad73b1592b13312df6","6745ad9f7e3c5fe4ff002b02","","2021-01-01","2025Q2DT","2021-12-31","GBP","0.07093057419","0.07093057419","0.059822696","0.059822696"],["EASY MONEY","SPRINGSTEEN, BRUCE","PPLEASYMONEYSPRINGSTEEN,BRUCE","Stephen Jordan","PPL UK","Contract","6867c2ad73b1592b13312df6","6745ad9f7e3c5fe4ff002b02","","2023-01-01","2025Q2DT","2023-12-31","GBP","-0.02378179083","-0.02378179083","-0.020057512","-0.020057512"],["AUGUST","MAYS, LYLE","PPLAUGUSTMAYS,LYLE","Stephen Jordan","PPL UK","Contract","6867c2ad73b1592b13312df6","6745ad9f7e3c5fe4ff002b02","","2022-01-01","2025Q2DT","2022-12-31","GBP","0.0152092853","0.0152092853","0.012827479","0.012827479"],["JUST WHEN I NEEDED YOU MOST","VANWARMER, RANDY","PPLJUSTWHENINEEDEDYOUMOSTVANWARMER,RANDY","Stephen Jordan","PPL UK","Contract","6867c2ad73b1592b13312df6","6745ad9f7e3c5fe4ff002b02","","2024-01-01","2025Q2DT","2024-12-31","GBP","1.435479985","1.435479985","1.210680778","1.210680778"],["GOOD OL' DAYS","ZIGGY MARLEY & CEDELLA MARLEY","PPLGOODOL'DAYSZIGGYMARLEYCEDELLAMARLEY","Stephen Jordan","PPL UK","Contract","6867c2ad73b1592b13312df6","6745ad9f7e3c5fe4ff002b02","","2023-01-01","2025Q2DT","2023-12-31","GBP","0.007927263214","0.007927263214","0.006685837","0.006685837"],["HOW WE ROLL","MICHAEL FITZPATRICK-P MICKEY","ABRAMUSHOWWEROLLMICHAELFITZPATRICKPMICKEY","MICHAELFITZPATRICK","ABRAMUS","Contract","66e323c322c182a7a36b2aad","66d0401688d6cb29f472af26","","2018-01-01","Q32024DT","2018-06-01","BRL","62.6724813","62.6724813","389.73","389.73"],["READY TO ROCK","","ABRAMUSREADYTOROCK","ANTONINAARMATO","ABRAMUS","Contract","66e323c322c182a7a36b2aad","66d04019fc08b5205fb45c1a","","2023-07-01","Q32024DT","2023-09-01","BRL","0.02462535327","0.02462535327","0.153133221","0.153133221"],["PHONE BOOTH (END TITLES)","GREGSON HARRY-MARK STEITENFELD","ABRAMUSPHONEBOOTH(ENDTITLES)GREGSONHARRYMARKSTEITENFELD","MARCSTREITENFELD","ABRAMUS","Contract","66e323c322c182a7a36b2aad","66d04017fc08b5205fb45bec","","2023-07-01","Q32024DT","2023-09-01","BRL","0.294485446","0.294485446","1.831263267","1.831263267"],["GETTING STARTED","ALOE BLACC-ANDREW DEROBERTS-DESTIN ROUTE-ESTHER RENAY DEAN-JOEL MICHAEL ROUSSEAU-KYLE BRYANT WILLIAMS-RYAN BENJAMIN TEDDER-SHANE L MC ANALLY-SOUNDPAKT-ZACHARY PHILIP SKELTON","ABRAMUSGETTINGSTARTEDALOEBLACCANDREWDEROBERTSDESTINROUTEESTHERRENAYDEANJOELMICHAELROUSSEAUKYLEBRYANTWILLIAMSRYANBENJAMINTEDDERSHANELMCANALLYSOUNDPAKTZACHARYPHILIPSKELTON","RYAN BENJAMINTEDDERGETTING STARTEDABRAMUSGETTINGSTARTEDALOEBLACCANDREWDEROBERTSDESTINROUTEESTHERRENAYDEANJOELMICHAELROUSSEAUKYLEBRYANTWILLIAMSRYANBENJAMINTEDDERSHANELMCANALLYSOUNDPAKTZACHARYPHILIPSKELTON","ABRAMUS","Contract","66e323c322c182a7a36b2aad","66d0402a63e2f2cf7805b3dc","","2023-07-01","Q32024DT","2023-09-01","BRL","0.6287671","0.6287671","3.91","3.91"],["SWEETBREADS","CHUCK GORMAN-MARK STEITENFELD-MARTIN TILLMAN","ABRAMUSSWEETBREADSCHUCKGORMANMARKSTEITENFELDMARTINTILLMAN","MARCSTREITENFELD","ABRAMUS","Contract","66e323c322c182a7a36b2aad","66d04017fc08b5205fb45bec","","2023-07-01","Q32024DT","2023-09-01","BRL","0.0006918953168","0.0006918953168","0.004302564","0.004302564"],["LET ME LIVE / LET ME DIE(undefined)","DES ROCS","GBKPL1812549","DES ROCSLET ME LIVE  LET ME DIE(undefined)","SENA","Contract","66f56c673da05217da20a300","","66d059f1c3f429dc47385d0c","2022-01-01","Q32024DT","2022-12-31","EUR","0.00855","0.00855","0.00855","0.00855"],["WILDFIRE(undefined)","JAMES MERCY & MIA VAILE","QM24S1702734","JAMES MERCY  MIA VAILEWILDFIRE(undefined)","SENA","Contract","66f56c673da05217da20a300","","66d057dab9ab5a956085b029","2023-01-01","Q32024DT","2023-12-31","EUR","0.0356","0.0356","0.0356","0.0356"],["DRONE GOES IN","ALEX NYE-MARK STEITENFELD","ABRAMUSDRONEGOESINALEXNYEMARKSTEITENFELD","MARCSTREITENFELD","ABRAMUS","Contract","66e323c1f11fdca5816708ae","66d04017fc08b5205fb45bec","","2018-01-01","Q32024DT","2018-12-01","BRL","21.9425245","21.9425245","136.45","136.45"],["ANOTHER DUMB BLONDE","ANTONINA ARMATO-TIMOTHY JAMES PRICE","ABRAMUSANOTHERDUMBBLONDEANTONINAARMATOTIMOTHYJAMESPRICE","TIMOTHY JAMESPRICE","ABRAMUS","Contract","66e323c1f11fdca5816708ae","66d0401888d6cb29f472af73","","2018-01-01","Q32024DT","2018-12-01","BRL","0.2846337","0.2846337","1.77","1.77"],["BREAKTHROUGH","ANTONINA ARMATO-TIMOTHY JAMES PRICE","ABRAMUSBREAKTHROUGHANTONINAARMATOTIMOTHYJAMESPRICE","TIMOTHY JAMESPRICE","ABRAMUS","Contract","66e323c1f11fdca5816708ae","66d0401888d6cb29f472af73","","2018-01-01","Q32024DT","2018-12-01","BRL","3.5667658","3.5667658","22.18","22.18"],["SWEETBREADS","CHUCK GORMAN-MARK STEITENFELD-MARTIN TILLMAN","ABRAMUSSWEETBREADSCHUCKGORMANMARKSTEITENFELDMARTINTILLMAN","MARCSTREITENFELD","ABRAMUS","Contract","66e323c14cd656be7f66445f","66d04017fc08b5205fb45bec","","2023-07-01","Q32024DT","2023-12-01","BRL","0.0002528077929","0.0002528077929","0.00157209","0.00157209"],["EH EH NOTHING ELSE I CAN SAYPET SHOP BOYS RADIO MIX","LADY GAGA","LADYGAGAEHEHNOTHINGELSEICANSAYPETSHOPBOYSRADIOMIX","MARTIN KIERSZENBAUM","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d0402f63e2f2cf7805b48b","","2023-01-01","Q32024DT","2023-12-31","EUR","1.4878","1.4878","1.4878","1.4878"],["LIFT ME UPMICHAEL BRUN REMIX","ONEREPUBLIC","ONEREPUBLICLIFTMEUPMICHAELBRUNREMIX","Brent Michael KutzleONEREPUBLICLIFT ME UPMICHAEL BRUN REMIXONEREPUBLICLIFTMEUPMICHAELBRUNREMIX","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d0401063e2f2cf7805b017","","2021-01-01","Q32024DT","2021-12-31","EUR","0.21375","0.21375","0.21375","0.21375"],["DRIVETOPIC VIP REMIX","CLEAN BANDIT & TOPIC & WES NELSON","CLEANBANDITTOPICWESNELSONDRIVETOPICVIPREMIX","David Phelan","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d0400bb9ab5a956083b44c","","2021-01-01","Q32024DT","2021-12-31","EUR","0.00855","0.00855","0.00855","0.00855"],["GETTIN' JIGGY WIT ITPRAIA DEL SOL REMIX","SMITH, WILL","SMITH,WILLGETTIN'JIGGYWITITPRAIADELSOLREMIX","Willard Carroll Smith II","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d0402863e2f2cf7805b3b1","","2021-01-01","Q32024DT","2021-12-31","EUR","0.0171","0.0171","0.0171","0.0171"],["IF I LOSE MYSELF","TIESTO & ALESSO & ONE REPUBLIC","TIESTOALESSOONEREPUBLICIFILOSEMYSELF","Brent Michael KutzleTIESTO  ALESSO  ONE REPUBLICIF I LOSE MYSELFTIESTOALESSOONEREPUBLICIFILOSEMYSELF","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d0401063e2f2cf7805b017","","2023-01-01","Q32024DT","2023-12-31","EUR","86","86","86","86"],["SHE DON'T LIKE THE LIGHTSACOUSTIC","BIEBER, JUSTIN","BIEBER,JUSTINSHEDON'TLIKETHELIGHTSACOUSTIC","Justin BieberBIEBER, JUSTINSHE DON'T LIKE THE LIGHTSACOUSTICBIEBER,JUSTINSHEDON'TLIKETHELIGHTSACOUSTIC","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d04004b9ab5a956083b32e","","2023-01-01","Q32024DT","2023-12-31","EUR","0.0602","0.0602","0.0602","0.0602"],["LET ME LOVE YOUMARSHMELLO REMIX","DJ SNAKE & JUSTIN BIEBER","DJSNAKEJUSTINBIEBERLETMELOVEYOUMARSHMELLOREMIX","Justin BieberDJ SNAKE  JUSTIN BIEBERLET ME LOVE YOUMARSHMELLO REMIXDJSNAKEJUSTINBIEBERLETMELOVEYOUMARSHMELLOREMIX","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d04004b9ab5a956083b32e","","2023-01-01","Q32024DT","2023-12-31","EUR","0.2924","0.2924","0.2924","0.2924"],["LOVE YOURSELFTHE DJ MIKE D REMIX","BIEBER, JUSTIN","BIEBER,JUSTINLOVEYOURSELFTHEDJMIKEDREMIX","Justin BieberBIEBER, JUSTINLOVE YOURSELFTHE DJ MIKE D REMIXBIEBER,JUSTINLOVEYOURSELFTHEDJMIKEDREMIX","SENA","Contract","66f56c49d06a7aff2e35d2ae","66d04004b9ab5a956083b32e","","2021-01-01","Q32024DT","2021-12-31","EUR","0.0171","0.0171","0.0171","0.0171"],["The Fighter feat. Ryan Tedder","Gym Class Heroes","GVLTheFighterfeatRyanTedderGymClassHeroes","Ryan  TedderThe Fighter feat Ryan TedderGym Class Heroes","GVL DE","Contract","68e3a5f89c9960db30d7324b","66d0401588d6cb29f472aee6","","2023-01-01","2025Q3DT","2023-12-31","EUR","0.02958572231","0.02958572231","0.02958572231","0.02958572231"],["Burn Slow","Jaira Burns","GVLBurnSlowJairaBurns","Ryan  TedderBurn SlowJaira Burns","GVL DE","Contract","68e3a5f89c9960db30d7324b","66d0401588d6cb29f472aee6","","2023-01-01","2025Q3DT","2023-12-31","EUR","0.002675304677","0.002675304677","0.002675304677","0.002675304677"],["Welcome To New York Karaoke Version","Taylor Swift","GVLWelcomeToNewYorkKaraokeVersionTaylorSwift","Ryan  TedderWelcome To New York Karaoke VersionTaylor Swift","GVL DE","Contract","68e3a5f89c9960db30d7324b","66d0401588d6cb29f472aee6","","2023-01-01","2025Q3DT","2023-12-31","EUR","0.04746305239","0.04746305239","0.04746305239","0.04746305239"],["BLEU CLAIR","MATRODA","BLEUCLAIRBLEUCLAIR","","SoundExchange","Track","66d182a32392ca1be08dafb0","","","2022-09-01","Q32024FUGA","2022-09-30","USD","21.14837695","21.14837695","23.414425","23.414425"],["DIAMOND","KLINT","PPLDIAMONDKLINT","Twentythree Records Ltd","PPL UK","Contract","69cd294278743393fbe69ec8","66f42cb7290a326fdc402031","","0101-01-01","2026Q1DT","2024-12-31","GBP","-0.05652430052","-0.05652430052","-0.0493964","-0.0493964"],["Dirim Dim Dom","CAPOEIRA SENZALA DE SANTOS","PPLDirimDimDomCAPOEIRASENZALADESANTOS","Downtown Music UK Limited","PPL UK","Contract","69cd294278743393fbe69ec8","66f42cd9290a326fdc402340","","0101-01-01","2026Q1DT","2022-12-31","GBP","-0.00003169711","-0.00003169711","-0.0000277","-0.0000277"],["What Do You Mean (Delirious & Alex K Mix)","Justin Bieber","SAMIWhatDoYouMean(DeliriousAlexKMix)JustinBieber","JUSTIN BIEBERJustin BieberWhat Do You Mean (Delirious  Alex K Mix)","SAMI SE","Contract","69d78c28ca714af64c2b3084","","66d08a2ab3f7d33d0b10aa4f","2015-01-01","2026Q1DT","2015-12-31","SEK","4.2725925","4.2725925","45.75","45.75"],["USE SOMEBODY","CALEB FOLLOWILL-IVAN FOLLOWILL-MATTHEW FOLLOWILL-MICHAEL FOLLOWILL","ABRAMUSUSESOMEBODYCALEBFOLLOWILLIVANFOLLOWILLMATTHEWFOLLOWILLMICHAELFOLLOWILL","CAMERON MATTHEWFOLLOWILL","ABRAMUS BR","Contract","699c45437a1ec6a0579806c7","66d0400463e2f2cf7805aea8","","2024-07-01","2026Q1DT","2024-09-01","BRL","0.009030859378","0.009030859378","0.05500584345","0.05500584345"],["PLAYTIME","KHALIL / JUSTIN BIEBER","ABRAMUSPLAYTIMEKHALILJUSTINBIEBER","JUSTIN DREWBIEBERPLAYTIMEABRAMUSPLAYTIMEKHALILJUSTINBIEBER","ABRAMUS BR","Contract","699c45437a1ec6a0579806c7","66d04004b9ab5a956083b32e","","2025-01-01","2026Q1DT","2025-03-01","BRL","0.113250682","0.113250682","0.6897958463","0.6897958463"],["MY FAMILY","","ABRAMUSMYFAMILY","ANTONINAARMATO","ABRAMUS BR","Contract","699c45437a1ec6a0579806c7","66d04019fc08b5205fb45c1a","","2025-01-01","2026Q1DT","2025-03-01","BRL","0.04326143","0.04326143","0.2635","0.2635"],["Airlock Homes","Fila Brazillia","GBEEF0100067","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","67f663ace39abb219ee0a3fa","2024-01-01","Q42024DT","2024-01-31","USD","0.2456783197","0.2456783197","0.25847","0.25847"],["HOW'S IT FEEL","DAUGHTERS OF BLUEGRASS","SOUNDEXCHANGEHOW'SITFEELDAUGHTERSOFBLUEGRASS","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2012-12-01","Q42024DT","2023-12-31","USD","0.0115772118","0.0115772118","0.01218","0.01218"],["STILETTO","THE CUTLER","SOUNDEXCHANGESTILETTOTHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2023-04-01","Q42024DT","2023-04-30","USD","0.2399277342","0.2399277342","0.25242","0.25242"],["STILETTO","THE CUTLER","SOUNDEXCHANGESTILETTOTHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2018-12-01","Q42024DT","2018-12-31","USD","-0.009930453225","-0.009930453225","-0.0104475","-0.0104475"],["TEACH YOURSELF BRAILLE","THE CUTLER","SOUNDEXCHANGETEACHYOURSELFBRAILLETHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2013-01-01","Q42024DT","2022-03-31","USD","-0.01681689818","-0.01681689818","-0.0176925","-0.0176925"],["Halo","Beyonc","USSM10900876","Ryan TedderBeyoncHaloUSSM10900876","SoundExchange US","Contract","678615464339323cb70411f9","","67edb40bc31ae9c7286e73ea","2024-05-01","Q42024DT","2024-05-31","USD","0.02824164817","0.02824164817","0.0297121","0.0297121"],["Halo","Beyonc","USSM10900876","Ryan TedderBeyoncHaloUSSM10900876","SoundExchange US","Contract","678615464339323cb70411f9","","67edb40bc31ae9c7286e73ea","2024-04-01","Q42024DT","2024-04-30","USD","0.02787879098","0.02787879098","0.02933035","0.02933035"],["Tracks Under One Cent","Tracks Under One Cent","BrentKutzleTracksUnderOneCent","Brent KutzleTracks Under One CentTracks Under One CentBrentKutzleTracksUnderOneCent","SoundExchange US","Contract","678615464339323cb70411f9","","","1900-01-01","Q42024DT","1900-12-31","USD","13.37828418","13.37828418","14.07484843","14.07484843"],["Suck it and See","Fragile State","GBMRG0700005","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686559ea1affe13194c0f3d7","2022-12-01","Q42024DT","2022-12-31","USD","0.06241286287","0.06241286287","0.0656625","0.0656625"],["Suck it and See","Fragile State","GBMRG0700005","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686559ea1affe13194c0f3d7","2022-11-01","Q42024DT","2022-11-30","USD","0.06741729803","0.06741729803","0.0709275","0.0709275"],["The Apple of My Eye - Live","Damien Dempsey","GBXWM1700067","Damien Dempsey","SoundExchange US","Contract","678615464339323cb70411f9","66d0401a88d6cb29f472afa5","","2023-10-01","Q42024DT","2023-12-31","USD","0.04490090426","0.04490090426","0.04723875","0.04723875"],["NUTTY SLACK","FILA BRAZILLIA","SOUNDEXCHANGENUTTYSLACKFILABRAZILLIA","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2023-08-01","Q42024DT","2023-08-31","USD","0.6223891954","0.6223891954","0.654795","0.654795"],["NUTTY SLACK","FILA BRAZILLIA","SOUNDEXCHANGENUTTYSLACKFILABRAZILLIA","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2022-09-01","Q42024DT","2022-09-30","USD","0.1691955326","0.1691955326","0.178005","0.178005"],["ROBIN HOOD - AMBUSH","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODAMBUSHMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2023-07-01","Q42024DT","2023-07-31","USD","0.01438454309","0.01438454309","0.0151335","0.0151335"],["ROBIN HOOD - AMBUSH","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODAMBUSHMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2022-03-01","Q42024DT","2022-03-31","USD","0.01080872446","0.01080872446","0.0113715","0.0113715"],["ROBIN HOOD~DESTINY","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODDESTINYMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2022-12-01","Q42024DT","2022-12-31","USD","0.009630329693","0.009630329693","0.01013175","0.01013175"],["ROBIN HOOD - GODFREY","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODGODFREYMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2024-05-01","Q42024DT","2024-05-31","USD","0.1090218336","0.1090218336","0.11469825","0.11469825"],["ROBIN HOOD - SIEGE","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODSIEGEMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2023-11-01","Q42024DT","2023-11-30","USD","0.009996038415","0.009996038415","0.0105165","0.0105165"],["ROBIN HOOD - THE LEGEND BEGINS","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODTHELEGENDBEGINSMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2022-07-01","Q42024DT","2022-07-31","USD","0.01064618726","0.01064618726","0.0112005","0.0112005"],["ROBIN HOOD - THE LEGEND BEGINS","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODTHELEGENDBEGINSMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","678615464339323cb70411f9","66d04017fc08b5205fb45bec","","2023-04-01","Q42024DT","2023-04-30","USD","0.01434390878","0.01434390878","0.01509075","0.01509075"],["APURANDO POCO A POCO","ANSINA","SOUNDEXCHANGEAPURANDOPOCOAPOCOANSINA","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2024-03-01","Q42024DT","2024-03-31","USD","0.08513242815","0.08513242815","0.089565","0.089565"],["CANDOMBE LENTO","CORDON","SOUNDEXCHANGECANDOMBELENTOCORDON","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2024-06-01","Q42024DT","2024-06-30","USD","0.065870343","0.065870343","0.0693","0.0693"],["CANDOMBE LENTO","CORDON","SOUNDEXCHANGECANDOMBELENTOCORDON","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2023-12-01","Q42024DT","2023-12-31","USD","0.03997132178","0.03997132178","0.0420525","0.0420525"],["MAGNETS","WAYLAYERS","SOUNDEXCHANGEMAGNETSWAYLAYERS","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2024-01-01","Q42024DT","2024-01-31","USD","0.1347846943","0.1347846943","0.1418025","0.1418025"],["messier","Tate McRae","USRC12303351","Ryan TedderTate McRaemessierUSRC12303351","SoundExchange US","Contract","678615464339323cb70411f9","","67edb40ec31ae9c7286e7f4d","2024-04-01","Q42024DT","2024-04-30","USD","0.2221049588","0.2221049588","0.23366925","0.23366925"],["APOLOGIZE","ONEREPUBLIC VS. RUDEEJAY & DA BROZZ","SOUNDEXCHANGEAPOLOGIZEONEREPUBLICVSRUDEEJAYDABROZZ","Zach FilkinsONEREPUBLIC VS RUDEEJAY  DA BROZZAPOLOGIZESOUNDEXCHANGEAPOLOGIZEONEREPUBLICVSRUDEEJAYDABROZZ","SoundExchange US","Contract","678615464339323cb70411f9","66d03ffd88d6cb29f472acd0","","2023-01-01","Q42024DT","2023-12-31","USD","0.05128048976","0.05128048976","0.0539505","0.0539505"],["COZ I LOVE YOU","THE WONDER STUFF","SOUNDEXCHANGECOZILOVEYOUTHEWONDERSTUFF","Miles Hunt","SoundExchange US","Contract","678615464339323cb70411f9","66d0401bb9ab5a956083b60c","","2023-01-01","Q42024DT","2023-12-31","USD","0.5368202646","0.5368202646","0.56477077","0.56477077"],["Black Suits Comin' (Rock Version) [Instrumental Version]","Smith, Will","USPSU1247359","Will Smith","SoundExchange US","Contract","678615464339323cb70411f9","66d0402863e2f2cf7805b3b1","","2021-05-01","Q42024DT","2021-05-31","USD","0.02836274315","0.02836274315","0.0298395","0.0298395"],["We Build Arks","Fila Brazillia","GBEEF0100085","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2022-08-01","Q42024DT","2022-08-31","USD","0.01008015855","0.01008015855","0.010605","0.010605"],["STILETTO","THE CUTLER","SOUNDEXCHANGESTILETTOTHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2021-05-01","Q42024DT","2021-05-31","USD","-0.05723733593","-0.05723733593","-0.0602175","-0.0602175"],["Bugs Will Bite","Fila Brazillia","GBEEF0100066","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","67f663ace39abb219ee0a3f6","2023-02-01","Q42024DT","2023-02-28","USD","0.01282475617","0.01282475617","0.0134925","0.0134925"],["Airlock Homes","Fila Brazillia","GBEEF0100067","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","67f663ace39abb219ee0a3fa","2022-01-01","Q42024DT","2022-01-31","USD","0.06172849568","0.06172849568","0.0649425","0.0649425"],["Swann Todd","Fila Brazillia","GBEEF0100070","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","67f663ace39abb219ee0a3fe","2023-10-01","Q42024DT","2023-10-31","USD","0.05454264008","0.05454264008","0.0573825","0.0573825"],["Leonids","Fila Brazillia","GBEEF0100076","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","67f663ace39abb219ee0a406","2023-10-01","Q42024DT","2023-10-31","USD","0.06961297613","0.06961297613","0.0732375","0.0732375"],["CHANDRAHAS","THE CUTLER","SOUNDEXCHANGECHANDRAHASTHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2019-01-01","Q42024DT","2019-01-31","USD","-0.03508094783","-0.03508094783","-0.0369075","-0.0369075"],["NUTTY SLACK","FILA BRAZILLIA","SOUNDEXCHANGENUTTYSLACKFILABRAZILLIA","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2022-01-01","Q42024DT","2022-01-31","USD","0.03747623303","0.03747623303","0.0394275","0.0394275"],["PANGEA","MANDRILLUS SPHYNX","SOUNDEXCHANGEPANGEAMANDRILLUSSPHYNX","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2023-10-01","Q42024DT","2023-10-31","USD","0.05593988978","0.05593988978","0.0588525","0.0588525"],["SCIMITAR","THE CUTLER","SOUNDEXCHANGESCIMITARTHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2020-10-01","Q42024DT","2020-10-31","USD","-0.02290491473","-0.02290491473","-0.0240975","-0.0240975"],["TEACH YOURSELF BRAILLE","THE CUTLER","SOUNDEXCHANGETEACHYOURSELFBRAILLETHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2021-06-01","Q42024DT","2021-06-30","USD","-0.09890531805","-0.09890531805","-0.104055","-0.104055"],["We Build Arks","Fila Brazillia","GBEEF0100085","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2022-04-01","Q42024DT","2022-04-30","USD","0.02530019993","0.02530019993","0.0266175","0.0266175"],["Mother Nature's Spies","Fila Brazillia","GBEEF0100090","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","67f663ace39abb219ee0a41a","2022-02-01","Q42024DT","2022-02-28","USD","0.0223559952","0.0223559952","0.02352","0.02352"],["Song of Departure","Fragile State","GBMRG0700001","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686559ea1affe13194c0f3ce","2023-12-01","Q42024DT","2023-12-31","USD","0.0694632708","0.0694632708","0.07308","0.07308"],["The Barney Fade","Fragile State","GBMRG0700002","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686559ea1affe13194c0f3d3","2022-12-01","Q42024DT","2022-12-31","USD","0.0193618887","0.0193618887","0.02037","0.02037"],["CINQUEDEA","THE CUTLER","SOUNDEXCHANGECINQUEDEATHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2021-01-01","Q42024DT","2021-01-31","USD","-0.0201603171","-0.0201603171","-0.02121","-0.02121"],["PICKAXE","THE CUTLER","SOUNDEXCHANGEPICKAXETHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2020-08-01","Q42024DT","2020-08-31","USD","-0.013972497","-0.013972497","-0.0147","-0.0147"],["Monk's Utterance","Fila Brazillia","GBEEF0100087","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686c39a407e99b8d0f40006b","2022-03-01","Q42024DT","2022-03-31","USD","0.04121886615","0.04121886615","0.043365","0.043365"],["SCIMITAR","THE CUTLER","SOUNDEXCHANGESCIMITARTHECUTLER","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2020-07-01","Q42024DT","2020-07-31","USD","-0.02125815615","-0.02125815615","-0.022365","-0.022365"],["The Barney Fade","Fragile State","GBMRG0700002","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686559ea1affe13194c0f3d3","2024-01-01","Q42024DT","2024-01-31","USD","0.0477060969","0.0477060969","0.05019","0.05019"],["Suck it and See","Fragile State","GBMRG0700005","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","686559ea1affe13194c0f3d7","2023-05-01","Q42024DT","2023-05-31","USD","0.009730846125","0.009730846125","0.0102375","0.0102375"],["HOMEBASE","DJ JAZZY JEFF & THE FRESH PRINCE","SOUNDEXCHANGEHOMEBASEDJJAZZYJEFFTHEFRESHPRINCE","Will Smith","SoundExchange US","Contract","678615464339323cb70411f9","66d0402863e2f2cf7805b3b1","","2024-04-01","Q42024DT","2024-04-30","USD","0.04849703528","0.04849703528","0.05102212","0.05102212"],["Back for More (TXT Ver.)","TOMORROW X TOGETHER","USA2P2342331","Ryan TedderTOMORROW X TOGETHERBack for More (TXT Ver)USA2P2342331","SoundExchange US","Contract","678615464339323cb70411f9","","67edb40bc31ae9c7286e741e","2024-05-01","Q42024DT","2024-05-31","USD","0.05204745627","0.05204745627","0.0547574","0.0547574"],["ARMANDO A LLAMADA","CUAREIM","SOUNDEXCHANGEARMANDOALLAMADACUAREIM","Downtown","SoundExchange US","Contract","678615464339323cb70411f9","","","2009-12-01","Q42024DT","2024-03-31","USD","0.02559961058","0.02559961058","0.0269325","0.0269325"],["PARADISE BY THE DASHBOARD LIGHT","MEAT LOAF","PIPARADISEBYTHEDASHBOARDLIGHTMEATLOAF","MICHAEL LEEADAY","PI RS","Contract","69d60de2d3fed7a044218ae9","66d03ffcb9ab5a956083b238","","2021-01-01","2026Q1DT","2024-12-31","RSD","0.07345092","0.07345092","8.621","8.621"],["Dead Ringer For Love","MEAT LOAF","PIDeadRingerForLoveMEATLOAF","MICHAEL LEEADAY","PI RS","Contract","69d60de2d3fed7a044218ae9","66d03ffcb9ab5a956083b238","","2021-01-01","2026Q1DT","2024-12-31","RSD","0.7279914","0.7279914","85.445","85.445"],["Just Like Fire Would","BRUCE SPRINGSTEEN","PIJustLikeFireWouldBRUCESPRINGSTEEN","THOMAS BAPTISTMORELLO","PI RS","Contract","69d60de2d3fed7a044218ae9","66d0403388d6cb29f472b22a","","2021-01-01","2026Q1DT","2024-12-31","RSD","2.638001592","2.638001592","309.6246","309.6246"],["FIRE","MEDUZA/LEONY/ONEREPUBLIC","PIFIREMEDUZALEONYONEREPUBLIC","BRIANWILLETT","PI RS","Contract","69d60de2d3fed7a044218ae9","66d04021fc08b5205fb45d02","","2021-01-01","2026Q1DT","2024-12-31","RSD","0.39143436","0.39143436","45.943","45.943"],["BALLERINA RADIO ALBUM VERSION","KINGS OF LEON","PIBALLERINARADIOALBUMVERSIONKINGSOFLEON","ANTHONYFOLLOWILL","PI RS","Contract","69d60de2d3fed7a044218ae9","66d04020fc08b5205fb45ce2","","2021-01-01","2026Q1DT","2024-12-31","RSD","0.308735832","0.308735832","36.2366","36.2366"],["10 000 HOURS","DAN SHAY,JUSTIN BIEBER","PI10000HOURSDANSHAY,JUSTINBIEBER","JUSTINBIEBER10 000 HOURSDAN SHAY,JUSTIN BIEBER","PI RS","Contract","69d60de2d3fed7a044218ae9","","66d08768b13352ab5ea99e80","2021-01-01","2026Q1DT","2024-12-31","RSD","1.58705448","1.58705448","186.274","186.274"],["Pray","Justin Bieber","PIPrayJustinBieber","JUSTINBIEBERPrayJustin Bieber","PI RS","Contract","69d60de2d3fed7a044218ae9","","66d08cbec3f429dc474201ca","2021-01-01","2026Q1DT","2024-12-31","RSD","1.66501248","1.66501248","195.424","195.424"],["2STEPN","CODY TAYLOR DICKINSON-LUTHER ANDREWS DICKINSON-MICHAEL FITZPATRICK-P MICKEY","ABRAMUS2STEPNCODYTAYLORDICKINSONLUTHERANDREWSDICKINSONMICHAELFITZPATRICKPMICKEY","MICHAELFITZPATRICK","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0401688d6cb29f472af26","","2018-01-01","Q32024DT","2018-12-01","BRL","0.7284693","0.7284693","4.53","4.53"],["ATTENTION PLEASE","RYAN BENJAMIN TEDDER","ABRAMUSATTENTIONPLEASERYANBENJAMINTEDDER","RYAN BENJAMINTEDDERATTENTION PLEASEABRAMUSATTENTIONPLEASERYANBENJAMINTEDDER","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0402a63e2f2cf7805b3dc","","2018-01-01","Q32024DT","2018-12-01","BRL","0.0064324","0.0064324","0.04","0.04"],["BACK TWO THEME THEME CLOSING","MICHAEL FITZPATRICK-P MICKEY","ABRAMUSBACKTWOTHEMETHEMECLOSINGMICHAELFITZPATRICKPMICKEY","MICHAELFITZPATRICK","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0401688d6cb29f472af26","","2018-01-01","Q32024DT","2018-12-01","BRL","0.0192972","0.0192972","0.12","0.12"],["I WANT EVERYTHING","ANTONINA ARMATO-TIMOTHY JAMES PRICE","ABRAMUSIWANTEVERYTHINGANTONINAARMATOTIMOTHYJAMESPRICE","TIMOTHY JAMESPRICE","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0401888d6cb29f472af73","","2018-01-01","Q32024DT","2018-12-01","BRL","0.0112567","0.0112567","0.07","0.07"],["STRIKE","BRANDI NICHOLE FLORES-DENISE LISA MARIA SANEINIA-RYAN BENJAMIN TEDDER","ABRAMUSSTRIKEBRANDINICHOLEFLORESDENISELISAMARIASANEINIARYANBENJAMINTEDDER","RYAN BENJAMINTEDDERSTRIKEABRAMUSSTRIKEBRANDINICHOLEFLORESDENISELISAMARIASANEINIARYANBENJAMINTEDDER","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0402a63e2f2cf7805b3dc","","2018-01-01","Q32024DT","2018-12-01","BRL","1.0082787","1.0082787","6.27","6.27"],["WE LIKE TO ROCK","MICHAEL FITZPATRICK-P MICKEY","ABRAMUSWELIKETOROCKMICHAELFITZPATRICKPMICKEY","MICHAELFITZPATRICK","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0401688d6cb29f472af26","","2018-01-01","Q32024DT","2018-12-01","BRL","0.0016081","0.0016081","0.01","0.01"],["SECOND HAND NEWS","LINDSEY A BUCKINGHAM / LINDSEY A BUCKINGHAM","QZAMM1985519","LINDSEYBUCKINGHAM","ABRAMUS","Contract","66e323c24cd656be7f664498","66d04006b9ab5a956083b3b1","","2018-01-01","Q32024DT","2018-12-01","BRL","0.0016081","0.0016081","0.01","0.01"],["TRUST YOU","ROB THOMAS-RYAN BENJAMIN TEDDER","USATV1600029","RYAN BENJAMINTEDDERTRUST YOUUSATV1600029","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0401588d6cb29f472aee6","","2018-01-01","Q32024DT","2018-12-01","BRL","1.5293031","1.5293031","9.51","9.51"],["WHEN YOUR LOVER HAS GONE","ELLA FITZGERALD","USCHR1372494","ELLAFITZGERALD","ABRAMUS","Contract","66e323c24cd656be7f664498","66d0402db13352ab5e8a176d","","2018-01-01","Q32024DT","2018-12-01","BRL","0.4052412","0.4052412","2.52","2.52"],["BALLAD OF THE DYING MAN","J TILLMAN","USSUB1620024","SUB POP RECORDS","ABRAMUS","Contract","66e323c24cd656be7f664498","66d03fe188d6cb29f472aac3","","2018-01-01","Q32024DT","2018-12-01","BRL","2.7514591","2.7514591","17.11","17.11"],["Outre Lux","Photay feat. Madison McFerrin","PROPHONOutreLuxPhotayfeatMadisonMcFerrin","Madison McFerrin","PROPHON BG","Contract","68e3b3d4451edc93838bcbfd","66d04009b9ab5a956083b417","","2017-01-01","2025Q3DT","2017-12-31","BGN","3.462712201","3.462712201","6.772368865","6.772368865"],["Outre Lux","Photay feat. Madison McFerrin","PROPHONOutreLuxPhotayfeatMadisonMcFerrin","Madison McFerrin","PROPHON BG","Contract","68e3b3d4451edc93838bcbfd","66d04009b9ab5a956083b417","","2018-01-01","2025Q3DT","2018-12-31","BGN","9.227511102","9.227511102","18.04715647","18.04715647"],["WEE B DOOIN IT","Bobby McFerrin , Siedah Garrett , ELLA FITZGERALD , QUINCY JONES , TAKE 6 , AL JARREAU","PROPHONWEEBDOOINITBobbyMcFerrin,SiedahGarrett,ELLAFITZGERALD,QUINCYJONES,TAKE6,ALJARREAU","Ella Fitzgerald","PROPHON BG","Contract","68e3b3d4451edc93838bcbfd","66d0402db13352ab5e8a176d","","2021-01-01","2025Q3DT","2021-12-31","BGN","0.0001553284471","0.0001553284471","0.0003037912128","0.0003037912128"],["Fever","ELLA FITZGERALD","PROPHONFeverELLAFITZGERALD","Ella Fitzgerald","PROPHON BG","Contract","68e3b3d4451edc93838bcbfd","66d0402db13352ab5e8a176d","","2019-01-01","2025Q3DT","2019-12-31","BGN","0.09104587836","0.09104587836","0.1780674327","0.1780674327"],["To Be With You","MEAT LOAF","PROPHONToBeWithYouMEATLOAF","Michael Lee Aday","PROPHON BG","Contract","68e3b3d4451edc93838bcbfd","66d03ffcb9ab5a956083b238","","2020-01-01","2025Q3DT","2020-12-31","BGN","0.0002577652259","0.0002577652259","0.0005041369566","0.0005041369566"],["You Are The Reason?(John Gibbons Remix)","Calum Scott","PPLYouAreTheReason(JohnGibbonsRemix)CalumScott","Reuben Butler","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400efc08b5205fb45a99","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.01057966353","0.01057966353","0.00916408701","0.00916408701"],["No Angel","Charli Xcx","PPLNoAngelCharliXcx","David Phelan","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400bb9ab5a956083b44c","","2020-01-01","2025Q3DT","2020-12-31","GBP","0.3205719754","0.3205719754","0.2776789136","0.2776789136"],["Is There Something I Should Know? (2004 Digital Remaster)","DURAN DURAN","PPLIsThereSomethingIShouldKnow(2004DigitalRemaster)DURANDURAN","Dominic Brown","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0401a63e2f2cf7805b19c","","2024-01-01","2025Q3DT","2024-12-31","GBP","0.05269287551","0.05269287551","0.04564248141","0.04564248141"],["JIM KIMO WEST","ESPANIOLO","PPLJIMKIMOWESTESPANIOLO","Andrew BrownESPANIOLOJIM KIMO WESTPPLJIMKIMOWESTESPANIOLO","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","","2021-01-01","2025Q3DT","2021-12-31","GBP","0.06385298706","0.06385298706","0.05530935153","0.05530935153"],["THE FEEL GOOD VIBE","FEEL GOOD PRODUCTIONS","PPLTHEFEELGOODVIBEFEELGOODPRODUCTIONS","Luca Gatti","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04012b9ab5a956083b4fa","","2021-01-01","2025Q3DT","2021-12-31","GBP","8.297979093","8.297979093","7.187695733","7.187695733"],["You're the Best Thing About Me","FM","PPLYou'retheBestThingAboutMeFM","Ryan TedderFMYou're the Best Thing About MePPLYou'retheBestThingAboutMeFM","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0401588d6cb29f472aee6","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.00006115980304","0.00006115980304","0.00005297652","0.00005297652"],["Loving Kind (Live)","Fleetwood Mac","PPLLovingKind(Live)FleetwoodMac","Lindsey Buckingham","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04006b9ab5a956083b3b1","","2020-01-01","2025Q3DT","2020-12-31","GBP","0.0000340317091","0.0000340317091","0.00002947821","0.00002947821"],["Underway","Fleetwood Mac","PPLUnderwayFleetwoodMac","Lindsey Buckingham","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04006b9ab5a956083b3b1","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.00005199721335","0.00005199721335","0.0000450399","0.0000450399"],["CURTIS MAYFIELD","GIVE ME YOUR LOVE","PPLCURTISMAYFIELDGIVEMEYOURLOVE","Brent KutzleGIVE ME YOUR LOVECURTIS MAYFIELDPPLCURTISMAYFIELDGIVEMEYOURLOVE","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","","2021-01-01","2025Q3DT","2021-12-31","GBP","0.0001426192409","0.0001426192409","0.00012353655","0.00012353655"],["Song 4 Mutya (Out of Control)","GROOVE ARMADA","PPLSong4Mutya(OutofControl)GROOVEARMADA","Jonathan White","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d03ffefc08b5205fb45907","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0001198104694","0.0001198104694","0.00010377963","0.00010377963"],["Not Over You","Gavin DeGraw","PPLNotOverYouGavinDeGraw","Ryan TedderGavin DeGrawNot Over YouPPLNotOverYouGavinDeGraw","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","66d0889fb13352ab5eaa2fad","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0002968296838","0.0002968296838","0.00025711338","0.00025711338"],["You Were Loved","Gryffin with OneRepublic","PPLYouWereLovedGryffinwithOneRepublic","Ryan TedderGryffin with OneRepublicYou Were LovedPPLYouWereLovedGryffinwithOneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0402a63e2f2cf7805b3dc","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.1408030758","0.1408030758","0.1219633908","0.1219633908"],["SO FINE","Guns N' Roses","PPLSOFINEGunsN'Roses","Michael McKagan","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04029fc08b5205fb45e15","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.001502247057","0.001502247057","0.00130124391","0.00130124391"],["by my side (dream edit)","HONNE(혼네)","PPLbymyside(dreamedit)HONNE()","Reuben Butler","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400efc08b5205fb45a99","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.4152257603","0.4152257603","0.3596678652","0.3596678652"],["SANTA CLAUS IS COMING TO TOWN","JUSTIN BIEBER(저스틴 비버)","PPLSANTACLAUSISCOMINGTOTOWNJUSTINBIEBER()","Justin BieberJUSTIN BIEBER( )SANTA CLAUS IS COMING TO TOWNPPLSANTACLAUSISCOMINGTOTOWNJUSTINBIEBER()","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04004b9ab5a956083b32e","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0002568445461","0.0002568445461","0.00022247832","0.00022247832"],["Love Me","Justin Bieber","PPLLoveMeJustinBieber","Justin BieberJustin BieberLove MePPLLoveMeJustinBieber","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","66d08377fc08b5205fbf6e5c","2023-01-01","2025Q3DT","2023-12-31","GBP","0.9854055892","0.9854055892","0.8535566877","0.8535566877"],["Someday At Christmas","Justin Bieber","PPLSomedayAtChristmasJustinBieber","Justin BieberJustin BieberSomeday At ChristmasPPLSomedayAtChristmasJustinBieber","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04004b9ab5a956083b32e","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.4550888136","0.4550888136","0.3941971758","0.3941971758"],["Trust","Justin Bieber","PPLTrustJustinBieber","Justin BieberJustin BieberTrustPPLTrustJustinBieber","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04004b9ab5a956083b32e","","2023-01-01","2025Q3DT","2023-12-31","GBP","1.99889411","1.99889411","1.731438764","1.731438764"],["Turn To You ((Mother's Day Dedication))","Justin Bieber","PPLTurnToYou((Mother'sDayDedication))JustinBieber","Justin BieberJustin BieberTurn To You ((Mother's Day Dedication))PPLTurnToYou((Mother'sDayDedication))JustinBieber","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04004b9ab5a956083b32e","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.001225627894","0.001225627894","0.00106163685","0.00106163685"],["someday at christmas","Justin Bieber","PPLsomedayatchristmasJustinBieber","Justin BieberJustin Biebersomeday at christmasPPLsomedayatchristmasJustinBieber","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.1880069019","0.1880069019","0.1628512668","0.1628512668"],["Lonely","Justin Bieber (저스틴 비버), Benny Blanco","PPLLonelyJustinBieber(),BennyBlanco","Justin BieberJustin Bieber ( ), Benny BlancoLonelyPPLLonelyJustinBieber(),BennyBlanco","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04004b9ab5a956083b32e","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.002838460559","0.002838460559","0.00245866983","0.00245866983"],["What Do You Mean?","Justin Bieber?(Justin Drew Bieber)","PPLWhatDoYouMeanJustinBieber(JustinDrewBieber)","Justin BieberJustin Bieber(Justin Drew Bieber)What Do You MeanPPLWhatDoYouMeanJustinBieber(JustinDrewBieber)","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04004b9ab5a956083b32e","","2021-01-01","2025Q3DT","2021-12-31","GBP","0.006024872984","0.006024872984","0.00521873499","0.00521873499"],["LET ME SHOW YOU","K KLASS","PPLLETMESHOWYOUKKLASS","Sudha Kheterpal","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0401c63e2f2cf7805b1dc","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.01334603983","0.01334603983","0.01156031757","0.01156031757"],["Good On You(MOTi Remix)","Krewella,Nucleya,MOTi","PPLGoodOnYou(MOTiRemix)Krewella,Nucleya,MOTi","Ryan TedderKrewella,Nucleya,MOTiGood On You(MOTi Remix)PPLGoodOnYou(MOTiRemix)Krewella,Nucleya,MOTi","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.01093407881","0.01093407881","0.00947108094","0.00947108094"],["New Song","Maggie Rogers, Del Water Gap","PPLNewSongMaggieRogers,DelWaterGap","Andrew BrownMaggie Rogers, Del Water GapNew SongPPLNewSongMaggieRogers,DelWaterGap","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","66d08c8fb13352ab5eac5001","2021-01-01","2025Q3DT","2021-12-31","GBP","0.0000101084816","0.0000101084816","0.00000875595","0.00000875595"],["Wellerman (Sea Shanty)","Nathan Evans","PPLWellerman(SeaShanty)NathanEvans","David Phelan","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400bb9ab5a956083b44c","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.8884220554","0.8884220554","0.7695497114","0.7695497114"],["Wellerman (Sea Shanty / 220 KID x Billen Ted Remix)","Nathan Evans,220 Kid,Billen Ted","PPLWellerman(SeaShanty220KIDxBillenTedRemix)NathanEvans,220Kid,BillenTed","Alexander Oriet","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400388d6cb29f472ad2b","","2023-01-01","2025Q3DT","2023-12-31","GBP","1.327292656","1.327292656","1.149698698","1.149698698"],["Start Again","One Republic Feat. Logic","PPLStartAgainOneRepublicFeatLogic","Zach FilkinsOne Republic Feat LogicStart AgainPPLStartAgainOneRepublicFeatLogic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d03ffd88d6cb29f472acd0","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0004961176201","0.0004961176201","0.00042973626","0.00042973626"],["Rescue Me (Acoustic)","OneRepublic","PPLRescueMe(Acoustic)OneRepublic","Eddie FisherOneRepublicRescue Me (Acoustic)PPLRescueMe(Acoustic)OneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04023fc08b5205fb45d48","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.1941994179","0.1941994179","0.1682152138","0.1682152138"],["Rescue Me (BUNT. Remix)","OneRepublic","PPLRescueMe(BUNTRemix)OneRepublic","Zach FilkinsOneRepublicRescue Me (BUNT Remix)PPLRescueMe(BUNTRemix)OneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04022b9ab5a956083b734","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0005612349232","0.0005612349232","0.00048614076","0.00048614076"],["Stop And Stare (Album Version)","OneRepublic","PPLStopAndStare(AlbumVersion)OneRepublic","Zach FilkinsOneRepublicStop And Stare (Album Version)PPLStopAndStare(AlbumVersion)OneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d03ffd88d6cb29f472acd0","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.008837975909","0.008837975909","0.00765544008","0.00765544008"],["Take It Out On Me","OneRepublic","PPLTakeItOutOnMeOneRepublic","Brent KutzleOneRepublicTake It Out On MePPLTakeItOutOnMeOneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04030b9ab5a956083b997","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.002144149059","0.002144149059","0.00185725836","0.00185725836"],["The Less I Know","OneRepublic","PPLTheLessIKnowOneRepublic","Eddie FisherOneRepublicThe Less I KnowPPLTheLessIKnowOneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0402388d6cb29f472b05e","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0001122980907","0.0001122980907","0.00009727242","0.00009727242"],["Wanted (String Mix)","OneRepublic","PPLWanted(StringMix)OneRepublic","Brent KutzleOneRepublicWanted (String Mix)PPLWanted(StringMix)OneRepublic","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04030b9ab5a956083b997","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0001527899946","0.0001527899946","0.00013234644","0.00013234644"],["Sunshine (Acoustic Version)","OneRepublic(원리퍼블릭)","PPLSunshine(AcousticVersion)OneRepublic()","Eddie FisherOneRepublic()Sunshine (Acoustic Version)PPLSunshine(AcousticVersion)OneRepublic()","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04023fc08b5205fb45d48","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.2985385798","0.2985385798","0.2585936229","0.2585936229"],["Wanted (TT Spry Remix)","OneRepublic/TT Spry","PPLWanted(TTSpryRemix)OneRepublicTTSpry","Ryan TedderOneRepublicTT SpryWanted (TT Spry Remix)PPLWanted(TTSpryRemix)OneRepublicTTSpry","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0402a63e2f2cf7805b3dc","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.07819316572","0.07819316572","0.06773079051","0.06773079051"],["PITY THE PLIGHT","PLAN B","PPLPITYTHEPLIGHTPLANB","Christopher Brown","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04014fc08b5205fb45b69","","2024-01-01","2025Q3DT","2024-12-31","GBP","0.00198395083","0.00198395083","0.00171849492","0.00171849492"],["PITY THE PLIGHT","PLAN B","PPLPITYTHEPLIGHTPLANB","Christopher Brown","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d04014fc08b5205fb45b69","","2022-01-01","2025Q3DT","2022-12-31","GBP","0.001164347842","0.001164347842","0.00100855617","0.00100855617"],["MADONNA","RAY OF LIGHT","PPLMADONNARAYOFLIGHT","Andrew BrownRAY OF LIGHTMADONNAPPLMADONNARAYOFLIGHT","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0402788d6cb29f472b0f6","","2021-01-01","2025Q3DT","2021-12-31","GBP","0.0003927147784","0.0003927147784","0.00034016889","0.00034016889"],["The Carrot","Rae Morris","PPLTheCarrotRaeMorris","Reuben Butler","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400efc08b5205fb45a99","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.001655226015","0.001655226015","0.00143375403","0.00143375403"],["GIMME","SAM SMITH, KOFFEE, JESSIE REYEZ","PPLGIMMESAMSMITH,KOFFEE,JESSIEREYEZ","Mikayla Simpson","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400e63e2f2cf7805afcc","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.004078922099","0.004078922099","0.00353315556","0.00353315556"],["PRAY","Sam Smith","PPLPRAYSamSmith","Reuben Butler","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400efc08b5205fb45a99","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0007865064349","0.0007865064349","0.00068127057","0.00068127057"],["Too Good At Goodbyes (Galantis Remix)","Sam Smith","PPLTooGoodAtGoodbyes(GalantisRemix)SamSmith","Reuben Butler","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400efc08b5205fb45a99","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.000006930456581","0.000006930456581","0.00000600315","0.00000600315"],["Who We Love","Sam Smith","PPLWhoWeLoveSamSmith","Reuben Butler","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400efc08b5205fb45a99","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.000397632128","0.000397632128","0.00034442829","0.00034442829"],["I Got 5 On It","Sultan & Shepard","PPLIGot5OnItSultanShepard","Andrew BrownSultan  ShepardI Got 5 On ItPPLIGot5OnItSultanShepard","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","","2021-01-01","2025Q3DT","2021-12-31","GBP","0.00001684675356","0.00001684675356","0.00001459263","0.00001459263"],["American Made","The Fallen State","PPLAmericanMadeTheFallenState","Richard Walker","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66f42cd9290a326fdc402340","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.00003627887341","0.00003627887341","0.0000314247","0.0000314247"],["Silent All These Years (LP Version)","Tori Amos","PPLSilentAllTheseYears(LPVersion)ToriAmos","Tori Amos","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0402d88d6cb29f472b171","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.003906793393","0.003906793393","0.00338405796","0.00338405796"],["Snow Angel","Tori Amos","PPLSnowAngelToriAmos","Tori Amos","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0402d88d6cb29f472b171","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0008732718862","0.0008732718862","0.00075642666","0.00075642666"],["Theme From Sunflower (Live)","Vladimir & Anton Jablokov","PPLThemeFromSunflower(Live)VladimirAntonJablokov","Andrew BrownVladimir  Anton JablokovTheme From Sunflower (Live)PPLThemeFromSunflower(Live)VladimirAntonJablokov","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","","","2021-01-01","2025Q3DT","2021-12-31","GBP","0.1895936415","0.1895936415","0.164225698","0.164225698"],["Never Be The Same","Welshly Arms","PPLNeverBeTheSameWelshlyArms","Brett Lindemann","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400f88d6cb29f472ae5c","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.00002418519983","0.00002418519983","0.00002094918","0.00002094918"],["Unspoken","Welshly Arms","PPLUnspokenWelshlyArms","James Weaver","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400a63e2f2cf7805af5b","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.00004837147333","0.00004837147333","0.00004189929","0.00004189929"],["X","Welshly Arms","PPLXWelshlyArms","James Weaver","PPL UK","Contract","68dfa06ff8d19a7c56ac3b74","66d0400a63e2f2cf7805af5b","","2023-01-01","2025Q3DT","2023-12-31","GBP","0.0008274396119","0.0008274396119","0.00071672682","0.00071672682"],["Come Un Pittore","MODA'","ITAP61000021","Andrew John BrownCome Un PittoreMODA'","ITSRIGHT IT","Contract","69dcf416fb69fe13de2d6b00","","","2024-01-01","2026Q1DT","2024-12-31","EUR","1.71","1.71","1.71","1.71"],["THE SICK NOTE","DUBLINERS","PPLTHESICKNOTEDUBLINERS","Independent Records Limited","PPL UK","Contract","686518d31affe13194beb010","66d03ebdfc08b5205fb3a2e3","","0101-01-01","2025Q2DT","2022-12-31","GBP","-0.02364352394","-0.02364352394","-0.019940898","-0.019940898"],["If I Lose Summertime (Thomas Rush Remix)","OneRepublic x Lana Del Rey","SOUNDEXCHANGEIfILoseSummertime(ThomasRushRemix)OneRepublicxLanaDelRey","Eddie FisherOneRepublic x Lana Del ReyIf I Lose Summertime (Thomas Rush Remix)SOUNDEXCHANGEIfILoseSummertime(ThomasRushRemix)OneRepublicxLanaDelRey","SoundExchange US","Contract","6867b190a403404cff5711cf","66d0402388d6cb29f472b05e","","2024-05-01","2025Q2DT","2024-05-31","USD","0.1558224541","0.1558224541","0.17858079","0.17858079"],["NEVER BECOME EMOTIONALLY ATTATCHED TO MAN, WOMAN, BEAST OR CHILD","THE BRIAN JONESTOWN MASSACRE","SOUNDEXCHANGENEVERBECOMEEMOTIONALLYATTATCHEDTOMAN,WOMAN,BEASTORCHILDTHEBRIANJONESTOWNMASSACRE","Anton Newcombe","SoundExchange US","Contract","6867b190a403404cff5711cf","66d0402bb9ab5a956083b8b3","","2024-11-01","2025Q2DT","2024-11-30","USD","0.00936278694","0.00936278694","0.01073025","0.01073025"],["YOU AND I BOTH","DAY OLD JOHNSON-IAN SHERIDEN-TOCA RIVERA","USEE10340740","JASON THOMASMRAZYOU AND I BOTHUSEE10340740","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","67d9f43d282b6b988a2f0127","2022-07-01","2026Q1DT","2023-06-01","BRL","0.13397088","0.13397088","0.816","0.816"],["COME HOME","ONEREPUBLIC","USUM70758798","ZACHARY DOUGLASFILKINSCOME HOMEUSUM70758798","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","66d0882c63e2f2cf7819cd92","2025-01-01","2026Q1DT","2025-03-01","BRL","0.07840918773","0.07840918773","0.4775806294","0.4775806294"],["COME HOME","ONEREPUBLIC","USUM70758798","ANDREW JOHNBROWNCOME HOMEUSUM70758798","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","66d0882c63e2f2cf7819cd92","2025-01-01","2026Q1DT","2025-03-01","BRL","0.07840918773","0.07840918773","0.4775806294","0.4775806294"],["AU REVOIR","ONEREPUBLIC","USUM71301510","EDDIE RAYFISHERAU REVOIRUSUM71301510","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","66d08e6db13352ab5eada890","2024-01-01","2026Q1DT","2024-02-01","BRL","0.06240750627","0.06240750627","0.3801163739","0.3801163739"],["NOBODY (FROM KAIJU NO. 8)","ONEREPUBLIC","USUM72405483","BRENT MICHAELKUTZLENOBODY (FROM KAIJU NO 8)USUM72405483","ABRAMUS BR","ABRAMUS BR","699c45462d0ac175a9bdf6a6","","686c39a407e99b8d0f400027","2025-04-01","2026Q1DT","2025-06-01","BRL","3.108621874","3.108621874","18.93422996","18.93422996"],["PUGSLEY FAILS \"MY FAMILY\" MAZURKA","ANTONINA ARMATO-DEFCON-VIC MIZZY","ABRAMUSPUGSLEYFAILS\"MYFAMILY\"MAZURKAANTONINAARMATODEFCONVICMIZZY","TIMOTHY JAMESPRICE","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","66d0401888d6cb29f472af73","","2022-07-01","2026Q1DT","2023-06-01","BRL","0.03767931","0.03767931","0.2295","0.2295"],["SOMEONE TO SAVE YOU","ONEREPUBLIC","USUM70758803","RYAN BENJAMINTEDDERSOMEONE TO SAVE YOUUSUM70758803","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","66d088d563e2f2cf781b7e09","2022-07-01","2026Q1DT","2023-06-01","BRL","0.03907484","0.03907484","0.238","0.238"],["A LITTLE BIT OF SUNSHINE","ONEREPUBLIC","USUV72106730","EDDIE RAYFISHERA LITTLE BIT OF SUNSHINEUSUV72106730","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","67f54f027966e4e0a7047620","2022-07-01","2026Q1DT","2023-06-01","BRL","0.31399425","0.31399425","1.9125","1.9125"],["SECOND EMOTION","JACQUES WEBSTER-JUSTIN BIEBER","USUM72001308","JUSTIN DREWBIEBERSECOND EMOTIONUSUM72001308","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","66d0875e634cb4f1ab80a475","2022-07-01","2026Q1DT","2023-06-01","BRL","0.78568339","0.78568339","4.7855","4.7855"],["THE CHRISTMAS SONG (CHESTNUTS ROASTING ON AN OPEN FIRE)","JUSTIN BIEBER-USHER (US)","USUV72106643","JUSTIN DREWBIEBERTHE CHRISTMAS SONG (CHESTNUTS ROASTING ON AN OPEN FIRE)USUV72106643","ABRAMUS BR","Contract","699c45462d0ac175a9bdf6a6","","66fc3e2b2149ae8fab4e12bb","2022-07-01","2026Q1DT","2023-06-01","BRL","0.78568339","0.78568339","4.7855","4.7855"],["THE ONE I LOVE","ROSIE THOMAS","ROSIETHOMASTHEONEILOVE(undefined)","","AGEDI ES","Track","69b43f101a025557a6b5b319","","","2022-07-01","2026Q1FUGA","2022-12-31","EUR","0.0231542735","0.0231542735","0.0231542735","0.0231542735"],["Warrior","Mark with a K & Robert Falcon","NLE711700213","Kimbra Johnson","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","66d04036b9ab5a956083ba6c","","2023-10-01","Q42024DT","2023-10-31","USD","0.08247938365","0.08247938365","0.08677382","0.08677382"],["RUNNING AND READING","WILL SMITH","SOUNDEXCHANGERUNNINGANDREADINGWILLSMITH","WILL SMITH","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","66d0402863e2f2cf7805b3b1","","2021-02-01","Q42024DT","2021-02-28","USD","0.01206838784","0.01206838784","0.01269675","0.01269675"],["SWEET THING","DREW BROWN","SOUNDEXCHANGESWEETTHINGDREWBROWN","Andrew John BrownDREW BROWNSWEET THINGSOUNDEXCHANGESWEETTHINGDREWBROWN","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","","","2023-01-01","Q42024DT","2023-01-31","USD","0.01747275007","0.01747275007","0.0183825","0.0183825"],["","US Tax Withheld","SOUNDEXCHANGEUSTaxWithheld","Jonathan Male","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","66d04015fc08b5205fb45b86","","1900-01-01","Q42024DT","1900-12-31","USD","-471.167807","-471.167807","-495.7","-495.7"],["SWEET THING","DREW BROWN","SOUNDEXCHANGESWEETTHINGDREWBROWN","Andrew John BrownDREW BROWNSWEET THINGSOUNDEXCHANGESWEETTHINGDREWBROWN","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","","","2022-02-01","Q42024DT","2022-02-28","USD","0.01755401868","0.01755401868","0.018468","0.018468"],["ROBIN HOOD - AMBUSH","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODAMBUSHMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","66d04017fc08b5205fb45bec","","2023-08-01","Q42024DT","2023-08-31","USD","0.1616432553","0.1616432553","0.1700595","0.1700595"],["ROBIN HOOD - GODFREY","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODGODFREYMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","66d04017fc08b5205fb45bec","","2023-03-01","Q42024DT","2023-03-31","USD","0.1875679403","0.1875679403","0.197334","0.197334"],["ROBIN HOOD - GODFREY","MARC STREITENFELD","SOUNDEXCHANGEROBINHOODGODFREYMARCSTREITENFELD","Marc Streitenfeld","SoundExchange US","Contract","6786cb8c5fcfd6bd799f18e8","66d04017fc08b5205fb45bec","","2023-04-01","Q42024DT","2023-04-30","USD","0.2234073951","0.2234073951","0.2350395","0.2350395"],["GONNA BE ALRIGHT","SHAYNE WARD","AIEGONNABEALRIGHTSHAYNEWARD","TEDDER RYAN BENJAMINGONNA BE ALRIGHTSHAYNE WARD","AIE ES","Contract","67f79a3a3acc764b437415e0","66d0401588d6cb29f472aee6","","2024-01-01","2025Q1DT","2024-12-31","EUR","0.000032","0.000032","0.000032","0.000032"],["ME & U","KANDI BURRUSS","AIEMEUKANDIBURRUSS","TEDDER RYAN BENJAMINME  UKANDI BURRUSS","AIE ES","Contract","67f79a3a3acc764b437415e0","66d0401588d6cb29f472aee6","","2024-01-01","2025Q1DT","2024-12-31","EUR","0.000005","0.000005","0.000005","0.000005"],["MUSIC SOUNDS BETTER WITH U","MANN/BIG TIME RUSH","AIEMUSICSOUNDSBETTERWITHUMANNBIGTIMERUSH","TEDDER RYAN BENJAMINMUSIC SOUNDS BETTER WITH UMANNBIG TIME RUSH","AIE ES","Contract","67f79a3a3acc764b437415e0","66d0401588d6cb29f472aee6","","2019-01-01","2025Q1DT","2019-12-31","EUR","0.0057","0.0057","0.0057","0.0057"],["SYSTEM ADDICT 1","FIVE STAR","AIESYSTEMADDICT1FIVESTAR","TEDDER RYAN BENJAMINSYSTEM ADDICT 1FIVE STAR","AIE ES","Contract","67f79a3a3acc764b437415e0","66d0402a63e2f2cf7805b3dc","","2024-01-01","2025Q1DT","2024-12-31","EUR","0.000003","0.000003","0.000003","0.000003"],["WITHOUT YOU","BLAKE LEWIS","AIEWITHOUTYOUBLAKELEWIS","TEDDER RYAN BENJAMINWITHOUT YOUBLAKE LEWIS","AIE ES","Contract","67f79a3a3acc764b437415e0","66d0401588d6cb29f472aee6","","2023-01-01","2025Q1DT","2023-12-31","EUR","0.000053","0.000053","0.000053","0.000053"],["WISH YOU WERE HERE -LIVE","VELVET REVOLVER","AIEWISHYOUWEREHERELIVEVELVETREVOLVER","MCKAGAN MICHAEL ANDREW","AIE ES","Contract","67f79a3a3acc764b437415e0","66d04029fc08b5205fb45e15","","2020-01-01","2025Q1DT","2020-12-31","EUR","-0.000001","-0.000001","-0.000001","-0.000001"],["ASHES TO ASHES","HANS ZIMMER","AIEASHESTOASHESHANSZIMMER","STREITENFELD MARC","AIE ES","Contract","67f79a3a3acc764b437415e0","66d04017fc08b5205fb45bec","","2021-01-01","2025Q1DT","2021-12-31","EUR","-0.000002","-0.000002","-0.000002","-0.000002"],["I'M BEGINNING TO SEE THE LIGHT","ELLA FITZGERALD","PPLI'MBEGINNINGTOSEETHELIGHTELLAFITZGERALD","ELLA FITZGERALD","PPL UK","Contract","67f6611ae39abb219edf8f3a","66d0402db13352ab5e8a176d","","2023-01-01","2025Q1DT","2023-12-31","GBP","0.3118028058","0.3118028058","0.2573309833","0.2573309833"],["Chi Chi","Trey Songz & Chris Brown","PPLChiChiTreySongzChrisBrown","Christopher Brown","PPL UK","Contract","67f65f56e39abb219eded9d8","66d04014fc08b5205fb45b69","","2020-01-01","2025Q1DT","2020-12-31","GBP","0.00007232311934","0.00007232311934","0.0000596883","0.0000596883"],["DON'T LEAVE","FAITHLESS","PPLDON'TLEAVEFAITHLESS","Sudha Kheterpal","PPL UK","Contract","67f65f56e39abb219eded9d8","66d0401c63e2f2cf7805b1dc","","2021-01-01","2025Q1DT","2021-12-31","GBP","0.08956347914","0.08956347914","0.073916776","0.073916776"],["GULAGUAJIRA I THE DISSOLUTE PRISONER","LES TRIABOLIQUES","PPLGULAGUAJIRAITHEDISSOLUTEPRISONERLESTRIABOLIQUES","Justin Alexander Adams","PPL UK","Contract","67f65f56e39abb219eded9d8","66d04016b9ab5a956083b559","","2023-01-01","2025Q1DT","2023-12-31","GBP","0.001155292048","0.001155292048","0.000953463","0.000953463"],["NO DATA PROVIDED","Mikayla Simpson","PPLNODATAPROVIDEDMikaylaSimpson","Mikayla Simpson","PPL UK","Contract","67f65f56e39abb219eded9d8","66d0400e63e2f2cf7805afcc","","2022-01-01","2025Q1DT","2022-12-31","GBP","0.6229892584","0.6229892584","0.51415329","0.51415329"],["PIPE DOWN","DRAKE","PPLPIPEDOWNDRAKE","Leon Thomas III","PPL UK","Contract","67f65f56e39abb219eded9d8","66d0401e88d6cb29f472b008","","2023-01-01","2025Q1DT","2023-12-31","GBP","0.06729576815","0.06729576815","0.055539225","0.055539225"],["RETURN TO NOW","DURAN DURAN","PPLRETURNTONOWDURANDURAN","Dominic Brown","PPL UK","Contract","67f65f56e39abb219eded9d8","66d0401a63e2f2cf7805b19c","","2022-01-01","2025Q1DT","2022-12-31","GBP","0.5453895356","0.5453895356","0.450110207","0.450110207"],["","Ryan Tedder","PPLRyanTedder","Ryan TedderRyan TedderPPLRyanTedder","PPL UK","Contract","67f65f56e39abb219eded9d8","","","2020-01-01","2025Q1DT","2020-12-31","GBP","1.913002331","1.913002331","1.578801607","1.578801607"],["TINSELTOWN IN THE RAIN","ANDREA CORR","PPLTINSELTOWNINTHERAINANDREACORR","Justin Alexander Adams","PPL UK","Contract","67f65f56e39abb219eded9d8","66d04016b9ab5a956083b559","","2023-01-01","2025Q1DT","2023-12-31","GBP","0.01374926254","0.01374926254","0.011347272","0.011347272"],["The Get Down","#SCONOSCIUTO (1)","PPLTheGetDown#SCONOSCIUTO(1)","Leon Thomas III","PPL UK","Contract","67f65f56e39abb219eded9d8","66d0401e88d6cb29f472b008","","2021-01-01","2025Q1DT","2021-12-31","GBP","0.002453842234","0.002453842234","0.002025157","0.002025157"],["YOSHI'S HIGHWAY","SUBJECTIVE","PPLYOSHI'SHIGHWAYSUBJECTIVE","Marley Munroe","PPL UK","Contract","67f65f56e39abb219eded9d8","66d04022fc08b5205fb45d1f","","2023-01-01","2025Q1DT","2023-12-31","GBP","0.3634994489","0.3634994489","0.299996244","0.299996244"],["THE WAY I FEEL","ROBERT PLANT","PPLTHEWAYIFEELROBERTPLANT","David Barratt","PPL UK","Contract","67f65f56e39abb219eded9d8","66d03ffbb9ab5a956083b214","","2020-01-01","2025Q1DT","2020-12-31","GBP","0.003086162288","0.003086162288","0.002547011","0.002547011"],["LONELY SOUL","DIRTY THRILLS","PPLLONELYSOULDIRTYTHRILLS","Jack Fawdry","PPL UK","Contract","67f65f56e39abb219eded9d8","66d04011fc08b5205fb45aff","","2022-01-01","2025Q1DT","2022-12-31","GBP","0.09077754131","0.09077754131","0.074918742","0.074918742"],["THE BRAVE","DIRTY THRILLS","PPLTHEBRAVEDIRTYTHRILLS","Jack Fawdry","PPL UK","Contract","67f65f56e39abb219eded9d8","66d04011fc08b5205fb45aff","","2020-01-01","2025Q1DT","2020-12-31","GBP","0.218894932","0.218894932","0.180654077","0.180654077"],["CHEAPER BY THE DOZEN 2 (CUES)","RYAN BENJAMIN TEDDER","ABRAMUSCHEAPERBYTHEDOZEN2(CUES)RYANBENJAMINTEDDER","RYAN BENJAMINTEDDERCHEAPER BY THE DOZEN 2 (CUES)ABRAMUSCHEAPERBYTHEDOZEN2(CUES)RYANBENJAMINTEDDER","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d0402a63e2f2cf7805b3dc","","2024-04-01","2025Q1DT","2024-06-01","BRL","20.16102798","20.16102798","124.1748459","124.1748459"],["HILLBILLY HOLLA","CODY TAYLOR DICKINSON-MICHAEL FITZPATRICK-P MICKEY","ABRAMUSHILLBILLYHOLLACODYTAYLORDICKINSONMICHAELFITZPATRICKPMICKEY","MICHAELFITZPATRICK","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d0401688d6cb29f472af26","","2021-07-01","2025Q1DT","2022-06-01","BRL","0.2743884","0.2743884","1.69","1.69"],["HOW WE ROLL THEME OPENING","MICHAEL FITZPATRICK-P MICKEY","ABRAMUSHOWWEROLLTHEMEOPENINGMICHAELFITZPATRICKPMICKEY","MICHAELFITZPATRICK","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d0401688d6cb29f472af26","","2023-12-01","2025Q1DT","2024-03-01","BRL","0.0009381631644","0.0009381631644","0.00577829","0.00577829"],["MY FAMILY","","ABRAMUSMYFAMILY","ANTONINAARMATO","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d04019fc08b5205fb45c1a","","2023-12-01","2025Q1DT","2024-03-01","BRL","0.002533127406","0.002533127406","0.015601918","0.015601918"],["LIKE ME","ADAM PAUL SCHMALHOLZ-ANTONINA ARMATO-DEFCON-JONATHAN L VELLA-TAS","ABRAMUSLIKEMEADAMPAULSCHMALHOLZANTONINAARMATODEFCONJONATHANLVELLATAS","ANTONINAARMATO","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d04019fc08b5205fb45c1a","","2024-01-01","2025Q1DT","2024-03-01","BRL","0.01803618468","0.01803618468","0.111087612","0.111087612"],["MONEY GRABBER","","ABRAMUSMONEYGRABBER","MICHAELFITZPATRICK","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d0401688d6cb29f472af26","","2024-04-01","2025Q1DT","2024-06-01","BRL","0.7354908","0.7354908","4.53","4.53"],["BEETHOVENS 5 SECRETS","ANDREW BROWN-BRENT KUTZLE-EDDIE FISHER-RYAN BENJAMIN TEDDER-ZACHARY DOUGLAS FILKINS","ABRAMUSBEETHOVENS5SECRETSANDREWBROWNBRENTKUTZLEEDDIEFISHERRYANBENJAMINTEDDERZACHARYDOUGLASFILKINS","ZACHARY DOUGLASFILKINSBEETHOVENS 5 SECRETSABRAMUSBEETHOVENS5SECRETSANDREWBROWNBRENTKUTZLEEDDIEFISHERRYANBENJAMINTEDDERZACHARYDOUGLASFILKINS","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","","","2022-10-01","2025Q1DT","2022-12-01","BRL","3.3511104","3.3511104","20.64","20.64"],["JOIN HANDS","BIG C (GB)-JONATHAN WHITE-SIMBA (GB)-THE HOURS-TIMOTHY JOHN HUTTON","ABRAMUSJOINHANDSBIGC(GB)JONATHANWHITESIMBA(GB)THEHOURSTIMOTHYJOHNHUTTON","ANDREW JOHNTREACEY","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d03fff63e2f2cf7805ae0a","","2021-02-01","2025Q1DT","2021-02-01","BRL","0.0007586342438","0.0007586342438","0.004672544","0.004672544"],["TICKING BOMB","ADAM PAUL SCHMALHOLZ-ALOE BLACC-ANTONINA ARMATO-DEFCON","ABRAMUSTICKINGBOMBADAMPAULSCHMALHOLZALOEBLACCANTONINAARMATODEFCON","TIMOTHY JAMESPRICE","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","66d0401888d6cb29f472af73","","2023-07-01","2025Q1DT","2023-12-01","BRL","0.009148703331","0.009148703331","0.056348259","0.056348259"],["MUSIC SOUNDS BETTER","ALAIN EMMANUEL QUEME-BENJAMIN G COHEN-BIG TIME RUSH-BRENT KUTZLE-BUGATTI DOMINIC-DAFT PUNK-ERIC A BELLINGER-FRANK MUSKER-JAMES MASLOW-KENDALL FRANCIS SCHMIDT-LOGAN HENDERSON-MICHAEL CAREN-NOEL P ZANCA","ABRAMUSMUSICSOUNDSBETTERALAINEMMANUELQUEMEBENJAMINGCOHENBIGTIMERUSHBRENTKUTZLEBUGATTIDOMINICDAFTPUNKERICABELLINGERFRANKMUSKERJAMESMASLOWKENDALLFRANCISSCHMIDTLOGANHENDERSONMICHAELCARENNOELPZANCA","BRENT MICHAELKUTZLEMUSIC SOUNDS BETTERABRAMUSMUSICSOUNDSBETTERALAINEMMANUELQUEMEBENJAMINGCOHENBIGTIMERUSHBRENTKUTZLEBUGATTIDOMINICDAFTPUNKERICABELLINGERFRANKMUSKERJAMESMASLOWKENDALLFRANCISSCHMIDTLOGANHENDERSONMICHAELCARENNOELPZANCA","ABRAMUS BR","Contract","67ee9a112c223a2572e6ea4c","","686c39a307e99b8d0f3fff2f","2016-01-01","2025Q1DT","2016-06-01","BRL","0.0535788","0.0535788","0.33","0.33"],["NO ONE ELSE TO BLAME","HOWIE DAY","AIENOONEELSETOBLAMEHOWIEDAY","TEDDER RYAN BENJAMINNO ONE ELSE TO BLAMEHOWIE DAY","AIE ES","Contract","68dfad6f4e7a8163321010b1","66d0402a63e2f2cf7805b3dc","","2023-01-01","2025Q3DT","2023-12-31","EUR","0.000026","0.000026","0.000026","0.000026"],["NO ONE ELSE TO BLAME","HOWIE DAY","AIENOONEELSETOBLAMEHOWIEDAY","TEDDER RYAN BENJAMINNO ONE ELSE TO BLAMEHOWIE DAY","AIE ES","Contract","68dfad6f4e7a8163321010b1","66d0402a63e2f2cf7805b3dc","","2024-01-01","2025Q3DT","2024-12-31","EUR","0.000114","0.000114","0.000114","0.000114"],["SYSTEM ADDICT 1","FIVE STAR","AIESYSTEMADDICT1FIVESTAR","TEDDER RYAN BENJAMINSYSTEM ADDICT 1FIVE STAR","AIE ES","Contract","68dfad6f4e7a8163321010b1","66d0402a63e2f2cf7805b3dc","","2024-01-01","2025Q3DT","2024-12-31","EUR","0.000008","0.000008","0.000008","0.000008"],["TELL HIM","SHAYNE WARD","AIETELLHIMSHAYNEWARD","TEDDER RYAN BENJAMINTELL HIMSHAYNE WARD","AIE ES","Contract","68dfad6f4e7a8163321010b1","66d0402a63e2f2cf7805b3dc","","2022-01-01","2025Q3DT","2022-12-31","EUR","0.000019","0.000019","0.000019","0.000019"],["USED TO BE","JONAS BROTHERS","USUG11901282","TEDDER RYAN BENJAMINUSED TO BEJONAS BROTHERS","AIE ES","Contract","68dfad6f4e7a8163321010b1","","66d08447b3f7d33d0b0dcfb5","2019-01-01","2025Q3DT","2019-12-31","EUR","0.001057","0.001057","0.001057","0.001057"],["BLACK LEATHER","GUNS N' ROSES","EJIBLACKLEATHERGUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2016-01-01","Q42024DT","2016-12-31","HUF","0.0007712","0.0007712","0.32","0.32"],["CATCHER IN THE RYE","GUNS `N` ROSES","EJICATCHERINTHERYEGUNSNROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2016-01-01","Q42024DT","2016-12-31","HUF","0.0264859","0.0264859","10.99","10.99"],["LIVE WIRE (KICK ASS 91 REMIX)","MÖTLEY CRÜE","EJILIVEWIRE(KICKASS91REMIX)MTLEYCRE","NIKKI SIXX","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401eb9ab5a956083b685","","2016-01-01","Q42024DT","2016-12-31","HUF","0.048682","0.048682","20.2","20.2"],["PROPHETS OF RAGE","PROPHETS OF RAGE","EJIPROPHETSOFRAGEPROPHETSOFRAGE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2016-01-01","Q42024DT","2016-12-31","HUF","0.0042657","0.0042657","1.77","1.77"],["Wurlitzer - Fleetwood Mac","LINDSEY BUCKINGHAM","EJIWurlitzerFleetwoodMacLINDSEYBUCKINGHAM","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2017-01-01","Q42024DT","2017-12-31","HUF","1.3035449","1.3035449","540.89","540.89"],["FEAR","ONEREPUBLIC","EJIFEARONEREPUBLIC","ZACHARY FILKINSFEARONEREPUBLIC","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffd88d6cb29f472acd0","","2018-01-01","Q42024DT","2018-12-31","HUF","0.0006989","0.0006989","0.29","0.29"],["MARCHIN ON","ONEREPUBLIC","EJIMARCHINONONEREPUBLIC","ANDREW BROWNMARCHIN ONONEREPUBLIC","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffdfc08b5205fb458e7","","2018-01-01","Q42024DT","2018-12-31","HUF","0.0005061","0.0005061","0.21","0.21"],["FEAR","ONEREPUBLIC","EJIFEARONEREPUBLIC","RYAN TEDDERFEARONEREPUBLIC","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401588d6cb29f472aee6","","2018-01-01","Q42024DT","2018-12-31","HUF","0.0006989","0.0006989","0.29","0.29"],["PRAYERS FOR THE DAMNED","SIXX A.M","EJIPRAYERSFORTHEDAMNEDSIXXAM","NIKKI SIXX","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401eb9ab5a956083b685","","2018-01-01","Q42024DT","2018-12-31","HUF","0.1619038","0.1619038","67.18","67.18"],["HYPNOTIZE","AUDIOSLAVE","EJIHYPNOTIZEAUDIOSLAVE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2019-01-01","Q42024DT","2019-12-31","HUF","0.0392107","0.0392107","16.27","16.27"],["WE TAKE CARE OF OUR OWN","BRUCE SPRINGSTEEN","EJIWETAKECAREOFOUROWNBRUCESPRINGSTEEN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2019-01-01","Q42024DT","2019-12-31","HUF","0.0018798","0.0018798","0.78","0.78"],["RING MY BELL","DJ JAZZY JEFF","EJIRINGMYBELLDJJAZZYJEFF","WILLARD CAROLL SMITH","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402863e2f2cf7805b3b1","","2019-01-01","Q42024DT","2019-12-31","HUF","0.0360295","0.0360295","14.95","14.95"],["ROCKETEER FT. (RYAN TEDDER)","FAR EAST MOVEMENT","EJIROCKETEERFT(RYANTEDDER)FAREASTMOVEMENT","RYAN TEDDERROCKETEER FT (RYAN TEDDER)FAR EAST MOVEMENT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401588d6cb29f472aee6","","2019-01-01","Q42024DT","2019-12-31","HUF","0.0358367","0.0358367","14.87","14.87"],["DOING IT FOR THE MONEY","FOSTER THE PEOPLE","EJIDOINGITFORTHEMONEYFOSTERTHEPEOPLE","RYAN TEDDERDOING IT FOR THE MONEYFOSTER THE PEOPLE","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401588d6cb29f472aee6","","2019-01-01","Q42024DT","2019-12-31","HUF","0.0006507","0.0006507","0.27","0.27"],["GENTLE ON MY MIND","JOHNNY CASH__WITH__GLEN CAMPBELL","EJIGENTLEONMYMINDJOHNNYCASH__WITH__GLENCAMPBELL","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2019-01-01","Q42024DT","2019-12-31","HUF","0.0028197","0.0028197","1.17","1.17"],["YOUR TIME HAS COME","AUDIOSLAVE","EJIYOURTIMEHASCOMEAUDIOSLAVE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0004338","0.0004338","0.18","0.18"],["SOMEDAYS","AUDIOSLAVE","EJISOMEDAYSAUDIOSLAVE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0004579","0.0004579","0.19","0.19"],["FACTORY LOVE","BRYCE VINE","EJIFACTORYLOVEBRYCEVINE","BRYCE ROSS-JOHNSON","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402463e2f2cf7805b31e","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0012291","0.0012291","0.51","0.51"],["GO AS A DREAM","CAROLINE POLACHEK","EJIGOASADREAMCAROLINEPOLACHEK","POLACHEK CAROLINE","EJI HU","Contract","67851d60fa280418281ba2c5","66d04026b9ab5a956083b7e3","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0117126","0.0117126","4.86","4.86"],["COOL AS A FIRE","CHAIRLIFT","EJICOOLASAFIRECHAIRLIFT","POLACHEK CAROLINE","EJI HU","Contract","67851d60fa280418281ba2c5","66d04026b9ab5a956083b7e3","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0012291","0.0012291","0.51","0.51"],["BUT I DO","CLARENCE \"FROGMAN\" HENRY","EJIBUTIDOCLARENCE\"FROGMAN\"HENRY","JUSTIN ALEXANDER ADAMS","EJI HU","Contract","67851d60fa280418281ba2c5","66d04016b9ab5a956083b559","","2020-01-01","Q42024DT","2020-12-31","HUF","0.3187948","0.3187948","132.28","132.28"],["LATCH (LIVE FROM MADISON SQUARE GARDEN)","DISCLOSURE FEAT. SAM SMITH","EJILATCH(LIVEFROMMADISONSQUAREGARDEN)DISCLOSUREFEATSAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0008676","0.0008676","0.36","0.36"],["I DO","GREGORY ISAACS","EJIIDOGREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2020-01-01","Q42024DT","2020-12-31","HUF","0.1934989","0.1934989","80.29","80.29"],["SO FINE","GUNS N' ROSES","EJISOFINEGUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0010845","0.0010845","0.45","0.45"],["NOVEMBER RAIN","GUNS N' ROSES","EJINOVEMBERRAINGUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2020-01-01","Q42024DT","2020-12-31","HUF","0.005061","0.005061","2.1","2.1"],["DEAD FLOWERS  (LIVE)","GUNS N' ROSES","EJIDEADFLOWERS(LIVE)GUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0126525","0.0126525","5.25","5.25"],["MAMA KIN  (LIVE)","GUNS N' ROSES","EJIMAMAKIN(LIVE)GUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0012291","0.0012291","0.51","0.51"],["LADYSHAVE","GUSGUS","EJILADYSHAVEGUSGUS","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0013496","0.0013496","0.56","0.56"],["DAY 1 ?","HONNE","EJIDAY1HONNE","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0010122","0.0010122","0.42","0.42"],["FORGET ME NOT ? [INSTRUMENTAL]","HONNE","EJIFORGETMENOTINSTRUMENTALHONNE","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0093749","0.0093749","3.89","3.89"],["WARM ON A CHRISTMAS NIGHT","HONNE","EJIWARMONACHRISTMASNIGHTHONNE","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.000482","0.000482","0.2","0.2"],["TINY DANCER (HOLD ME CLOSER) (FEAT. ELTON JOHN)","IRONIC","EJITINYDANCER(HOLDMECLOSER)(FEATELTONJOHN)IRONIC","JAHMAAL FYFFE","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400dfc08b5205fb45a40","","2020-01-01","Q42024DT","2020-12-31","HUF","0.000241","0.000241","0.1","0.1"],["DON'T STOP","JON BATISTE","EJIDON'TSTOPJONBATISTE","JONATHAN BATISTE","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae5f","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0151589","0.0151589","6.29","6.29"],["BRING IT ON HOME","LINDSEY BUCKINGHAM | LITTLE BIG TOWN","EJIBRINGITONHOMELINDSEYBUCKINGHAMLITTLEBIGTOWN","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0018798","0.0018798","0.78","0.78"],["FOR CRYING OUT LOUD (LIVE)","MEAT LOAF","EJIFORCRYINGOUTLOUD(LIVE)MEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0033981","0.0033981","1.41","1.41"],["BLIND AS A BAT","MEAT LOAF","EJIBLINDASABATMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0006989","0.0006989","0.29","0.29"],["CHICKS = TROUBLE","MÖTLEY CRÜE","EJICHICKSTROUBLEMTLEYCRE","NIKKI SIXX","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401eb9ab5a956083b685","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0164603","0.0164603","6.83","6.83"],["WHILE IM STILL HERE","NINE INCH NAILS","EJIWHILEIMSTILLHERENINEINCHNAILS","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2020-01-01","Q42024DT","2020-12-31","HUF","0.000482","0.000482","0.2","0.2"],["THE COUNTEROFFENSIVE","PROPHETS OF RAGE","EJITHECOUNTEROFFENSIVEPROPHETSOFRAGE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0183883","0.0183883","7.63","7.63"],["REVOLUTION","ROYAL DELUXE","EJIREVOLUTIONROYALDELUXE","GETZ SAMUEL","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400a63e2f2cf7805af33","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0213767","0.0213767","8.87","8.87"],["TOO GOOD AT GOODBYES","SAM SMITH","EJITOOGOODATGOODBYESSAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0001205","0.0001205","0.05","0.05"],["LIKE I CAN (RADIO MIX)","SAM SMITH","EJILIKEICAN(RADIOMIX)SAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0007953","0.0007953","0.33","0.33"],["MIDNIGHT TRAIN","SAM SMITH","EJIMIDNIGHTTRAINSAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0033017","0.0033017","1.37","1.37"],["NO PEACE","SAM SMITH FEAT. YEBBA","EJINOPEACESAMSMITHFEATYEBBA","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0044344","0.0044344","1.84","1.84"],["THE WOLF IS GETTING MARRIED","SINEAD O'CONNOR","EJITHEWOLFISGETTINGMARRIEDSINEADO'CONNOR","JUSTIN ALEXANDER ADAMS","EJI HU","Contract","67851d60fa280418281ba2c5","66d04016b9ab5a956083b559","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0005784","0.0005784","0.24","0.24"],["GHOSTS ARE GONE","STEVIE NICKS","EJIGHOSTSAREGONESTEVIENICKS","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0006025","0.0006025","0.25","0.25"],["MOONLIGHT (A VAMPIRE'S DREAM)","STEVIE NICKS","EJIMOONLIGHT(AVAMPIRE'SDREAM)STEVIENICKS","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0003615","0.0003615","0.15","0.15"],["DUMPLING (TODDLA T REMIX)","STYLO G FEAT. JAY1 & SEAN PAUL","EJIDUMPLING(TODDLATREMIX)STYLOGFEATJAY1SEANPAUL","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0003615","0.0003615","0.15","0.15"],["WU-TANG CLAN AIN'T NOTHING TA F**K WIT","TOM MORELLO, CHAD SMITH & WU-TANG CLAN","EJIWUTANGCLANAIN'TNOTHINGTAFKWITTOMMORELLO,CHADSMITHWUTANGCLAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0050851","0.0050851","2.11","2.11"],["MAXIMUM FIREPOWER","TOM MORELLO: THE NIGHTWATCHMAN","EJIMAXIMUMFIREPOWERTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0060732","0.0060732","2.52","2.52"],["THIS LAND IS YOUR LAND","TOM MORELLO: THE NIGHTWATCHMAN","EJITHISLANDISYOURLANDTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0022413","0.0022413","0.93","0.93"],["WHATEVER IT TAKES","TOM MORELLO: THE NIGHTWATCHMAN","EJIWHATEVERITTAKESTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0098328","0.0098328","4.08","4.08"],["PRECIOUS THINGS (LIVE 1991)","TORI AMOS","EJIPRECIOUSTHINGS(LIVE1991)TORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0050128","0.0050128","2.08","2.08"],["HERE, IN MY HEAD","TORI AMOS","EJIHERE,INMYHEADTORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0019762","0.0019762","0.82","0.82"],["THROW ME A TEXT","YOUNG T & BUGSEY","EJITHROWMEATEXTYOUNGTBUGSEY","RA'CHARD TUCKER","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400b63e2f2cf7805af7b","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0011568","0.0011568","0.48","0.48"],["DON'T RUSH","YOUNG T & BUGSEY FEAT. DADJU","EJIDON'TRUSHYOUNGTBUGSEYFEATDADJU","RA'CHARD TUCKER","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400b63e2f2cf7805af7b","","2020-01-01","Q42024DT","2020-12-31","HUF","0.0046513","0.0046513","1.93","1.93"],["SHINE","BIRDY","EJISHINEBIRDY","ANDREW BROWNSHINEBIRDY","EJI HU","Contract","67851d60fa280418281ba2c5","","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0003374","0.0003374","0.14","0.14"],["SUNFLOWER SEEDS","BRYCE VINE","EJISUNFLOWERSEEDSBRYCEVINE","BRYCE ROSS-JOHNSON","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402463e2f2cf7805b31e","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0448019","0.0448019","18.59","18.59"],["THE FALL","BRYCE VINE","EJITHEFALLBRYCEVINE","BRYCE ROSS-JOHNSON","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402463e2f2cf7805b31e","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0087001","0.0087001","3.61","3.61"],["CAROLINE SHUT UP","CAROLINE POLACHEK","EJICAROLINESHUTUPCAROLINEPOLACHEK","POLACHEK CAROLINE","EJI HU","Contract","67851d60fa280418281ba2c5","66d04026b9ab5a956083b7e3","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0014942","0.0014942","0.62","0.62"],["OPINION (FEAT. TOM MORELLO)","DEVICE FEAT. TOM MORELLO","EJIOPINION(FEATTOMMORELLO)DEVICEFEATTOMMORELLO","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0006266","0.0006266","0.26","0.26"],["CIVIL WAR","GUNS N' ROSES","EJICIVILWARGUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0028197","0.0028197","1.17","1.17"],["NOVEMBER RAIN","GUNS N' ROSES","EJINOVEMBERRAINGUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2021-01-01","Q42024DT","2021-12-31","HUF","0.2683776","0.2683776","111.36","111.36"],["YESTERDAYS (LIVE)","GUNS N' ROSES","EJIYESTERDAYS(LIVE)GUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0010604","0.0010604","0.44","0.44"],["ESTRANGED (LIVE)","GUNS N' ROSES","EJIESTRANGED(LIVE)GUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0194969","0.0194969","8.09","8.09"],["ATTITUDE  (LIVE)","GUNS N' ROSES","EJIATTITUDE(LIVE)GUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0005784","0.0005784","0.24","0.24"],["MY NUMBER 1 (RADIO EDIT)","GYPTIAN | STYLO G","EJIMYNUMBER1(RADIOEDIT)GYPTIANSTYLOG","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0010363","0.0010363","0.43","0.43"],["DAY 1 ?","HONNE","EJIDAY1HONNE","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0002892","0.0002892","0.12","0.12"],["WARM ON A CHRISTMAS NIGHT","HONNE","EJIWARMONACHRISTMASNIGHTHONNE","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2021-01-01","Q42024DT","2021-12-31","HUF","0.000241","0.000241","0.1","0.1"],["LA LA LA LA (MEANS I LOVE YOU)","HRVY FEAT. STYLO G","EJILALALALA(MEANSILOVEYOU)HRVYFEATSTYLOG","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0001928","0.0001928","0.08","0.08"],["TINY DANCER (HOLD ME CLOSER) (FEAT. ELTON JOHN)","IRONIC","EJITINYDANCER(HOLDMECLOSER)(FEATELTONJOHN)IRONIC","JAHMAAL FYFFE","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400dfc08b5205fb45a40","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0001928","0.0001928","0.08","0.08"],["TARANTA","LUDOVICO EINAUDI","EJITARANTALUDOVICOEINAUDI","JUSTIN ALEXANDER ADAMS","EJI HU","Contract","67851d60fa280418281ba2c5","66d04016b9ab5a956083b559","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0063142","0.0063142","2.62","2.62"],["CONTIGO","MALA RODRÍGUEZ FT. STYLO G","EJICONTIGOMALARODRGUEZFTSTYLOG","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0001928","0.0001928","0.08","0.08"],["READ 'EM AND WEEP","MEAT LOAF","EJIREAD'EMANDWEEPMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0365115","0.0365115","15.15","15.15"],["IF YOU REALLY WANT TO","MEAT LOAF","EJIIFYOUREALLYWANTTOMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0042416","0.0042416","1.76","1.76"],["LIFE IS A LEMON AND I WANT MY MONEY BACK (LIVE)","MEAT LOAF","EJILIFEISALEMONANDIWANTMYMONEYBACK(LIVE)MEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0005784","0.0005784","0.24","0.24"],["OBJECTS IN THE REAR VIEW MIRROR MAY APPEAR CLOSER THEN THEY ARE","MEAT LOAF","EJIOBJECTSINTHEREARVIEWMIRRORMAYAPPEARCLOSERTHENTHEYAREMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0121705","0.0121705","5.05","5.05"],["DON'T LEAVE YOUR MARK ON ME","MEAT LOAF","EJIDON'TLEAVEYOURMARKONMEMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0013014","0.0013014","0.54","0.54"],["BAD FOR GOOD","MEAT LOAF","EJIBADFORGOODMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0009158","0.0009158","0.38","0.38"],["GODZ","MEAT LOAF","EJIGODZMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0006025","0.0006025","0.25","0.25"],["FAKE","MÖTLEY CRÜE","EJIFAKEMTLEYCRE","NIKKI SIXX","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401eb9ab5a956083b685","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0033017","0.0033017","1.37","1.37"],["LIVING GRAVY","NOT3S FEAT. YOUNG T & BUGSEY","EJILIVINGGRAVYNOT3SFEATYOUNGTBUGSEY","RA'CHARD TUCKER","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400b63e2f2cf7805af7b","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0004097","0.0004097","0.17","0.17"],["STRENGTH IN NUMBERS","PROPHETS OF RAGE","EJISTRENGTHINNUMBERSPROPHETSOFRAGE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0188462","0.0188462","7.82","7.82"],["PROPHETS OF RAGE","PROPHETS OF RAGE","EJIPROPHETSOFRAGEPROPHETSOFRAGE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0171833","0.0171833","7.13","7.13"],["WIN MY TRAIN FARE HOME (IF I EVER GET LUCKY)","ROBERT PLANT","EJIWINMYTRAINFAREHOME(IFIEVERGETLUCKY)ROBERTPLANT","JUSTIN ALEXANDER ADAMS","EJI HU","Contract","67851d60fa280418281ba2c5","66d04016b9ab5a956083b559","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0003856","0.0003856","0.16","0.16"],["ONE LAST SONG","SAM SMITH","EJIONELASTSONGSAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0004579","0.0004579","0.19","0.19"],["PROBLEM (SOLVED)","SBTRKT FEAT. JESSIE WARE","EJIPROBLEM(SOLVED)SBTRKTFEATJESSIEWARE","POLACHEK CAROLINE","EJI HU","Contract","67851d60fa280418281ba2c5","66d04026b9ab5a956083b7e3","","2021-01-01","Q42024DT","2021-12-31","HUF","0.00241","0.00241","1","1"],["OUTTA SPACE","STYLO G & BUSTA RHYMES","EJIOUTTASPACESTYLOGBUSTARHYMES","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0006989","0.0006989","0.29","0.29"],["HOLY, IVY AND ROSE","TORI AMOS","EJIHOLY,IVYANDROSETORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0019521","0.0019521","0.81","0.81"],["THANK YOU (LIVE)","TORI AMOS","EJITHANKYOU(LIVE)TORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0014701","0.0014701","0.61","0.61"],["GREENLIGHT","YOUNG T & BUGSEY","EJIGREENLIGHTYOUNGTBUGSEY","RA'CHARD TUCKER","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400b63e2f2cf7805af7b","","2021-01-01","Q42024DT","2021-12-31","HUF","0.0004338","0.0004338","0.18","0.18"],["FEED MY FRANKENSTEIN","ALICE COOPER","EJIFEEDMYFRANKENSTEINALICECOOPER","NIKKI SIXX","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401eb9ab5a956083b685","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0274258","0.0274258","11.38","11.38"],["NO BROKEN HEARTS (FEAT. NICKI MINAJ)","BEBE REXHA","EJINOBROKENHEARTS(FEATNICKIMINAJ)BEBEREXHA","DAVID PHELAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400bb9ab5a956083b44c","","2022-01-01","Q42024DT","2022-12-31","HUF","0.006025","0.006025","2.5","2.5"],["LIFE GOES ON","BRYCE VINE","EJILIFEGOESONBRYCEVINE","BRYCE ROSS-JOHNSON","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402463e2f2cf7805b31e","","2022-01-01","Q42024DT","2022-12-31","HUF","0.1097032","0.1097032","45.52","45.52"],["MAKE YOUR MIND UP","CHAIRLIFT","EJIMAKEYOURMINDUPCHAIRLIFT","POLACHEK CAROLINE","EJI HU","Contract","67851d60fa280418281ba2c5","66d04026b9ab5a956083b7e3","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0029161","0.0029161","1.21","1.21"],["CAN'T WAIT TO BE WITH YOU (LP VERSION)","DJ JAZZY JEFF & THE FRESH PRINCE","EJICAN'TWAITTOBEWITHYOU(LPVERSION)DJJAZZYJEFFTHEFRESHPRINCE","WILLARD CAROLL SMITH","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402863e2f2cf7805b3b1","","2022-01-01","Q42024DT","2022-12-31","HUF","0.1554209","0.1554209","64.49","64.49"],["CAUGHT IN THE MIDDLE (LOVE AND LIFE)","DJ JAZZY JEFF & THE FRESH PRINCE","EJICAUGHTINTHEMIDDLE(LOVEANDLIFE)DJJAZZYJEFFTHEFRESHPRINCE","WILLARD CAROLL SMITH","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402863e2f2cf7805b3b1","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0039524","0.0039524","1.64","1.64"],["BREAKIN' THE CHAINS OF LOVE","FITZ  AND  THE TANTRUMS","EJIBREAKIN'THECHAINSOFLOVEFITZANDTHETANTRUMS","MICHAEL FITZPATRICK","EJI HU","Contract","67851d60fa280418281ba2c5","66d0401688d6cb29f472af26","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0011568","0.0011568","0.48","0.48"],["DREAMS (LIVE)","FLEETWOOD MAC","EJIDREAMS(LIVE)FLEETWOODMAC","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2022-01-01","Q42024DT","2022-12-31","HUF","0.000723","0.000723","0.3","0.3"],["ROSIE","GREGORY ISAACS","EJIROSIEGREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0039283","0.0039283","1.63","1.63"],["SAD TO KNOW (YOU'RE LEAVING)","GREGORY ISAACS","EJISADTOKNOW(YOU'RELEAVING)GREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0004579","0.0004579","0.19","0.19"],["ASO","GREGORY ISAACS","EJIASOGREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0088447","0.0088447","3.67","3.67"],["GOING DOWNTOWN","GREGORY ISAACS","EJIGOINGDOWNTOWNGREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0014219","0.0014219","0.59","0.59"],["HARD DRUGS","GREGORY ISAACS","EJIHARDDRUGSGREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0009399","0.0009399","0.39","0.39"],["SHOULD I","GREGORY ISAACS","EJISHOULDIGREGORYISAACS","GREGORY ANTHONY ISAACS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae82","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0002651","0.0002651","0.11","0.11"],["NOVEMBER RAIN (LIVE)","GUNS N' ROSES","EJINOVEMBERRAIN(LIVE)GUNSN'ROSES","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2022-01-01","Q42024DT","2022-12-31","HUF","0.172315","0.172315","71.5","71.5"],["FACE MY FEARS (ENGLISH VERSION)","HIKARU UTADA & SKRILLEX","EJIFACEMYFEARS(ENGLISHVERSION)HIKARUUTADASKRILLEX","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0147492","0.0147492","6.12","6.12"],["REACH OUT","HILLARY DUFF","EJIREACHOUTHILLARYDUFF","RYAN TEDDERREACH OUTHILLARY DUFF","EJI HU","Contract","67851d60fa280418281ba2c5","","","2022-01-01","Q42024DT","2022-12-31","HUF","0.028197","0.028197","11.7","11.7"],["TINY DANCER (HOLD ME CLOSER) (FEAT. ELTON JOHN)","IRONIC","EJITINYDANCER(HOLDMECLOSER)(FEATELTONJOHN)IRONIC","JAHMAAL FYFFE","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400dfc08b5205fb45a40","","2022-01-01","Q42024DT","2022-12-31","HUF","0.000241","0.000241","0.1","0.1"],["BECOMING MORE LIKE GOD","JAH WOBBLE'S INVADERS OF THE HEART","EJIBECOMINGMORELIKEGODJAHWOBBLE'SINVADERSOFTHEHEART","JUSTIN ALEXANDER ADAMS","EJI HU","Contract","67851d60fa280418281ba2c5","66d04016b9ab5a956083b559","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0006748","0.0006748","0.28","0.28"],["KENNER (LIVE)","JON BATISTE","EJIKENNER(LIVE)JONBATISTE","JONATHAN BATISTE","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400263e2f2cf7805ae5f","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0112065","0.0112065","4.65","4.65"],["BLUE","KAMAL","EJIBLUEKAMAL","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0691429","0.0691429","28.69","28.69"],["TOWERS","LITTLE MIX","EJITOWERSLITTLEMIX","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.001928","0.001928","0.8","0.8"],["CONTIGO","MALA RODRÍGUEZ FT. STYLO G","EJICONTIGOMALARODRGUEZFTSTYLOG","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2022-01-01","Q42024DT","2022-12-31","HUF","0.002169","0.002169","0.9","0.9"],["TED LASSO THEME","MARCUS MUMFORD & TOM HOWE","EJITEDLASSOTHEMEMARCUSMUMFORDTOMHOWE","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0107245","0.0107245","4.45","4.45"],["ALL REVVED UP WITH NO PLACE TO GO (LIVE)","MEAT LOAF","EJIALLREVVEDUPWITHNOPLACETOGO(LIVE)MEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.019039","0.019039","7.9","7.9"],["BAD ATTITUDE","MEAT LOAF","EJIBADATTITUDEMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0317156","0.0317156","13.16","13.16"],["FOR CRYING OUT LOUD (LIVE)","MEAT LOAF","EJIFORCRYINGOUTLOUD(LIVE)MEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0222925","0.0222925","9.25","9.25"],["IF IT RAINS","MEAT LOAF","EJIIFITRAINSMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0040006","0.0040006","1.66","1.66"],["WHERE THE RUBBER MEETS THE ROAD","MEAT LOAF","EJIWHERETHERUBBERMEETSTHEROADMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.016388","0.016388","6.8","6.8"],["TRAIN OF LOVE","MEAT LOAF","EJITRAINOFLOVEMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0077361","0.0077361","3.21","3.21"],["LOVING YOU IS A DIRTY JOB (BUT SOMEBODY'S GOTTA DO IT)","MEAT LOAF FT. STACY MICHELLE","EJILOVINGYOUISADIRTYJOB(BUTSOMEBODY'SGOTTADOIT)MEATLOAFFTSTACYMICHELLE","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2022-01-01","Q42024DT","2022-12-31","HUF","0.064829","0.064829","26.9","26.9"],["EXCUSES (KIA LOVE REMIX)","OLLY MURS","EJIEXCUSES(KIALOVEREMIX)OLLYMURS","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0028438","0.0028438","1.18","1.18"],["NO SHELTER","RAGE AGAINST THE MACHINE","EJINOSHELTERRAGEAGAINSTTHEMACHINE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0056394","0.0056394","2.34","2.34"],["FUCK THA POLICE","RAGE AGAINST THE MACHINE","EJIFUCKTHAPOLICERAGEAGAINSTTHEMACHINE","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.1386714","0.1386714","57.54","57.54"],["LAY ME DOWN (POMO REMIX)","SAM SMITH","EJILAYMEDOWN(POMOREMIX)SAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.000241","0.000241","0.1","0.1"],["LAY ME DOWN (TODD EDWARDS DUB)","SAM SMITH","EJILAYMEDOWN(TODDEDWARDSDUB)SAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0002892","0.0002892","0.12","0.12"],["I'M NOT THE ONLY ONE","SAM SMITH","EJII'MNOTTHEONLYONESAMSMITH","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0527067","0.0527067","21.87","21.87"],["SWEET CHILD O' MINE/SUBWAY RIDE","SHERYL CROW","EJISWEETCHILDO'MINESUBWAYRIDESHERYLCROW","MICHAEL ANDREW MCKAGAN","EJI HU","Contract","67851d60fa280418281ba2c5","66d04029fc08b5205fb45e15","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0056153","0.0056153","2.33","2.33"],["TWISTED","STEVIE NICKS & LINDSEY BUCKINGHAM","EJITWISTEDSTEVIENICKSLINDSEYBUCKINGHAM","LINDSEY BUCKINGHAM","EJI HU","Contract","67851d60fa280418281ba2c5","66d04006b9ab5a956083b3b1","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0005543","0.0005543","0.23","0.23"],["TOUCH DOWN (REMIX)","STYLO G & THE FANATIX FEAT. NICKI MINAJ & VYBZ KARTEL","EJITOUCHDOWN(REMIX)STYLOGTHEFANATIXFEATNICKIMINAJVYBZKARTEL","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0023136","0.0023136","0.96","0.96"],["DUMPLING [REMIX] (REMIX)","STYLO G FT. SEAN PAUL & SPICE","EJIDUMPLINGREMIX(REMIX)STYLOGFTSEANPAULSPICE","JASON MCDERMOTT","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400763e2f2cf7805aede","","2022-01-01","Q42024DT","2022-12-31","HUF","0.004579","0.004579","1.9","1.9"],["LEAF WRAPS","THE HOMIES FEAT. JACK HARLOW","EJILEAFWRAPSTHEHOMIESFEATJACKHARLOW","JACKMAN THOMAS HARLOW","EJI HU","Contract","67851d60fa280418281ba2c5","66d04035fc08b5205fb45fa2","","2022-01-01","Q42024DT","2022-12-31","HUF","1.4258524","1.4258524","591.64","591.64"],["WATER BABY","TOM MISCH FEAT. LOYLE CARNER","EJIWATERBABYTOMMISCHFEATLOYLECARNER","BUTLER REUBEN","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400efc08b5205fb45a99","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0099292","0.0099292","4.12","4.12"],["WHATEVER IT TAKES","TOM MORELLO: THE NIGHTWATCHMAN","EJIWHATEVERITTAKESTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0037837","0.0037837","1.57","1.57"],["LET FREEDOM RING","TOM MORELLO: THE NIGHTWATCHMAN","EJILETFREEDOMRINGTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0042416","0.0042416","1.76","1.76"],["THE LIGHTS ARE ON IN SPIDERTOWN","TOM MORELLO: THE NIGHTWATCHMAN","EJITHELIGHTSAREONINSPIDERTOWNTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0025546","0.0025546","1.06","1.06"],["UNTIL THE END","TOM MORELLO: THE NIGHTWATCHMAN","EJIUNTILTHEENDTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0058804","0.0058804","2.44","2.44"],["THIS LAND IS YOUR LAND","TOM MORELLO: THE NIGHTWATCHMAN","EJITHISLANDISYOURLANDTOMMORELLOTHENIGHTWATCHMAN","THOMAS MORELLO","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403388d6cb29f472b22a","","2022-01-01","Q42024DT","2022-12-31","HUF","0.00723","0.00723","3","3"],["PLAYBOY MOMMY","TORI AMOS","EJIPLAYBOYMOMMYTORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0008194","0.0008194","0.34","0.34"],["UPSIDE DOWN (LIVE)","TORI AMOS","EJIUPSIDEDOWN(LIVE)TORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0045308","0.0045308","1.88","1.88"],["THE POOL","TORI AMOS","EJITHEPOOLTORIAMOS","TORI MYRA ELLEN AMOS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402d88d6cb29f472b171","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0006507","0.0006507","0.27","0.27"],["ALADDIN","WILLARD CAROLL SMITH","EJIALADDINWILLARDCAROLLSMITH","WILLARD CAROLL SMITH","EJI HU","Contract","67851d60fa280418281ba2c5","66d0402863e2f2cf7805b3b1","","2022-01-01","Q42024DT","2022-12-31","HUF","0.2712696","0.2712696","112.56","112.56"],["GREENLIGHT","YOUNG T & BUGSEY","EJIGREENLIGHTYOUNGTBUGSEY","RA'CHARD TUCKER","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400b63e2f2cf7805af7b","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0017593","0.0017593","0.73","0.73"],["NO MICKEY MOUSE TING","YOUNG T & BUGSEY","EJINOMICKEYMOUSETINGYOUNGTBUGSEY","RA'CHARD TUCKER","EJI HU","Contract","67851d60fa280418281ba2c5","66d0400b63e2f2cf7805af7b","","2022-01-01","Q42024DT","2022-12-31","HUF","0.0014701","0.0014701","0.61","0.61"],["WHERE ANGELS SING","MEAT LOAF","EJIWHEREANGELSSINGMEATLOAF","MICHAEL ADAY","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffcb9ab5a956083b238","","2023-01-01","Q42024DT","2023-12-31","HUF","1.7018697","1.7018697","706.17","706.17"],["MARCHIN ON","ONEREPUBLIC","EJIMARCHINONONEREPUBLIC","ZACHARY FILKINSMARCHIN ONONEREPUBLIC","EJI HU","Contract","67851d60fa280418281ba2c5","66d03ffd88d6cb29f472acd0","","2023-01-01","Q42024DT","2023-12-31","HUF","0.0262931","0.0262931","10.91","10.91"],["GORGEOUS","SAINT JHN","EJIGORGEOUSSAINTJHN","CARLOS PHILLIPS","EJI HU","Contract","67851d60fa280418281ba2c5","66d0403463e2f2cf7805b514","","2023-01-01","Q42024DT","2023-12-31","HUF","0.0546588","0.0546588","22.68","22.68"],["I GOT A FEELING","THE BLACK EYED PEAS","EJIIGOTAFEELINGTHEBLACKEYEDPEAS","KIMBRA JOHNSON","EJI HU","Contract","67851d60fa280418281ba2c5","66d04036b9ab5a956083ba6c","","2023-01-01","Q42024DT","2023-12-31","HUF","0.0439343","0.0439343","18.23","18.23"],["UNALLOCATED","UNALLOCATED","EJIUNALLOCATEDUNALLOCATED","Zachary Filkins","EJI HU","Contract","67851d60fa280418281ba2c5","66d04022b9ab5a956083b734","","4273-06-01","Q42024DT","4456-01-01","HUF","42.4852152","42.4852152","17628.72","17628.72"],["UNALLOCATED","UNALLOCATED","EJIUNALLOCATEDUNALLOCATED","Michael Andrew Mckagan","EJI HU","Contract","67851d60fa280418281ba2c5","","","4273-06-01","Q42024DT","4456-01-01","HUF","35.3800291","35.3800291","14680.51","14680.51"],["ALWAYS LOVING YOU","ERIKA FECOVA","ERIKAFECOVAALWAYSLOVINGYOU(undefined)","","AGEDI ES","Track","678932eb4fe9129c05a3520b","","","2021-07-01","Q42024FUGA","2021-12-31","EUR","0.005193330749","0.005193330749","0.005193330749","0.005193330749"],["I WILL FIGHT TO BE WITH YOU (FEAT. MART","ERIKA FECOVA","ERIKAFECOVAIWILLFIGHTTOBEWITHYOU(FEATMART(undefined)","","AGEDI ES","Track","678932eb4fe9129c05a3520b","","","2022-01-01","Q42024FUGA","2022-06-30","EUR","0.0142329056","0.0142329056","0.0142329056","0.0142329056"],["CHANGE FOR ME","ERIKA FECOVA","ERIKAFECOVACHANGEFORME(undefined)","","AGEDI ES","Track","678932eb4fe9129c05a3520b","","","2022-07-01","Q42024FUGA","2022-12-31","EUR","0.01632403904","0.01632403904","0.01632403904","0.01632403904"],["Girls & Boys","Viagra Boys","SE5AJ2001182","","AGEDI ES","Track","678932eb4fe9129c05a3520b","","","2022-07-01","Q42024FUGA","2022-12-31","EUR","0.01877133853","0.01877133853","0.01877133853","0.01877133853"],["Come Together","Shannon Lay","ShannonLayComeTogether(undefined)","","AGEDI ES","Track","678932eb4fe9129c05a3520b","","","2023-07-01","Q42024FUGA","2023-12-31","EUR","0.01978874919","0.01978874919","0.01978874919","0.01978874919"],["SOUND INTENSE CITY (DECIBEL ANTHEM 2011)","DJ ZANY","NLQS91100048","","SIMIM BE","Track","677d5ec59f9791ddb487516f","","","2012-01-01","Q42024FUGA","2012-12-31","EUR","0","0","0","0"],["SUGAR SNAP","TORA","QM4TX1533186","","SIMIM BE","Track","677d5ec59f9791ddb487516f","","","2022-01-01","Q42024FUGA","2022-12-31","EUR","-0.03287","-0.03287","-0.03287","-0.03287"],["LIGHTNESS","DEAD TIMES","TCACH1532019","","SIMIM BE","Track","677d5ec59f9791ddb487516f","","","2022-01-01","Q42024FUGA","2022-12-31","EUR","0.01396","0.01396","0.01396","0.01396"],["HOLD OUT FOR LOVE","KING, CAROLE","ITQ031000019","","SIMIM BE","Track","677d5ec59f9791ddb487516f","","","2019-01-01","Q42024FUGA","2019-12-31","EUR","0","0","0","0"],["IT'S LOVE","ERIKA FECOVA","ERIKAFECOVAIT'SLOVE(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2014-01-01","Q42024FUGA","2014-12-31","EUR","0.0006802272092","0.0006802272092","0.0006802272092","0.0006802272092"],["IT'S LOVE","ERIKA FECOVA","ERIKAFECOVAIT'SLOVE(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2016-01-01","Q42024FUGA","2016-12-31","EUR","0.001667336681","0.001667336681","0.001667336681","0.001667336681"],["","","null(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2021-07-01","Q42024FUGA","2021-12-31","EUR","0","0","0","0"],["THE ONE I LOVE","ROSIE THOMAS","ROSIETHOMASTHEONEILOVE(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2021-10-01","Q42024FUGA","2021-10-31","EUR","-0.0001230765097","-0.0001230765097","-0.0001230765097","-0.0001230765097"],["CHANGE FOR ME","ERIKA FECOVA","ERIKAFECOVACHANGEFORME(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2021-12-01","Q42024FUGA","2021-12-31","EUR","-0.000134798082","-0.000134798082","-0.000134798082","-0.000134798082"],["THE ONE I LOVE","ROSIE THOMAS","ROSIETHOMASTHEONEILOVE(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2021-12-01","Q42024FUGA","2021-12-31","EUR","-0.000134798082","-0.000134798082","-0.000134798082","-0.000134798082"],["CHANGE FOR ME","ERIKA FECOVA","ERIKAFECOVACHANGEFORME(undefined)","","AGEDI ES","Track","678924b838ff56c57fe0495f","","","2023-01-01","Q42024FUGA","2023-06-30","EUR","0.07401713118","0.07401713118","0.07401713118","0.07401713118"],["ALWAYS LOVING YOU","ERIKA FECOVA","ERIKAFECOVAALWAYSLOVINGYOU(undefined)","","AGEDI ES","Track","678942bbfa26a807dd13034b","","","2021-01-01","Q42024FUGA","2021-06-30","EUR","0.001123173961","0.001123173961","0.001123173961","0.001123173961"],["THE ONE I LOVE","ROSIE THOMAS","ROSIETHOMASTHEONEILOVE(undefined)","","AGEDI ES","Track","678942bbfa26a807dd13034b","","","2021-01-01","Q42024FUGA","2021-06-30","EUR","0.00277049577","0.00277049577","0.00277049577","0.00277049577"],["ALWAYS LOVING YOU","ERIKA FECOVA","ERIKAFECOVAALWAYSLOVINGYOU(undefined)","","AGEDI ES","Track","678942bbfa26a807dd13034b","","","2022-01-01","Q42024FUGA","2022-06-30","EUR","0.005977732552","0.005977732552","0.005977732552","0.005977732552"],["Lights Of Home","U2","GVLLightsOfHomeU2","Brent KutzleLights Of HomeU2","GVL DE","Contract","677be97cf592d3b8146a9a94","","67699ba3c0994445b381cc84","2020-01-01","Q42024DT","2020-01-01","EUR","0.2192137233","0.2192137233","0.2192137233","0.2192137233"],["Say It All","Liam Payne","GVLSayItAllLiamPayne","Ryan TedderSay It AllLiam Payne","GVL DE","Contract","677bee7cf592d3b8146ae43e","","","2020-01-01","Q42024DT","2020-01-01","EUR","0.7458054627","0.7458054627","0.7458054627","0.7458054627"],["5k Running Mix","Various Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","GVL5kRunningMixVariousArtists,OneRepublic,Alesso,Avicii,Bastille,EllieGoulding,LucasNord,ToveLo,OttoKnows,Klangkarussell,SamSmith","Ryan Tedder5k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","GVL DE","Contract","677bee7cf592d3b8146ae43e","66d0401588d6cb29f472aee6","","2020-01-01","Q42024DT","2020-05-01","EUR","0.09406555385","0.09406555385","0.09406555385","0.09406555385"],["Joy of Life Main version","Graham Donald Harry Preskett","GVLJoyofLifeMainversionGrahamDonaldHarryPreskett","Justin BieberJoy of Life Main versionGraham Donald Harry Preskett","GVL DE","Contract","677bed6cb5dfce001838b0b2","66d04004b9ab5a956083b32e","","2020-01-01","Q42024DT","2020-01-01","EUR","0.3910483956","0.3910483956","0.3910483956","0.3910483956"],["WNDRLND","BIMINI, Britt Lari","WNDRLNDBIMINI,BrittLari","","CONNECT CA","Track","691dbf8604087a2dfcbe754e","","","2024-01-10","2025Q4DT","2025-10-01","CAD","0.02489267737","0.02489267737","0.040667","0.040667"],["Day We Met (Betonkust Remix)","Fatima Yamaha","DayWeMet(BetonkustRemix)DayWeMet(Remixes)","","SoundExchange US","Track","69244fe270afe9e5d39fb68d","","","2022-01-01","2025Q4FUGA","2022-01-31","USD","4.074519753","4.074519753","4.7007","4.7007"],["Waymo","HoneyLuv-Aluna","WaymoWaymo","","SoundExchange US","Track","69244fe270afe9e5d39fb68d","","","2025-08-01","2025Q4FUGA","2025-08-31","USD","2680.552238","2680.552238","3092.504803","3092.504803"],["Take You Places","SIDEPIECE & Westend","TakeYouPlacesWestend","","SoundExchange US","Track","69244fe270afe9e5d39fb68d","","","2025-08-01","2025Q4FUGA","2025-08-31","USD","34.39832712","34.39832712","39.68473","39.68473"],["PUT YOUR HANDS UP 4 DETROIT","LE GRAND, FEDDE","GBHAD0600311","","SIMIM BE","Track","69245232a8fe6e9db3051145","","","2018-01-01","2025Q4FUGA","2018-12-31","EUR","0.01447","0.01447","0.01447","0.01447"],["PUT YOUR HANDS UP 4 DETROIT","LE GRAND, FEDDE","GBHAD0600311","","SIMIM BE","Track","69245232a8fe6e9db3051145","","","2020-01-01","2025Q4FUGA","2020-12-31","EUR","0.00101","0.00101","0.00101","0.00101"],["TELL ME BOY","2 ELEMENTS","DEN061202811","","SIMIM BE","Track","69245232a8fe6e9db3051145","","","2017-01-01","2025Q4FUGA","2017-12-31","EUR","0","0","0","0"],["LUST TAKES TIME","MATTHEWS, ERIC","USSUB0200186","","SIMIM BE","Track","69245232a8fe6e9db3051145","","","2022-01-01","2025Q4FUGA","2022-12-31","EUR","0.00008","0.00008","0.00008","0.00008"],["SHE IS SEVENTEEN","AVI BUFFALO","USSUB1404707","","SIMIM BE","Track","69245232a8fe6e9db3051145","","","2022-01-01","2025Q4FUGA","2022-12-31","EUR","0.00008","0.00008","0.00008","0.00008"],["FAITH TO CLAY","MATTHEWS, ERIC","USSUB0200183","","SIMIM BE","Track","69245232a8fe6e9db3051145","","","2023-01-01","2025Q4FUGA","2023-12-31","EUR","0.00119","0.00119","0.00119","0.00119"],["THERE S NO YOU","ELLA FITZGERALD","AIETHERESNOYOUELLAFITZGERALD","FITZGERALD ELLA JANE","AIE ES","Contract","69d6411ee1d95c043b38db67","66d0402db13352ab5e8a176d","","2023-01-01","2026Q1DT","2023-12-31","EUR","0.000134","0.000134","0.000134","0.000134"],["END OF THE WORLD","BLAKE LEWIS","AIEENDOFTHEWORLDBLAKELEWIS","TEDDER RYAN BENJAMINEND OF THE WORLDBLAKE LEWIS","AIE ES","Contract","69d6412d2de90013015543dd","66d0402a63e2f2cf7805b3dc","","2022-01-01","2026Q1DT","2022-12-31","EUR","0.000002","0.000002","0.000002","0.000002"],["ME & U","KANDI BURRUSS","AIEMEUKANDIBURRUSS","TEDDER RYAN BENJAMINME  UKANDI BURRUSS","AIE ES","Contract","69d6412d2de90013015543dd","66d0402a63e2f2cf7805b3dc","","2024-01-01","2026Q1DT","2024-12-31","EUR","0.000008","0.000008","0.000008","0.000008"],["ERASE YOU","MIMI WEBB","USSM12405201","TEDDER RYAN BENJAMINERASE YOUMIMI WEBB","AIE ES","Contract","69d6412d2de90013015543dd","","69d7940c44707784d12655cc","2025-01-01","2026Q1DT","2025-12-31","EUR","0.272224","0.272224","0.272224","0.272224"],["BETTER DAYS - GIORNI MIGLIORI (FEAT. NEGRAMARO) -ALBUM VERSION","ERMANNO CARLA'/ANDREA ANTONIO DE ROCCO/GIULIANO SANGIORGI/EMANUELE SPEDICATO/DANILO TASCO","USUM72009607","TEDDER RYAN BENJAMINBETTER DAYS - GIORNI MIGLIORI (FEAT NEGRAMARO) -ALBUM VERSIONERMANNO CARLA'ANDREA ANTONIO DE ROCCOGIULIANO SANGIORGIEMANUELE SPEDICATODANILO TASCO","AIE ES","Contract","69d6412d2de90013015543dd","","66d08e43fc08b5205fc30e50","2024-01-01","2026Q1DT","2024-12-31","EUR","0.004906","0.004906","0.004906","0.004906"],["Apologize _Feat Onerepublic","Timbaland","USUM70722793","Zachary D FilkinsApologize _Feat OnerepublicTimbaland","ITSRIGHT IT","Contract","69dcf44266675098a7cf0312","","66d08e1863e2f2cf7825f984","2023-01-01","2026Q1DT","2023-12-31","EUR","0.17","0.17","0.17","0.17"]]}</script>
+
 <div class="page">
 
-  <!-- ============================================================
-       HEADER
-       ============================================================ -->
   <div class="dm-header">
     <div style="display: flex; align-items: baseline; gap: 14px;">
-      <span class="hand-l" style="font-weight: var(--weight-bold);">Match review</span>
-      <span class="hand-s" style="color: var(--color-fg-muted);">Source A → B</span>
+      <span class="hand-l" style="font-weight: var(--weight-bold);">Unmapped review</span>
+      <span class="hand-s" style="color: var(--color-fg-muted);">Curve unmapped export</span>
     </div>
-    <div class="tabs">
-      <span class="on">All<span class="ct">1,284</span></span>
-      <span>High<span class="ct">412</span></span>
-      <span>Medium<span class="ct">607</span></span>
-      <span>Low<span class="ct">221</span></span>
-      <span>No match<span class="ct">44</span></span>
+    <div class="tabs" id="filter-tabs">
+      <span class="on" data-filter="All">All<span class="ct" id="ct-all">…</span></span>
+      <span data-filter="Contract">Contract<span class="ct" id="ct-contract">…</span></span>
+      <span data-filter="Track">Track<span class="ct" id="ct-track">…</span></span>
     </div>
   </div>
 
-  <!-- ============================================================
-       TOOLBAR
-       ============================================================ -->
   <div class="dm-toolbar">
     <div class="hand-s" style="display: flex; align-items: center; gap: 14px;">
       <span class="check" id="master-check"><span class="box"></span></span>
-      <span><span class="count">0</span> of 1,284 selected</span>
+      <span><span class="count">0</span> of <span class="total">0</span> selected</span>
       <span style="color: var(--color-fg-subtle);">·</span>
-      <span style="color: var(--color-fg-muted);">Sort: ambiguous first</span>
+      <span style="color: var(--color-fg-muted);">Sort: source then date</span>
       <span style="color: var(--color-fg-subtle);">·</span>
       <span style="color: var(--color-fg-muted);">Showing fields: 6</span>
     </div>
     <div style="display: flex; gap: 8px;">
       <button class="btn outline sm">Filter</button>
-      <button class="btn outline sm">Bulk approve</button>
+      <button class="btn outline sm">Bulk defer</button>
       <button class="btn outline sm">Export</button>
     </div>
   </div>
 
-  <!-- ============================================================
-       BODY
-       ============================================================ -->
   <div class="dm-body" id="dm-body">
 
-    <!-- ============= MASTER TABLE ============= -->
     <div class="dm-master">
       <table class="tbl">
         <colgroup>
-          <col style="width: 32px;">
+          <col style="width: 30px;">
           <col style="width: 36px;">
-          <col style="width: 96px;">
+          <col style="width: 140px;">
           <col>
-          <col style="width: 50px;">
-          <col style="width: 130px;">
           <col style="width: 110px;">
           <col style="width: 110px;">
-          <col style="width: 50px;">
+          <col style="width: 110px;">
+          <col style="width: 70px;">
           <col style="width: 50px;">
         </colgroup>
         <thead>
           <tr>
             <th></th>
             <th></th>
-            <th>record id</th>
-            <th>anchor name</th>
-            <th>country</th>
-            <th>tax id</th>
-            <th>sector</th>
-            <th>best match</th>
-            <th>cands</th>
+            <th>track title</th>
+            <th>track artist</th>
+            <th>isrc</th>
+            <th>orig. contract id</th>
+            <th>source</th>
+            <th>cat. type</th>
             <th></th>
           </tr>
         </thead>
-        <tbody>
-
-          <tr data-record="A-902100">
-            <td><span class="chev">›</span></td>
-            <td><span class="check"><span class="box"></span></span></td>
-            <td class="mono" style="font-size: var(--text-sm);">A-902100</td>
-            <td>Acme Corp</td>
-            <td>US</td>
-            <td class="mono" style="font-size: var(--text-xs);">EIN 47-2841559</td>
-            <td>Software</td>
-            <td><span class="pill sm muted">High 96%</span></td>
-            <td style="color: var(--color-fg-muted);">1</td>
-            <td>
-              <button class="eye-btn ibtn sm muted" data-record="A-902100" aria-label="Open focus panel">
-                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
-                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
-              </button>
-            </td>
-          </tr>
-
-          <tr data-record="A-902184">
-            <td><span class="chev">›</span></td>
-            <td><span class="check"><span class="box"></span></span></td>
-            <td class="mono" style="font-size: var(--text-sm);">A-902184</td>
-            <td>Atlas Logistics Ltd</td>
-            <td>UK</td>
-            <td class="mono" style="font-size: var(--text-xs);">GB438291045</td>
-            <td>Freight</td>
-            <td><span class="pill sm muted">Med 78%</span></td>
-            <td style="color: var(--color-fg-muted);">1</td>
-            <td>
-              <button class="eye-btn ibtn sm muted" data-record="A-902184" aria-label="Open focus panel">
-                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
-                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
-              </button>
-            </td>
-          </tr>
-
-          <tr data-record="A-902301">
-            <td><span class="chev">›</span></td>
-            <td><span class="check"><span class="box"></span></span></td>
-            <td class="mono" style="font-size: var(--text-sm);">A-902301</td>
-            <td>Beta Industries</td>
-            <td>DE</td>
-            <td class="mono" style="font-size: var(--text-xs);">DE127654893</td>
-            <td>Manufacturing</td>
-            <td><span class="pill sm muted">Med 71%</span></td>
-            <td style="color: var(--color-fg-muted);">1</td>
-            <td>
-              <button class="eye-btn ibtn sm muted" data-record="A-902301" aria-label="Open focus panel">
-                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
-                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
-              </button>
-            </td>
-          </tr>
-
-          <tr data-record="A-902418">
-            <td><span class="chev">›</span></td>
-            <td><span class="check"><span class="box"></span></span></td>
-            <td class="mono" style="font-size: var(--text-sm);">A-902418</td>
-            <td>Cygnet Holdings</td>
-            <td>UK</td>
-            <td class="mono" style="font-size: var(--text-xs);">GB991204776</td>
-            <td>Investment</td>
-            <td><span class="pill sm muted">Low 52%</span></td>
-            <td style="color: var(--color-fg-muted);">1</td>
-            <td>
-              <button class="eye-btn ibtn sm muted" data-record="A-902418" aria-label="Open focus panel">
-                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
-                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
-              </button>
-            </td>
-          </tr>
-
-          <tr data-record="A-902502">
-            <td><span class="chev">›</span></td>
-            <td><span class="check"><span class="box"></span></span></td>
-            <td class="mono" style="font-size: var(--text-sm);">A-902502</td>
-            <td>Delta Freight Co</td>
-            <td>NL</td>
-            <td class="mono" style="font-size: var(--text-xs);">NL854391057B01</td>
-            <td>Freight</td>
-            <td><span class="pill sm muted">No match</span></td>
-            <td style="color: var(--color-fg-muted);">0</td>
-            <td>
-              <button class="eye-btn ibtn sm muted" data-record="A-902502" aria-label="Open focus panel">
-                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
-                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
-              </button>
-            </td>
-          </tr>
-
-        </tbody>
+        <tbody id="rows"></tbody>
       </table>
+      <div class="dm-pager">
+        <div class="summary" id="pager-summary">…</div>
+        <div class="nav">
+          <button class="pg" id="pg-prev">‹ Prev</button>
+          <span class="pages" id="pg-pages"></span>
+          <button class="pg" id="pg-next">Next ›</button>
+        </div>
+      </div>
     </div>
 
-    <!-- ============= FOCUS PANEL ============= -->
     <div class="dm-focus" id="focus-panel">
-
-      <div style="padding: 16px 18px; border-bottom: var(--border-2) solid var(--color-border-subtle); display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <span class="sec-eyebrow">Focus</span>
-          <span class="mono" style="font-size: var(--text-sm); color: var(--color-fg-muted);">A-902184</span>
-          <span class="hand-m" style="font-weight: var(--weight-bold);">Atlas Logistics Ltd</span>
+      <div style="padding: 16px 18px; border-bottom: var(--border-2) solid var(--color-border-subtle); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="sec-eyebrow">Focus</span>
+            <span class="mono" id="focus-id" style="font-size: var(--text-sm); color: var(--color-fg-muted); overflow: hidden; text-overflow: ellipsis;"></span>
+          </div>
+          <span class="hand-m" id="focus-title" style="font-weight: var(--weight-bold); overflow: hidden; text-overflow: ellipsis;"></span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: var(--text-xs); color: var(--color-fg-muted);">1 candidate</span>
-          <button class="ibtn sm" id="focus-close" title="Close" aria-label="Close focus panel">×</button>
-        </div>
+        <button class="ibtn sm" id="focus-close" title="Close" aria-label="Close focus panel">×</button>
       </div>
 
-      <div style="padding: 14px 18px;">
-        <table class="tbl pmini">
-          <colgroup>
-            <col style="width: 70px;">
-            <col>
-            <col>
-          </colgroup>
-          <thead>
-            <tr>
-              <th></th>
-              <th class="anchor-col">
-                <span class="src-tag">A-902184</span>
-                <div style="margin-top: 4px; font-weight: var(--weight-regular); color: var(--color-fg-muted); font-size: var(--text-xs);">anchor</div>
-              </th>
-              <th>
-                <span class="src-tag">B-44217</span>
-                <div style="margin-top: 4px; font-weight: var(--weight-regular);">
-                  <span class="pill sm muted">78%</span>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">name</td>
-              <td class="anchor-col">Atlas Logistics Ltd</td>
-              <td class="cell-diff">Atlas Logistics UK</td>
-            </tr>
-            <tr>
-              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">country</td>
-              <td class="anchor-col">UK</td>
-              <td>UK<span class="consensus-dot"></span></td>
-            </tr>
-            <tr>
-              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">founded</td>
-              <td class="anchor-col">2014</td>
-              <td class="cell-missing">missing</td>
-            </tr>
-            <tr>
-              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">tax id</td>
-              <td class="anchor-col mono" style="font-size: var(--text-xs);">GB438291045</td>
-              <td class="mono" style="font-size: var(--text-xs);">GB438291045<span class="consensus-dot"></span></td>
-            </tr>
-            <tr>
-              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">sector</td>
-              <td class="anchor-col">Freight</td>
-              <td class="cell-diff">Logistics</td>
-            </tr>
-            <tr>
-              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">employees</td>
-              <td class="anchor-col">142</td>
-              <td class="cell-missing">missing</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td class="anchor-col" style="text-align: center; color: var(--color-fg-muted); font-size: var(--text-xs); font-weight: var(--weight-regular);">reference</td>
-              <td>
-                <span class="row-actions">
-                  <button class="ibtn sm" title="Confirm B-44217">✓</button>
-                  <button class="ibtn sm" title="Reject B-44217">✗</button>
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="panel-fields" id="panel-fields"></div>
 
-        <div style="margin-top: 16px; padding: 12px 14px; background: var(--color-bg-muted); border-radius: var(--radius-md);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <span class="sec-eyebrow">Why this match</span>
-            <a class="hand-xs" style="color: var(--color-primary); text-decoration: none; cursor: pointer;">Field-level reasoning →</a>
-          </div>
-          <div class="hand-xs" style="display: flex; flex-wrap: wrap; gap: 14px; color: var(--color-fg);">
-            <span class="match-line"><span class="dot"></span>Tax ID matches</span>
-            <span class="match-line"><span class="dot"></span>Country matches</span>
-            <span class="match-line miss"><span class="dot"></span>Sector differs</span>
-            <span class="match-line miss"><span class="dot"></span>Name fuzzy</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="focus-actions" style="margin-top: auto;">
+      <div class="focus-actions">
         <div style="display: flex; gap: 8px;">
-          <button class="btn sm">Merge<span class="kbd-hint">M</span></button>
-          <button class="btn outline sm">Defer<span class="kbd-hint">D</span></button>
-          <button class="btn outline sm">Reject<span class="kbd-hint">N</span></button>
+          <button class="btn sm">Find a match</button>
+          <button class="btn outline sm">Defer</button>
+          <button class="btn outline sm">Mark no-match</button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <script>
-  (function () {
-    /* Per-record data the master table doesn't carry on its own
-       (founded, employees, and the matched candidate from Source B). */
-    const records = {
-      'A-902100': { founded: '1998',    employees: '220',
-                    cand: { src: 'B-22918', name: 'Acme Corporation',  sector: 'Software',      match: 'High 96%' } },
-      'A-902184': { founded: '2014',    employees: '142',
-                    cand: { src: 'B-44217', name: 'Atlas Logistics UK', sector: 'Logistics',     match: 'Med 78%'  } },
-      'A-902301': { founded: '2002',    employees: '88',
-                    cand: { src: 'B-30771', name: 'Beta Industrie GmbH', sector: 'Manufacturing', match: 'Med 71%'  } },
-      'A-902418': { founded: 'missing', employees: 'missing',
-                    cand: { src: 'B-50284', name: 'Cygnet Hldg',        sector: null,            match: 'Low 52%'  } },
-      'A-902502': { founded: 'missing', employees: 'missing', cand: null }
-    };
+(function () {
+  const dataEl = document.getElementById('data');
+  const data = JSON.parse(dataEl.textContent);
+  const FIELDS = data.fields;
+  const ROWS   = data.rows;
 
-    const esc = s => String(s).replace(/[&<>"']/g, ch =>
-      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const F = name => FIELDS.indexOf(name);
+  const TITLE_IDX        = F('Original Track Title');
+  const ARTIST_IDX       = F('Original Track Artist');
+  const ISRC_IDX         = F('Original ISRC');
+  const ORIG_CONTRACT_ID = F('Original Contract ID');
+  const SOURCE_IDX       = F('Source');
+  const CATTYPE_IDX      = F('Catalogue Type');
+  const SALES_FILE_ID    = F('Sales File ID');
 
-    function readAnchor(row) {
-      return {
-        record:  row.dataset.record,
-        name:    row.children[3].textContent.trim(),
-        country: row.children[4].textContent.trim(),
-        taxId:   row.children[5].textContent.trim(),
-        sector:  row.children[6].textContent.trim()
-      };
+  const MONO_FIELDS = new Set([
+    'Sales File ID', 'Original ISRC', 'Original Contract ID',
+    'Contract ID', 'Track ID', 'Net Amount', 'Gross Amount',
+    'Net Amount in Currency', 'Gross Amount in Currency'
+  ]);
+
+  const PAGE_SIZE = 20;
+  const state = {
+    filter: 'All',
+    page: 1,
+    expanded: new Set(),
+    checked:  new Set(),
+    activeIdx: null
+  };
+
+  function filteredIndices() {
+    if (state.filter === 'All') return ROWS.map((_, i) => i);
+    return ROWS.reduce((acc, r, i) => {
+      if (r[CATTYPE_IDX] === state.filter) acc.push(i);
+      return acc;
+    }, []);
+  }
+  function pageCount() {
+    return Math.max(1, Math.ceil(filteredIndices().length / PAGE_SIZE));
+  }
+  function pageIndices() {
+    const f = filteredIndices();
+    const start = (state.page - 1) * PAGE_SIZE;
+    return f.slice(start, start + PAGE_SIZE);
+  }
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, ch =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+  function cellMarkup(field, value) {
+    const isEmpty = value === '' || value == null;
+    const cls = ['value'];
+    if (isEmpty) cls.push('empty');
+    if (MONO_FIELDS.has(field)) cls.push('mono');
+    return '<div class="' + cls.join(' ') + '">' + (isEmpty ? '(empty)' : esc(value)) + '</div>';
+  }
+
+  function buildDetailGrid(idx) {
+    const row = ROWS[idx];
+    return FIELDS.map((f, i) =>
+      '<div class="field"><div class="label">' + esc(f).toLowerCase() + '</div>' +
+      cellMarkup(f, row[i]) + '</div>'
+    ).join('');
+  }
+
+  function renderRows() {
+    const tbody = document.getElementById('rows');
+    const idxs = pageIndices();
+    if (idxs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records on this page.</td></tr>';
+      return;
     }
+    const html = idxs.map(idx => {
+      const row = ROWS[idx];
+      const isExpanded = state.expanded.has(idx);
+      const isChecked  = state.checked.has(idx);
+      const isFocused  = state.activeIdx === idx;
+      const titleVal   = row[TITLE_IDX]  || '';
+      const artistVal  = row[ARTIST_IDX] || '';
+      const isrcVal    = row[ISRC_IDX]   || '';
+      const ocidVal    = row[ORIG_CONTRACT_ID] || '';
+      const sourceVal  = row[SOURCE_IDX] || '';
+      const cattypeVal = row[CATTYPE_IDX] || '';
 
-    function buildDetail(row) {
-      const a = readAnchor(row);
-      const r = records[a.record] || {};
-      const c = r.cand;
-      const tr = document.createElement('tr');
-      tr.className = 'detail';
+      const cells = [
+        '<td><span class="chev' + (isExpanded ? ' open' : '') + '">' +
+          (isExpanded ? '⌄' : '›') + '</span></td>',
+        '<td><span class="check' + (isChecked ? ' on' : '') + '"><span class="box"></span></span></td>',
+        '<td title="' + esc(titleVal)  + '">' + esc(titleVal)  + '</td>',
+        '<td title="' + esc(artistVal) + '">' + esc(artistVal) + '</td>',
+        '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(isrcVal) + '">' + esc(isrcVal) + '</td>',
+        '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(ocidVal) + '">' + esc(ocidVal) + '</td>',
+        '<td title="' + esc(sourceVal) + '">' + esc(sourceVal) + '</td>',
+        '<td>' + esc(cattypeVal) + '</td>',
+        '<td><button class="eye-btn ibtn sm muted' + (isFocused ? ' active' : '') + '" data-idx="' + idx + '" aria-label="Open focus panel">' +
+          '<svg class="icon-eye-on"><use href="#i-eye-on"/></svg>' +
+          '<svg class="icon-eye-off"><use href="#i-eye-off"/></svg>' +
+        '</button></td>'
+      ];
 
-      if (!c) {
-        tr.innerHTML = '<td colspan="10"><div class="detail-inner"><div class="empty-detail">No candidates from Source B for this record.</div></div></td>';
-        return tr;
+      let out = '<tr data-idx="' + idx + '"' + (isFocused ? ' class="focused"' : '') + '>' +
+                cells.join('') + '</tr>';
+      if (isExpanded) {
+        out += '<tr class="detail"><td colspan="9"><div class="detail-inner">' +
+               '<div class="detail-grid">' + buildDetailGrid(idx) + '</div>' +
+               '</div></td></tr>';
       }
+      return out;
+    }).join('');
+    tbody.innerHTML = html;
+  }
 
-      const nameDiff      = c.name !== a.name;
-      const sectorDiff    = c.sector && c.sector !== a.sector;
-      const sectorMissing = !c.sector;
-      const cellOrMissing = v => v === 'missing'
-        ? '<td class="cell-missing">missing</td>'
-        : `<td>${esc(v)}</td>`;
+  function renderPager() {
+    const total = filteredIndices().length;
+    const pages = pageCount();
+    const start = total === 0 ? 0 : (state.page - 1) * PAGE_SIZE + 1;
+    const end   = Math.min(state.page * PAGE_SIZE, total);
+    document.getElementById('pager-summary').textContent =
+      total === 0
+        ? 'No records'
+        : 'Showing ' + start + '–' + end + ' of ' + total + (state.filter === 'All' ? '' : ' (' + state.filter + ')');
 
-      tr.innerHTML = `<td colspan="10">
-        <div class="detail-inner">
-          <table class="tbl subtbl">
-            <colgroup>
-              <col style="width: 80px;"><col>
-              <col style="width: 56px;"><col style="width: 70px;">
-              <col style="width: 130px;"><col style="width: 110px;">
-              <col style="width: 80px;"><col style="width: 70px;">
-              <col style="width: 90px;">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>source</th><th>name</th><th>country</th><th>founded</th>
-                <th>tax id</th><th>sector</th><th>employees</th>
-                <th>match</th><th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="anchor">
-                <td><span class="src-tag">anchor</span></td>
-                <td>${esc(a.name)}</td>
-                <td>${esc(a.country)}</td>
-                ${cellOrMissing(r.founded)}
-                <td class="mono" style="font-size: var(--text-xs);">${esc(a.taxId)}</td>
-                <td>${esc(a.sector)}</td>
-                ${cellOrMissing(r.employees)}
-                <td style="color: var(--color-fg-subtle);">—</td>
-                <td style="color: var(--color-fg-subtle);">—</td>
-              </tr>
-              <tr>
-                <td><span class="src-tag">${esc(c.src)}</span></td>
-                <td class="${nameDiff ? 'cell-diff' : ''}">${esc(c.name)}</td>
-                <td>${esc(a.country)}</td>
-                <td class="cell-missing">missing</td>
-                <td class="mono" style="font-size: var(--text-xs);">${esc(a.taxId)}</td>
-                <td class="${sectorDiff ? 'cell-diff' : sectorMissing ? 'cell-missing' : ''}">${sectorMissing ? 'missing' : esc(c.sector)}</td>
-                <td class="cell-missing">missing</td>
-                <td><span class="pill sm muted">${esc(c.match)}</span></td>
-                <td>
-                  <span class="row-actions">
-                    <button class="ibtn sm" title="Confirm">✓</button>
-                    <button class="ibtn sm" title="Reject">✗</button>
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </td>`;
-      return tr;
+    document.getElementById('pg-prev').disabled = state.page === 1;
+    document.getElementById('pg-next').disabled = state.page === pages;
+
+    const list = [];
+    const p = state.page;
+    if (pages <= 7) {
+      for (let i = 1; i <= pages; i++) list.push(i);
+    } else {
+      list.push(1);
+      if (p > 3) list.push('…');
+      for (let i = Math.max(2, p - 1); i <= Math.min(pages - 1, p + 1); i++) list.push(i);
+      if (p < pages - 2) list.push('…');
+      list.push(pages);
     }
+    document.getElementById('pg-pages').innerHTML = list.map(item =>
+      item === '…'
+        ? '<span class="pg dots">…</span>'
+        : '<button class="pg' + (item === p ? ' on' : '') + '" data-page="' + item + '">' + item + '</button>'
+    ).join('');
+  }
 
-    /* ── Chevron expand/collapse ── */
-    document.querySelectorAll('.dm-master tbody tr[data-record]').forEach(row => {
-      const chev = row.querySelector('.chev');
-      chev.addEventListener('click', () => {
-        const next = row.nextElementSibling;
-        if (next && next.classList.contains('detail')) {
-          next.remove();
-          chev.classList.remove('open');
-          chev.textContent = '›';
-        } else {
-          const detail = buildDetail(row);
-          row.parentNode.insertBefore(detail, row.nextSibling);
-          chev.classList.add('open');
-          chev.textContent = '⌄';
-        }
-      });
-    });
+  function renderTabCounts() {
+    const total = ROWS.length;
+    const contract = ROWS.filter(r => r[CATTYPE_IDX] === 'Contract').length;
+    const track    = ROWS.filter(r => r[CATTYPE_IDX] === 'Track').length;
+    document.getElementById('ct-all').textContent      = total.toLocaleString('en-US');
+    document.getElementById('ct-contract').textContent = contract.toLocaleString('en-US');
+    document.getElementById('ct-track').textContent    = track.toLocaleString('en-US');
+    document.querySelector('.dm-toolbar .total').textContent = total.toLocaleString('en-US');
+  }
 
-    /* ── Eye toggle (focus panel) ── */
-    const body  = document.getElementById('dm-body');
-    const eyes  = document.querySelectorAll('.eye-btn');
-    const close = document.getElementById('focus-close');
+  function renderSelectionCount() {
+    document.querySelector('.dm-toolbar .count').textContent =
+      state.checked.size.toLocaleString('en-US');
+    const visible = pageIndices();
+    const allOn  = visible.length > 0 && visible.every(i => state.checked.has(i));
+    const someOn = visible.some(i => state.checked.has(i));
+    const m = document.getElementById('master-check');
+    m.classList.remove('on', 'indet');
+    if (allOn) m.classList.add('on');
+    else if (someOn) m.classList.add('indet');
+  }
 
-    function setActiveEye(activeBtn) {
-      eyes.forEach(b => {
-        const isActive = b === activeBtn;
-        b.classList.toggle('active', isActive);
-        const r = b.closest('tr');
-        if (r) r.classList.toggle('focused', isActive);
-      });
-      body.classList.toggle('focus-open', !!activeBtn);
+  function renderFocusPanel() {
+    const idx = state.activeIdx;
+    const body = document.getElementById('dm-body');
+    if (idx == null) {
+      body.classList.remove('focus-open');
+      return;
     }
-    eyes.forEach(btn => {
-      btn.addEventListener('click', () => {
-        setActiveEye(btn.classList.contains('active') ? null : btn);
-      });
-    });
-    close?.addEventListener('click', () => setActiveEye(null));
+    body.classList.add('focus-open');
+    const row = ROWS[idx];
+    const idLabel = row[SALES_FILE_ID] || row[ISRC_IDX] || '(no id)';
+    const title   = row[TITLE_IDX]     || row[ARTIST_IDX] || '(untitled)';
+    document.getElementById('focus-id').textContent    = idLabel;
+    document.getElementById('focus-title').textContent = title;
+    document.getElementById('panel-fields').innerHTML = FIELDS.map((f, i) =>
+      '<div class="field"><div class="label">' + esc(f).toLowerCase() + '</div>' +
+      cellMarkup(f, row[i]) + '</div>'
+    ).join('');
+  }
 
-    /* ── Checkboxes ── */
-    const rowChecks = document.querySelectorAll('.dm-master .check');
-    const masterCheck = document.getElementById('master-check');
-    const countEl = document.querySelector('.dm-toolbar .count');
+  function renderAll() {
+    renderRows();
+    renderPager();
+    renderSelectionCount();
+    renderFocusPanel();
+  }
 
-    function updateCount() {
-      const n = document.querySelectorAll('.dm-master .check.on').length;
-      if (countEl) countEl.textContent = n.toLocaleString('en-US');
-      if (!masterCheck) return;
-      masterCheck.classList.remove('on', 'indet');
-      if (n === rowChecks.length && n > 0) masterCheck.classList.add('on');
-      else if (n > 0) masterCheck.classList.add('indet');
+  document.getElementById('rows').addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-idx]');
+    if (!tr) return;
+    const idx = parseInt(tr.dataset.idx, 10);
+
+    if (e.target.closest('.chev')) {
+      if (state.expanded.has(idx)) state.expanded.delete(idx);
+      else state.expanded.add(idx);
+      renderRows();
+      return;
     }
-    rowChecks.forEach(c => {
-      c.addEventListener('click', () => { c.classList.toggle('on'); updateCount(); });
-    });
-    masterCheck?.addEventListener('click', () => {
-      const allOn = [...rowChecks].every(c => c.classList.contains('on'));
-      rowChecks.forEach(c => c.classList.toggle('on', !allOn));
-      updateCount();
-    });
-    updateCount();
+    if (e.target.closest('.check')) {
+      if (state.checked.has(idx)) state.checked.delete(idx);
+      else state.checked.add(idx);
+      renderRows();
+      renderSelectionCount();
+      return;
+    }
+    const eye = e.target.closest('.eye-btn');
+    if (eye) {
+      state.activeIdx = (state.activeIdx === idx) ? null : idx;
+      renderRows();
+      renderFocusPanel();
+      return;
+    }
+  });
 
-    /* Default state: Atlas Logistics expanded inline (matches the
-       canonical example users see on first load). */
-    document.querySelector('.dm-master tbody tr[data-record="A-902184"] .chev')?.click();
-  })();
+  document.getElementById('master-check').addEventListener('click', () => {
+    const visible = pageIndices();
+    const allOn = visible.length > 0 && visible.every(i => state.checked.has(i));
+    if (allOn) visible.forEach(i => state.checked.delete(i));
+    else visible.forEach(i => state.checked.add(i));
+    renderRows();
+    renderSelectionCount();
+  });
+
+  document.getElementById('pg-prev').addEventListener('click', () => {
+    if (state.page > 1) { state.page--; renderAll(); }
+  });
+  document.getElementById('pg-next').addEventListener('click', () => {
+    if (state.page < pageCount()) { state.page++; renderAll(); }
+  });
+  document.getElementById('pg-pages').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-page]');
+    if (!btn) return;
+    state.page = parseInt(btn.dataset.page, 10);
+    renderAll();
+  });
+
+  document.getElementById('filter-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-filter]');
+    if (!tab) return;
+    document.querySelectorAll('#filter-tabs > *').forEach(t => t.classList.remove('on'));
+    tab.classList.add('on');
+    state.filter = tab.dataset.filter;
+    state.page = 1;
+    renderAll();
+  });
+
+  document.getElementById('focus-close').addEventListener('click', () => {
+    state.activeIdx = null;
+    renderRows();
+    renderFocusPanel();
+  });
+
+  renderTabCounts();
+  if (ROWS.length > 0) state.expanded.add(0);
+  renderAll();
+})();
 </script>
 
 </body>
