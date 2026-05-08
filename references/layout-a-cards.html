@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Layout A — side-by-side cards (1280px)</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+
+<div class="dm-app">
+
+  <div class="dm-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="font-size: 15px; font-weight: 500;">Match review</div>
+      <span style="color: var(--color-text-tertiary); font-size: 13px;">Source A → Source B</span>
+    </div>
+    <div style="display: flex; gap: 4px;">
+      <span class="tab on">All<span class="ct">1,284</span></span>
+      <span class="tab">High<span class="ct">412</span></span>
+      <span class="tab">Medium<span class="ct">607</span></span>
+      <span class="tab">Low<span class="ct">221</span></span>
+      <span class="tab">No match<span class="ct">44</span></span>
+    </div>
+  </div>
+
+  <div class="dm-toolbar">
+    <div style="display: flex; align-items: center; gap: 14px; color: var(--color-text-secondary);">
+      <input type="checkbox">
+      <span>3 of 1,284 selected</span>
+      <span style="color: var(--color-text-tertiary);">·</span>
+      <span>Sort: ambiguous first</span>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn">Filter</button>
+      <button class="btn">Bulk approve</button>
+      <button class="btn">Export</button>
+    </div>
+  </div>
+
+  <div class="dm-body">
+
+    <div style="width: 280px; border-right: 0.5px solid var(--color-border-tertiary);">
+      <div class="qi"><div class="ttl">Record #00481</div><div class="sub"><span>3 candidates</span><span class="pill pill-hi">High 96%</span></div></div>
+      <div class="qi on"><div class="ttl">Record #00482 — Atlas Logistics Ltd</div><div class="sub"><span>2 candidates</span><span class="pill pill-md">Med 78%</span></div></div>
+      <div class="qi"><div class="ttl">Record #00483</div><div class="sub"><span>1 candidate</span><span class="pill pill-md">Med 71%</span></div></div>
+      <div class="qi"><div class="ttl">Record #00484</div><div class="sub"><span>4 candidates</span><span class="pill pill-lo">Low 52%</span></div></div>
+      <div class="qi"><div class="ttl">Record #00485</div><div class="sub"><span>0 candidates</span><span class="pill pill-none">None</span></div></div>
+      <div class="qi"><div class="ttl">Record #00486</div><div class="sub"><span>2 candidates</span><span class="pill pill-md">Med 74%</span></div></div>
+      <div class="qi"><div class="ttl">Record #00487</div><div class="sub"><span>3 candidates</span><span class="pill pill-hi">High 91%</span></div></div>
+      <div class="qi"><div class="ttl">Record #00488</div><div class="sub"><span>1 candidate</span><span class="pill pill-md">Med 68%</span></div></div>
+    </div>
+
+    <div style="flex: 1; padding: 20px 24px;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <div style="font-size: 16px; font-weight: 500;">Record #00482 — Atlas Logistics Ltd</div>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--color-text-secondary);">
+          <span>Reviewing 482 of 1,284</span>
+          <div class="bar" style="width: 120px;"><span style="width: 38%;"></span></div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--color-text-tertiary); margin-bottom: 18px;">2 candidate matches · best 78%</div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+
+        <div style="border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 0.04em;">ANCHOR · SOURCE A</span>
+            <span class="pill pill-anchor">canonical</span>
+          </div>
+          <div class="row"><span class="lab">id</span><span>A-902184</span></div>
+          <div class="row"><span class="lab">name</span><span>Atlas Logistics Ltd</span></div>
+          <div class="row"><span class="lab">country</span><span>United Kingdom</span></div>
+          <div class="row"><span class="lab">founded</span><span>2014</span></div>
+          <div class="row"><span class="lab">tax id</span><span style="font-family: var(--font-mono); font-size: 12px;">GB438291045</span></div>
+          <div class="row"><span class="lab">sector</span><span>Freight</span></div>
+          <div class="row"><span class="lab">employees</span><span>142</span></div>
+        </div>
+
+        <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 0.04em;">CANDIDATE · SOURCE B</span>
+            <span class="pill pill-md">78%</span>
+          </div>
+          <div class="row"><span class="lab">id</span><span>B-44217</span></div>
+          <div class="row"><span class="lab">name</span><span style="background: var(--color-background-warning); color: var(--color-text-warning); padding: 1px 6px; border-radius: 3px;">Atlas Logistics UK</span></div>
+          <div class="row"><span class="lab">country</span><span>United Kingdom</span></div>
+          <div class="row"><span class="lab">founded</span><span class="cell-missing">missing</span></div>
+          <div class="row"><span class="lab">tax id</span><span style="font-family: var(--font-mono); font-size: 12px;">GB438291045</span></div>
+          <div class="row"><span class="lab">sector</span><span style="background: var(--color-background-warning); color: var(--color-text-warning); padding: 1px 6px; border-radius: 3px;">Logistics</span></div>
+          <div class="row"><span class="lab">employees</span><span class="cell-missing">missing</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px; padding: 14px 16px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); font-size: 13px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--color-text-secondary);">Why this match</span>
+          <a style="color: var(--color-text-info); font-size: 12px;">See all 2 candidates →</a>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 18px; font-size: 12px; color: var(--color-text-secondary);">
+          <span>Tax ID exact <span class="fld-meter"><span style="width: 100%; background: var(--color-text-success);"></span></span></span>
+          <span>Country exact <span class="fld-meter"><span style="width: 100%; background: var(--color-text-success);"></span></span></span>
+          <span>Name fuzzy 0.84 <span class="fld-meter"><span style="width: 84%; background: var(--color-text-warning);"></span></span></span>
+          <span>Sector synonym <span class="fld-meter"><span style="width: 60%; background: var(--color-text-warning);"></span></span></span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding-top: 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn primary">Confirm match<span class="kbd">Y</span></button>
+          <button class="btn">Reject<span class="kbd">N</span></button>
+          <button class="btn">Merge<span class="kbd">M</span></button>
+          <button class="btn">Defer<span class="kbd">D</span></button>
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-tertiary);">
+          <span class="kbd">J</span><span class="kbd">K</span> navigate · <span class="kbd">U</span> undo · <span class="kbd">?</span> shortcuts
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

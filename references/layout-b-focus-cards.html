@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Layout B + focus(cards) — table with card focus panel (1280px)</title>
+<link rel="stylesheet" href="wireframe.css">
+<style>
+.dm-master { flex: 1; overflow: hidden; }
+.dm-focus { width: 520px; border-left: 0.5px solid var(--color-border-tertiary); display: flex; flex-direction: column; flex-shrink: 0; background: var(--color-background-primary); }
+</style>
+</head>
+<body>
+
+<div class="dm-app">
+
+  <div class="dm-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="font-size: 15px; font-weight: 500;">Match review</div>
+      <span style="color: var(--color-text-tertiary); font-size: 13px;">Source A → B, C, D</span>
+    </div>
+    <div style="display: flex; gap: 4px;">
+      <span class="tab on">All<span class="ct">1,284</span></span>
+      <span class="tab">High<span class="ct">412</span></span>
+      <span class="tab">Medium<span class="ct">607</span></span>
+      <span class="tab">Low<span class="ct">221</span></span>
+      <span class="tab">No match<span class="ct">44</span></span>
+    </div>
+  </div>
+
+  <div class="dm-toolbar">
+    <div style="display: flex; align-items: center; gap: 14px; color: var(--color-text-secondary);">
+      <input type="checkbox">
+      <span>0 of 1,284 selected</span>
+      <span style="color: var(--color-text-tertiary);">·</span>
+      <span>Sort: ambiguous first</span>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn">Filter</button>
+      <button class="btn">Bulk approve</button>
+      <button class="btn">Export</button>
+    </div>
+  </div>
+
+  <div class="dm-body">
+
+    <div class="dm-master">
+      <table class="tbl">
+        <colgroup>
+          <col style="width: 40px;">
+          <col style="width: 96px;">
+          <col>
+          <col style="width: 60px;">
+          <col style="width: 120px;">
+          <col style="width: 90px;">
+          <col style="width: 80px;">
+          <col style="width: 80px;">
+          <col style="width: 36px;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th></th>
+            <th>record id</th>
+            <th>anchor name</th>
+            <th>country</th>
+            <th>tax id</th>
+            <th>best match</th>
+            <th>candidates</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">A-902100</td>
+            <td>Acme Corp</td>
+            <td>US</td>
+            <td style="font-family: var(--font-mono); font-size: 11px;">EIN 47-2841559</td>
+            <td><span class="pill pill-hi">High 96%</span></td>
+            <td style="color: var(--color-text-secondary);">3</td>
+            <td><button class="focus-btn">Focus →</button></td>
+            <td><span class="chev">›</span></td>
+          </tr>
+
+          <tr class="focused">
+            <td><input type="checkbox" checked></td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">A-902184</td>
+            <td>Atlas Logistics Ltd</td>
+            <td>UK</td>
+            <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+            <td><span class="pill pill-md">Med 78%</span></td>
+            <td style="color: var(--color-text-secondary);">3</td>
+            <td><button class="focus-btn active">In focus</button></td>
+            <td><span class="chev open">⌄</span></td>
+          </tr>
+          <tr class="detail">
+            <td colspan="9">
+              <div class="detail-inner">
+                <table class="subtbl">
+                  <colgroup>
+                    <col style="width: 80px;">
+                    <col>
+                    <col style="width: 60px;">
+                    <col style="width: 70px;">
+                    <col style="width: 130px;">
+                    <col style="width: 90px;">
+                    <col style="width: 60px;">
+                    <col style="width: 90px;">
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>source</th>
+                      <th>name</th>
+                      <th>country</th>
+                      <th>founded</th>
+                      <th>tax id</th>
+                      <th>sector</th>
+                      <th>match</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="anchor">
+                      <td><span class="src-tag src-a">anchor</span></td>
+                      <td>Atlas Logistics Ltd</td>
+                      <td>UK</td>
+                      <td>2014</td>
+                      <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+                      <td>Freight</td>
+                      <td style="color: var(--color-text-tertiary);">—</td>
+                      <td style="color: var(--color-text-tertiary);">—</td>
+                    </tr>
+                    <tr>
+                      <td><span class="src-tag src-b">B-44217</span></td>
+                      <td class="cell-diff">Atlas Logistics UK</td>
+                      <td>UK</td>
+                      <td class="cell-missing">missing</td>
+                      <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+                      <td class="cell-diff">Logistics</td>
+                      <td><span class="pill pill-md">78%</span></td>
+                      <td style="white-space: nowrap;">
+                        <button class="icon-btn confirm">✓</button>
+                        <button class="icon-btn reject">✗</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><span class="src-tag src-b">C-09112</span></td>
+                      <td class="cell-diff">Atlas Logistics Limited</td>
+                      <td>UK</td>
+                      <td class="cell-diff">2015</td>
+                      <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+                      <td class="cell-diff">Logistics</td>
+                      <td><span class="pill pill-md">74%</span></td>
+                      <td style="white-space: nowrap;">
+                        <button class="icon-btn confirm">✓</button>
+                        <button class="icon-btn reject">✗</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><span class="src-tag src-b">D-13408</span></td>
+                      <td class="cell-diff">Atlas Frt Co</td>
+                      <td>UK</td>
+                      <td>2014</td>
+                      <td class="cell-missing">missing</td>
+                      <td>Freight</td>
+                      <td><span class="pill pill-lo">61%</span></td>
+                      <td style="white-space: nowrap;">
+                        <button class="icon-btn confirm">✓</button>
+                        <button class="icon-btn reject">✗</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">A-902301</td>
+            <td>Beta Industries</td>
+            <td>DE</td>
+            <td style="font-family: var(--font-mono); font-size: 11px;">DE127654893</td>
+            <td><span class="pill pill-md">Med 71%</span></td>
+            <td style="color: var(--color-text-secondary);">1</td>
+            <td><button class="focus-btn">Focus →</button></td>
+            <td><span class="chev">›</span></td>
+          </tr>
+
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">A-902418</td>
+            <td>Cygnet Holdings</td>
+            <td>UK</td>
+            <td style="font-family: var(--font-mono); font-size: 11px;">GB991204776</td>
+            <td><span class="pill pill-lo">Low 52%</span></td>
+            <td style="color: var(--color-text-secondary);">4</td>
+            <td><button class="focus-btn">Focus →</button></td>
+            <td><span class="chev">›</span></td>
+          </tr>
+
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">A-902502</td>
+            <td>Delta Freight Co</td>
+            <td>NL</td>
+            <td style="font-family: var(--font-mono); font-size: 11px;">NL854391057B01</td>
+            <td><span class="pill pill-none">No match</span></td>
+            <td style="color: var(--color-text-secondary);">0</td>
+            <td><button class="focus-btn">Focus →</button></td>
+            <td><span class="chev">›</span></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dm-focus">
+
+      <div style="padding: 14px 18px; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 0.04em;">FOCUS</span>
+          <span style="font-family: var(--font-mono); font-size: 12px; color: var(--color-text-secondary);">A-902184</span>
+          <span style="font-weight: 500; font-size: 13px;">Atlas Logistics Ltd</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button class="btn" style="padding: 3px 8px; font-size: 11px;">←</button>
+          <span style="font-size: 11px; color: var(--color-text-tertiary);">cand 1 / 3</span>
+          <button class="btn" style="padding: 3px 8px; font-size: 11px;">→</button>
+          <button class="btn" style="padding: 3px 8px; font-size: 11px;">×</button>
+        </div>
+      </div>
+
+      <div style="padding: 14px 18px;">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 11px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: var(--color-text-tertiary); letter-spacing: 0.04em;">ANCHOR · SOURCE A</span>
+              <span class="pill pill-anchor">canonical</span>
+            </div>
+            <div class="row"><span class="lab">id</span><span>A-902184</span></div>
+            <div class="row"><span class="lab">name</span><span>Atlas Logistics Ltd</span></div>
+            <div class="row"><span class="lab">country</span><span>UK</span></div>
+            <div class="row"><span class="lab">founded</span><span>2014</span></div>
+            <div class="row"><span class="lab">tax id</span><span style="font-family: var(--font-mono); font-size: 11px;">GB438291045</span></div>
+            <div class="row"><span class="lab">sector</span><span>Freight</span></div>
+            <div class="row"><span class="lab">employees</span><span>142</span></div>
+          </div>
+
+          <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 11px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: var(--color-text-tertiary); letter-spacing: 0.04em;">CANDIDATE · SOURCE B</span>
+              <span class="pill pill-md">78%</span>
+            </div>
+            <div class="row"><span class="lab">id</span><span>B-44217</span></div>
+            <div class="row"><span class="lab">name</span><span style="background: var(--color-background-warning); color: var(--color-text-warning); padding: 0 4px; border-radius: 3px;">Atlas Logistics UK</span></div>
+            <div class="row"><span class="lab">country</span><span>UK</span></div>
+            <div class="row"><span class="lab">founded</span><span class="cell-missing">missing</span></div>
+            <div class="row"><span class="lab">tax id</span><span style="font-family: var(--font-mono); font-size: 11px;">GB438291045</span></div>
+            <div class="row"><span class="lab">sector</span><span style="background: var(--color-background-warning); color: var(--color-text-warning); padding: 0 4px; border-radius: 3px;">Logistics</span></div>
+            <div class="row"><span class="lab">employees</span><span class="cell-missing">missing</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px; padding: 10px 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); font-size: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span style="color: var(--color-text-secondary);">Why this match</span>
+            <a style="color: var(--color-text-info); font-size: 11px;">View all candidates →</a>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--color-text-secondary);">
+            <span>Tax ID exact <span class="fld-meter"><span style="width: 100%; background: var(--color-text-success);"></span></span></span>
+            <span>Country exact <span class="fld-meter"><span style="width: 100%; background: var(--color-text-success);"></span></span></span>
+            <span>Name fuzzy 0.84 <span class="fld-meter"><span style="width: 84%; background: var(--color-text-warning);"></span></span></span>
+            <span>Sector synonym <span class="fld-meter"><span style="width: 60%; background: var(--color-text-warning);"></span></span></span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 0.5px solid var(--color-border-tertiary);">
+          <div style="display: flex; gap: 6px;">
+            <button class="btn primary">Confirm match<span class="kbd">Y</span></button>
+            <button class="btn">Reject<span class="kbd">N</span></button>
+            <button class="btn">Merge<span class="kbd">M</span></button>
+            <button class="btn">Defer<span class="kbd">D</span></button>
+          </div>
+          <div style="font-size: 11px; color: var(--color-text-tertiary);">
+            <span class="kbd">J</span><span class="kbd">K</span> · <span class="kbd">U</span> undo
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

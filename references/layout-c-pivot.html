@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Layout C — pivot table (1280px)</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+
+<div class="dm-app">
+
+  <div class="dm-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="font-size: 15px; font-weight: 500;">Match review</div>
+      <span style="color: var(--color-text-tertiary); font-size: 13px;">4 sources</span>
+    </div>
+    <div style="display: flex; gap: 4px;">
+      <span class="tab on">Pivot</span>
+      <span class="tab">Side-by-side</span>
+      <span class="tab">Table</span>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 13px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-family: var(--font-mono); font-size: 13px; color: var(--color-text-secondary);">A-902184</span>
+      <span style="font-weight: 500; font-size: 15px;">Atlas Logistics Ltd</span>
+      <span style="color: var(--color-text-tertiary);">·</span>
+      <span style="color: var(--color-text-secondary);">3 candidates</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; color: var(--color-text-secondary);">
+      <button class="btn" style="padding: 4px 10px; font-size: 12px;">←</button>
+      <span style="font-size: 12px;">482 / 1,284</span>
+      <button class="btn" style="padding: 4px 10px; font-size: 12px;">→</button>
+    </div>
+  </div>
+
+  <div style="padding: 20px 24px;">
+
+    <table class="pivot-full">
+      <colgroup>
+        <col style="width: 130px;">
+        <col>
+        <col>
+        <col>
+        <col>
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="fh"></th>
+          <th class="sh anchor">
+            <span class="src-tag src-a">A-902184</span>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Anchor</div>
+            <div style="margin-top: 6px;"><span class="pill pill-anchor">canonical</span></div>
+          </th>
+          <th class="sh">
+            <span class="src-tag src-b">B-44217</span>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Source B</div>
+            <div style="margin-top: 6px;"><span class="pill pill-md">78%</span></div>
+          </th>
+          <th class="sh">
+            <span class="src-tag src-b">C-09112</span>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Source C</div>
+            <div style="margin-top: 6px;"><span class="pill pill-md">74%</span></div>
+          </th>
+          <th class="sh">
+            <span class="src-tag src-b">D-13408</span>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Source D</div>
+            <div style="margin-top: 6px;"><span class="pill pill-lo">61%</span></div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td class="fn">name</td>
+          <td class="ac">Atlas Logistics Ltd</td>
+          <td class="cell-diff">Atlas Logistics UK</td>
+          <td class="cell-diff">Atlas Logistics Limited</td>
+          <td class="cell-diff">Atlas Frt Co</td>
+        </tr>
+        <tr>
+          <td class="fn">country</td>
+          <td class="ac">UK</td>
+          <td>UK<span class="consensus-dot"></span></td>
+          <td>UK<span class="consensus-dot"></span></td>
+          <td>UK<span class="consensus-dot"></span></td>
+        </tr>
+        <tr>
+          <td class="fn">founded</td>
+          <td class="ac">2014</td>
+          <td class="cell-missing">missing</td>
+          <td class="cell-diff">2015</td>
+          <td>2014<span class="consensus-dot"></span></td>
+        </tr>
+        <tr>
+          <td class="fn">tax id</td>
+          <td class="ac" style="font-family: var(--font-mono); font-size: 12px;">GB438291045</td>
+          <td style="font-family: var(--font-mono); font-size: 12px;">GB438291045<span class="consensus-dot"></span></td>
+          <td style="font-family: var(--font-mono); font-size: 12px;">GB438291045<span class="consensus-dot"></span></td>
+          <td class="cell-missing">missing</td>
+        </tr>
+        <tr>
+          <td class="fn">sector</td>
+          <td class="ac">Freight</td>
+          <td class="cell-diff">Logistics</td>
+          <td class="cell-diff">Logistics</td>
+          <td>Freight<span class="consensus-dot"></span></td>
+        </tr>
+        <tr>
+          <td class="fn">employees</td>
+          <td class="ac">142</td>
+          <td class="cell-missing">missing</td>
+          <td class="cell-diff">156</td>
+          <td class="cell-missing">missing</td>
+        </tr>
+
+        <tr class="actrow">
+          <td></td>
+          <td style="text-align: center; color: var(--color-text-tertiary); font-size: 12px;">reference</td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="icon-btn confirm" style="flex: 1;">✓ Confirm</button>
+              <button class="icon-btn reject">✗</button>
+            </div>
+          </td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="icon-btn confirm" style="flex: 1;">✓ Confirm</button>
+              <button class="icon-btn reject">✗</button>
+            </div>
+          </td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="icon-btn confirm" style="flex: 1;">✓ Confirm</button>
+              <button class="icon-btn reject">✗</button>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding-top: 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+      <div style="font-size: 12px; color: var(--color-text-secondary); display: flex; gap: 18px; align-items: center;">
+        <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--color-background-warning); border-radius: 2px; vertical-align: middle; margin-right: 5px;"></span>differs from anchor</span>
+        <span><span class="consensus-dot"></span><span style="margin-left: 3px;">agrees with anchor</span></span>
+      </div>
+      <div style="font-size: 12px; color: var(--color-text-tertiary);">
+        <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span> confirm by source · <span class="kbd">M</span> merge all
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

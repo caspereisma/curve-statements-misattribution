@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Layout B — table with expandable rows (1280px)</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+
+<div class="dm-app">
+
+  <div class="dm-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="font-size: 15px; font-weight: 500;">Match review</div>
+      <span style="color: var(--color-text-tertiary); font-size: 13px;">Source A → Source B</span>
+    </div>
+    <div style="display: flex; gap: 4px;">
+      <span class="tab on">All<span class="ct">1,284</span></span>
+      <span class="tab">High<span class="ct">412</span></span>
+      <span class="tab">Medium<span class="ct">607</span></span>
+      <span class="tab">Low<span class="ct">221</span></span>
+      <span class="tab">No match<span class="ct">44</span></span>
+    </div>
+  </div>
+
+  <div class="dm-toolbar">
+    <div style="display: flex; align-items: center; gap: 14px; color: var(--color-text-secondary);">
+      <input type="checkbox">
+      <span>0 of 1,284 selected</span>
+      <span style="color: var(--color-text-tertiary);">·</span>
+      <span>Sort: ambiguous first</span>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn">Filter</button>
+      <button class="btn">Bulk approve</button>
+      <button class="btn">Export</button>
+    </div>
+  </div>
+
+  <table class="tbl">
+    <colgroup>
+      <col style="width: 40px;">
+      <col style="width: 110px;">
+      <col>
+      <col style="width: 80px;">
+      <col style="width: 160px;">
+      <col style="width: 120px;">
+      <col style="width: 110px;">
+      <col style="width: 100px;">
+      <col style="width: 36px;">
+    </colgroup>
+    <thead>
+      <tr>
+        <th></th>
+        <th>record id</th>
+        <th>anchor name</th>
+        <th>country</th>
+        <th>tax id</th>
+        <th>sector</th>
+        <th>best match</th>
+        <th>candidates</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="font-family: var(--font-mono); font-size: 12px;">A-902100</td>
+        <td>Acme Corp</td>
+        <td>US</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">EIN 47-2841559</td>
+        <td>Software</td>
+        <td><span class="pill pill-hi">High 96%</span></td>
+        <td style="color: var(--color-text-secondary);">3</td>
+        <td><span class="chev">›</span></td>
+      </tr>
+
+      <tr class="focused">
+        <td><input type="checkbox" checked></td>
+        <td style="font-family: var(--font-mono); font-size: 12px;">A-902184</td>
+        <td>Atlas Logistics Ltd</td>
+        <td>UK</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+        <td>Freight</td>
+        <td><span class="pill pill-md">Med 78%</span></td>
+        <td style="color: var(--color-text-secondary);">2</td>
+        <td><span class="chev open">⌄</span></td>
+      </tr>
+      <tr class="detail">
+        <td colspan="9">
+          <div class="detail-inner">
+            <table class="subtbl">
+              <colgroup>
+                <col style="width: 110px;">
+                <col>
+                <col style="width: 80px;">
+                <col style="width: 80px;">
+                <col style="width: 160px;">
+                <col style="width: 120px;">
+                <col style="width: 100px;">
+                <col style="width: 80px;">
+                <col style="width: 110px;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>source</th>
+                  <th>name</th>
+                  <th>country</th>
+                  <th>founded</th>
+                  <th>tax id</th>
+                  <th>sector</th>
+                  <th>employees</th>
+                  <th>match</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="anchor">
+                  <td><span class="src-tag src-a">anchor</span></td>
+                  <td>Atlas Logistics Ltd</td>
+                  <td>UK</td>
+                  <td>2014</td>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+                  <td>Freight</td>
+                  <td>142</td>
+                  <td style="color: var(--color-text-tertiary);">—</td>
+                  <td style="color: var(--color-text-tertiary);">—</td>
+                </tr>
+                <tr>
+                  <td><span class="src-tag src-b">B-44217</span></td>
+                  <td class="cell-diff">Atlas Logistics UK</td>
+                  <td>UK</td>
+                  <td class="cell-missing">missing</td>
+                  <td style="font-family: var(--font-mono); font-size: 11px;">GB438291045</td>
+                  <td class="cell-diff">Logistics</td>
+                  <td class="cell-missing">missing</td>
+                  <td><span class="pill pill-md">78%</span></td>
+                  <td style="white-space: nowrap;">
+                    <button class="icon-btn confirm">✓ Confirm</button>
+                    <button class="icon-btn reject">✗</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="src-tag src-b">B-77104</span></td>
+                  <td class="cell-diff">Atlas Freight Ltd</td>
+                  <td>UK</td>
+                  <td>2014</td>
+                  <td class="cell-missing">missing</td>
+                  <td>Freight</td>
+                  <td class="cell-missing">missing</td>
+                  <td><span class="pill pill-md">71%</span></td>
+                  <td style="white-space: nowrap;">
+                    <button class="icon-btn confirm">✓ Confirm</button>
+                    <button class="icon-btn reject">✗</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="font-family: var(--font-mono); font-size: 12px;">A-902301</td>
+        <td>Beta Industries</td>
+        <td>DE</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">DE127654893</td>
+        <td>Manufacturing</td>
+        <td><span class="pill pill-md">Med 71%</span></td>
+        <td style="color: var(--color-text-secondary);">1</td>
+        <td><span class="chev">›</span></td>
+      </tr>
+
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="font-family: var(--font-mono); font-size: 12px;">A-902418</td>
+        <td>Cygnet Holdings</td>
+        <td>UK</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">GB991204776</td>
+        <td>Investment</td>
+        <td><span class="pill pill-lo">Low 52%</span></td>
+        <td style="color: var(--color-text-secondary);">4</td>
+        <td><span class="chev">›</span></td>
+      </tr>
+
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="font-family: var(--font-mono); font-size: 12px;">A-902502</td>
+        <td>Delta Freight Co</td>
+        <td>NL</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">NL854391057B01</td>
+        <td>Freight</td>
+        <td><span class="pill pill-none">No match</span></td>
+        <td style="color: var(--color-text-secondary);">0</td>
+        <td><span class="chev">›</span></td>
+      </tr>
+
+      <tr>
+        <td><input type="checkbox"></td>
+        <td style="font-family: var(--font-mono); font-size: 12px;">A-902644</td>
+        <td>Echo Maritime Group</td>
+        <td>IE</td>
+        <td style="font-family: var(--font-mono); font-size: 11px;">IE3294188WH</td>
+        <td>Shipping</td>
+        <td><span class="pill pill-md">Med 74%</span></td>
+        <td style="color: var(--color-text-secondary);">2</td>
+        <td><span class="chev">›</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+
+</div>
+
+</body>
+</html>
