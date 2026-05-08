@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, initial-scale=1">
+  <title>Data matching review — lo-fi wireframe</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Caveat:wght@400;700&family=Gloria+Hallelujah&family=Patrick+Hand&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Redacted+Script&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    /* ── Project-local additions for things the kit doesn't ship ──
+       Selectors are nested under .tbl so they beat the kit's
+       `table.tbl td { background: var(--color-bg) }` baseline. */
+    .tbl .cell-diff      { background: var(--color-highlight); }
+    .tbl .cell-missing   { color: var(--color-fg-muted); font-style: italic; }
+    .consensus-dot  { display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+                      background: var(--color-fg); margin-left: 5px; vertical-align: middle; }
+    .src-tag        { font-family: var(--font-mono); font-size: var(--text-xs);
+                      padding: 2px 6px; border: 1px solid var(--color-border-subtle);
+                      border-radius: var(--radius-xs); color: var(--color-fg-muted);
+                      display: inline-block; }
+    .kbd-hint       { font-family: var(--font-mono); font-size: var(--text-xs);
+                      padding: 1px 6px; background: var(--color-bg-muted);
+                      border: 1px solid var(--color-border-subtle); border-radius: var(--radius-xs);
+                      color: var(--color-fg-muted); margin-left: 6px; }
+    .mono           { font-family: var(--font-mono); }
+
+    .ibtn.muted { border-color: var(--color-border); color: var(--color-fg-muted); }
+
+    /* ── Data-matching wireframe layout ── */
+    .dm-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 24px; border-bottom: var(--border-2) solid var(--color-border);
+    }
+    .dm-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 24px; border-bottom: var(--border-2) solid var(--color-border-subtle);
+    }
+    .dm-body {
+      display: grid; grid-template-columns: 1fr; min-height: 700px;
+    }
+    .dm-body.focus-open { grid-template-columns: 1fr 520px; }
+    .dm-master  { overflow: hidden; }
+    .dm-focus   { display: none;
+                  border-left: var(--border-2) solid var(--color-border);
+                  flex-direction: column; }
+    .dm-body.focus-open .dm-focus { display: flex; }
+
+    .dm-master table.tbl,
+    .dm-focus table.tbl,
+    .subtbl { width: 100%; table-layout: fixed; }
+    .dm-master table.tbl th,
+    .dm-master table.tbl td { min-width: 0; padding: 10px 10px; }
+    .subtbl th, .subtbl td   { min-width: 0; padding: 8px 10px; font-size: var(--text-sm); }
+    .dm-focus table.tbl th,
+    .dm-focus table.tbl td   { min-width: 0; padding: 8px 8px; font-size: var(--text-sm);
+                               vertical-align: middle; word-wrap: break-word; }
+
+    /* row states */
+    tr.focused td  { background: var(--color-bg-tint);
+                     border-bottom-color: var(--color-bg-tint); }
+    tr.detail td   { padding: 0; background: var(--color-bg-muted); }
+    .detail-inner  { padding: 8px 14px 14px; }
+    tr.anchor td   { background: var(--color-bg-muted);
+                     font-weight: var(--weight-semibold); }
+
+    .pmini td.anchor-col,
+    .pmini th.anchor-col { background: var(--color-bg-muted); font-weight: var(--weight-semibold); }
+
+    .chev          { display: inline-block; color: var(--color-fg-subtle); font-size: 16px;
+                     text-align: center; width: 100%; cursor: pointer; user-select: none;
+                     padding: 2px 0; }
+    .chev:hover    { color: var(--color-fg); }
+    .chev.open     { color: var(--color-fg); }
+
+    .row-actions   { display: inline-flex; gap: 4px; }
+    .row-actions .ibtn.sm { width: 26px; height: 26px; font-family: var(--font-mono);
+                            font-size: var(--text-sm); }
+
+    .eye-btn       { display: inline-flex; align-items: center; justify-content: center; }
+    .eye-btn .icon-eye-on  { display: none; }
+    .eye-btn.active        { background: var(--color-primary);
+                              border-color: var(--color-primary);
+                              color: var(--color-primary-fg); }
+    .eye-btn.active .icon-eye-on  { display: block; }
+    .eye-btn.active .icon-eye-off { display: none; }
+    .eye-btn svg   { width: 16px; height: 16px; }
+
+    .focus-actions { display: flex; align-items: center; justify-content: space-between;
+                     padding: 14px 18px; border-top: var(--border-2) solid var(--color-border-subtle); }
+
+    .tabs > * .ct  { color: var(--color-fg-muted); font-size: var(--text-sm); margin-left: 6px; }
+    .tabs > .on .ct { color: var(--color-primary); }
+
+    .check { cursor: pointer; }
+
+    .match-line       { display: inline-flex; align-items: center; gap: 6px; }
+    .match-line .dot  { width: 8px; height: 8px; border-radius: 50%;
+                        background: var(--color-fg); }
+    .match-line.miss .dot { background: transparent;
+                            border: 1.5px solid var(--color-border); }
+
+    .empty-detail { padding: 28px 14px; color: var(--color-fg-muted);
+                    font-family: var(--font-hand); font-size: var(--text-md);
+                    text-align: center; }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-eye-on" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </g>
+  </symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17.94 17.94A10 10 0 0 1 12 19c-7 0-10-7-10-7a18 18 0 0 1 5-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 7 10 7a17.5 17.5 0 0 1-2.16 3.19"/>
+      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+      <line x1="2" y1="2" x2="22" y2="22"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="page">
+
+  <!-- ============================================================
+       HEADER
+       ============================================================ -->
+  <div class="dm-header">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <span class="hand-l" style="font-weight: var(--weight-bold);">Match review</span>
+      <span class="hand-s" style="color: var(--color-fg-muted);">Source A → B</span>
+    </div>
+    <div class="tabs">
+      <span class="on">All<span class="ct">1,284</span></span>
+      <span>High<span class="ct">412</span></span>
+      <span>Medium<span class="ct">607</span></span>
+      <span>Low<span class="ct">221</span></span>
+      <span>No match<span class="ct">44</span></span>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TOOLBAR
+       ============================================================ -->
+  <div class="dm-toolbar">
+    <div class="hand-s" style="display: flex; align-items: center; gap: 14px;">
+      <span class="check" id="master-check"><span class="box"></span></span>
+      <span><span class="count">0</span> of 1,284 selected</span>
+      <span style="color: var(--color-fg-subtle);">·</span>
+      <span style="color: var(--color-fg-muted);">Sort: ambiguous first</span>
+      <span style="color: var(--color-fg-subtle);">·</span>
+      <span style="color: var(--color-fg-muted);">Showing fields: 6</span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn outline sm">Filter</button>
+      <button class="btn outline sm">Bulk approve</button>
+      <button class="btn outline sm">Export</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       BODY
+       ============================================================ -->
+  <div class="dm-body" id="dm-body">
+
+    <!-- ============= MASTER TABLE ============= -->
+    <div class="dm-master">
+      <table class="tbl">
+        <colgroup>
+          <col style="width: 32px;">
+          <col style="width: 36px;">
+          <col style="width: 96px;">
+          <col>
+          <col style="width: 50px;">
+          <col style="width: 130px;">
+          <col style="width: 110px;">
+          <col style="width: 110px;">
+          <col style="width: 50px;">
+          <col style="width: 50px;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>record id</th>
+            <th>anchor name</th>
+            <th>country</th>
+            <th>tax id</th>
+            <th>sector</th>
+            <th>best match</th>
+            <th>cands</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr data-record="A-902100">
+            <td><span class="chev">›</span></td>
+            <td><span class="check"><span class="box"></span></span></td>
+            <td class="mono" style="font-size: var(--text-sm);">A-902100</td>
+            <td>Acme Corp</td>
+            <td>US</td>
+            <td class="mono" style="font-size: var(--text-xs);">EIN 47-2841559</td>
+            <td>Software</td>
+            <td><span class="pill sm muted">High 96%</span></td>
+            <td style="color: var(--color-fg-muted);">1</td>
+            <td>
+              <button class="eye-btn ibtn sm muted" data-record="A-902100" aria-label="Open focus panel">
+                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
+                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
+              </button>
+            </td>
+          </tr>
+
+          <tr data-record="A-902184">
+            <td><span class="chev">›</span></td>
+            <td><span class="check"><span class="box"></span></span></td>
+            <td class="mono" style="font-size: var(--text-sm);">A-902184</td>
+            <td>Atlas Logistics Ltd</td>
+            <td>UK</td>
+            <td class="mono" style="font-size: var(--text-xs);">GB438291045</td>
+            <td>Freight</td>
+            <td><span class="pill sm muted">Med 78%</span></td>
+            <td style="color: var(--color-fg-muted);">1</td>
+            <td>
+              <button class="eye-btn ibtn sm muted" data-record="A-902184" aria-label="Open focus panel">
+                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
+                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
+              </button>
+            </td>
+          </tr>
+
+          <tr data-record="A-902301">
+            <td><span class="chev">›</span></td>
+            <td><span class="check"><span class="box"></span></span></td>
+            <td class="mono" style="font-size: var(--text-sm);">A-902301</td>
+            <td>Beta Industries</td>
+            <td>DE</td>
+            <td class="mono" style="font-size: var(--text-xs);">DE127654893</td>
+            <td>Manufacturing</td>
+            <td><span class="pill sm muted">Med 71%</span></td>
+            <td style="color: var(--color-fg-muted);">1</td>
+            <td>
+              <button class="eye-btn ibtn sm muted" data-record="A-902301" aria-label="Open focus panel">
+                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
+                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
+              </button>
+            </td>
+          </tr>
+
+          <tr data-record="A-902418">
+            <td><span class="chev">›</span></td>
+            <td><span class="check"><span class="box"></span></span></td>
+            <td class="mono" style="font-size: var(--text-sm);">A-902418</td>
+            <td>Cygnet Holdings</td>
+            <td>UK</td>
+            <td class="mono" style="font-size: var(--text-xs);">GB991204776</td>
+            <td>Investment</td>
+            <td><span class="pill sm muted">Low 52%</span></td>
+            <td style="color: var(--color-fg-muted);">1</td>
+            <td>
+              <button class="eye-btn ibtn sm muted" data-record="A-902418" aria-label="Open focus panel">
+                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
+                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
+              </button>
+            </td>
+          </tr>
+
+          <tr data-record="A-902502">
+            <td><span class="chev">›</span></td>
+            <td><span class="check"><span class="box"></span></span></td>
+            <td class="mono" style="font-size: var(--text-sm);">A-902502</td>
+            <td>Delta Freight Co</td>
+            <td>NL</td>
+            <td class="mono" style="font-size: var(--text-xs);">NL854391057B01</td>
+            <td>Freight</td>
+            <td><span class="pill sm muted">No match</span></td>
+            <td style="color: var(--color-fg-muted);">0</td>
+            <td>
+              <button class="eye-btn ibtn sm muted" data-record="A-902502" aria-label="Open focus panel">
+                <svg class="icon-eye-on"><use href="#i-eye-on"/></svg>
+                <svg class="icon-eye-off"><use href="#i-eye-off"/></svg>
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============= FOCUS PANEL ============= -->
+    <div class="dm-focus" id="focus-panel">
+
+      <div style="padding: 16px 18px; border-bottom: var(--border-2) solid var(--color-border-subtle); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span class="sec-eyebrow">Focus</span>
+          <span class="mono" style="font-size: var(--text-sm); color: var(--color-fg-muted);">A-902184</span>
+          <span class="hand-m" style="font-weight: var(--weight-bold);">Atlas Logistics Ltd</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: var(--text-xs); color: var(--color-fg-muted);">1 candidate</span>
+          <button class="ibtn sm" id="focus-close" title="Close" aria-label="Close focus panel">×</button>
+        </div>
+      </div>
+
+      <div style="padding: 14px 18px;">
+        <table class="tbl pmini">
+          <colgroup>
+            <col style="width: 70px;">
+            <col>
+            <col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th></th>
+              <th class="anchor-col">
+                <span class="src-tag">A-902184</span>
+                <div style="margin-top: 4px; font-weight: var(--weight-regular); color: var(--color-fg-muted); font-size: var(--text-xs);">anchor</div>
+              </th>
+              <th>
+                <span class="src-tag">B-44217</span>
+                <div style="margin-top: 4px; font-weight: var(--weight-regular);">
+                  <span class="pill sm muted">78%</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">name</td>
+              <td class="anchor-col">Atlas Logistics Ltd</td>
+              <td class="cell-diff">Atlas Logistics UK</td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">country</td>
+              <td class="anchor-col">UK</td>
+              <td>UK<span class="consensus-dot"></span></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">founded</td>
+              <td class="anchor-col">2014</td>
+              <td class="cell-missing">missing</td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">tax id</td>
+              <td class="anchor-col mono" style="font-size: var(--text-xs);">GB438291045</td>
+              <td class="mono" style="font-size: var(--text-xs);">GB438291045<span class="consensus-dot"></span></td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">sector</td>
+              <td class="anchor-col">Freight</td>
+              <td class="cell-diff">Logistics</td>
+            </tr>
+            <tr>
+              <td style="color: var(--color-fg-muted); font-size: var(--text-xs);">employees</td>
+              <td class="anchor-col">142</td>
+              <td class="cell-missing">missing</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="anchor-col" style="text-align: center; color: var(--color-fg-muted); font-size: var(--text-xs); font-weight: var(--weight-regular);">reference</td>
+              <td>
+                <span class="row-actions">
+                  <button class="ibtn sm" title="Confirm B-44217">✓</button>
+                  <button class="ibtn sm" title="Reject B-44217">✗</button>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px; padding: 12px 14px; background: var(--color-bg-muted); border-radius: var(--radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span class="sec-eyebrow">Why this match</span>
+            <a class="hand-xs" style="color: var(--color-primary); text-decoration: none; cursor: pointer;">Field-level reasoning →</a>
+          </div>
+          <div class="hand-xs" style="display: flex; flex-wrap: wrap; gap: 14px; color: var(--color-fg);">
+            <span class="match-line"><span class="dot"></span>Tax ID matches</span>
+            <span class="match-line"><span class="dot"></span>Country matches</span>
+            <span class="match-line miss"><span class="dot"></span>Sector differs</span>
+            <span class="match-line miss"><span class="dot"></span>Name fuzzy</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="focus-actions" style="margin-top: auto;">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn sm">Merge<span class="kbd-hint">M</span></button>
+          <button class="btn outline sm">Defer<span class="kbd-hint">D</span></button>
+          <button class="btn outline sm">Reject<span class="kbd-hint">N</span></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    /* Per-record data the master table doesn't carry on its own
+       (founded, employees, and the matched candidate from Source B). */
+    const records = {
+      'A-902100': { founded: '1998',    employees: '220',
+                    cand: { src: 'B-22918', name: 'Acme Corporation',  sector: 'Software',      match: 'High 96%' } },
+      'A-902184': { founded: '2014',    employees: '142',
+                    cand: { src: 'B-44217', name: 'Atlas Logistics UK', sector: 'Logistics',     match: 'Med 78%'  } },
+      'A-902301': { founded: '2002',    employees: '88',
+                    cand: { src: 'B-30771', name: 'Beta Industrie GmbH', sector: 'Manufacturing', match: 'Med 71%'  } },
+      'A-902418': { founded: 'missing', employees: 'missing',
+                    cand: { src: 'B-50284', name: 'Cygnet Hldg',        sector: null,            match: 'Low 52%'  } },
+      'A-902502': { founded: 'missing', employees: 'missing', cand: null }
+    };
+
+    const esc = s => String(s).replace(/[&<>"']/g, ch =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+    function readAnchor(row) {
+      return {
+        record:  row.dataset.record,
+        name:    row.children[3].textContent.trim(),
+        country: row.children[4].textContent.trim(),
+        taxId:   row.children[5].textContent.trim(),
+        sector:  row.children[6].textContent.trim()
+      };
+    }
+
+    function buildDetail(row) {
+      const a = readAnchor(row);
+      const r = records[a.record] || {};
+      const c = r.cand;
+      const tr = document.createElement('tr');
+      tr.className = 'detail';
+
+      if (!c) {
+        tr.innerHTML = '<td colspan="10"><div class="detail-inner"><div class="empty-detail">No candidates from Source B for this record.</div></div></td>';
+        return tr;
+      }
+
+      const nameDiff      = c.name !== a.name;
+      const sectorDiff    = c.sector && c.sector !== a.sector;
+      const sectorMissing = !c.sector;
+      const cellOrMissing = v => v === 'missing'
+        ? '<td class="cell-missing">missing</td>'
+        : `<td>${esc(v)}</td>`;
+
+      tr.innerHTML = `<td colspan="10">
+        <div class="detail-inner">
+          <table class="tbl subtbl">
+            <colgroup>
+              <col style="width: 80px;"><col>
+              <col style="width: 56px;"><col style="width: 70px;">
+              <col style="width: 130px;"><col style="width: 110px;">
+              <col style="width: 80px;"><col style="width: 70px;">
+              <col style="width: 90px;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>source</th><th>name</th><th>country</th><th>founded</th>
+                <th>tax id</th><th>sector</th><th>employees</th>
+                <th>match</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="anchor">
+                <td><span class="src-tag">anchor</span></td>
+                <td>${esc(a.name)}</td>
+                <td>${esc(a.country)}</td>
+                ${cellOrMissing(r.founded)}
+                <td class="mono" style="font-size: var(--text-xs);">${esc(a.taxId)}</td>
+                <td>${esc(a.sector)}</td>
+                ${cellOrMissing(r.employees)}
+                <td style="color: var(--color-fg-subtle);">—</td>
+                <td style="color: var(--color-fg-subtle);">—</td>
+              </tr>
+              <tr>
+                <td><span class="src-tag">${esc(c.src)}</span></td>
+                <td class="${nameDiff ? 'cell-diff' : ''}">${esc(c.name)}</td>
+                <td>${esc(a.country)}</td>
+                <td class="cell-missing">missing</td>
+                <td class="mono" style="font-size: var(--text-xs);">${esc(a.taxId)}</td>
+                <td class="${sectorDiff ? 'cell-diff' : sectorMissing ? 'cell-missing' : ''}">${sectorMissing ? 'missing' : esc(c.sector)}</td>
+                <td class="cell-missing">missing</td>
+                <td><span class="pill sm muted">${esc(c.match)}</span></td>
+                <td>
+                  <span class="row-actions">
+                    <button class="ibtn sm" title="Confirm">✓</button>
+                    <button class="ibtn sm" title="Reject">✗</button>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </td>`;
+      return tr;
+    }
+
+    /* ── Chevron expand/collapse ── */
+    document.querySelectorAll('.dm-master tbody tr[data-record]').forEach(row => {
+      const chev = row.querySelector('.chev');
+      chev.addEventListener('click', () => {
+        const next = row.nextElementSibling;
+        if (next && next.classList.contains('detail')) {
+          next.remove();
+          chev.classList.remove('open');
+          chev.textContent = '›';
+        } else {
+          const detail = buildDetail(row);
+          row.parentNode.insertBefore(detail, row.nextSibling);
+          chev.classList.add('open');
+          chev.textContent = '⌄';
+        }
+      });
+    });
+
+    /* ── Eye toggle (focus panel) ── */
+    const body  = document.getElementById('dm-body');
+    const eyes  = document.querySelectorAll('.eye-btn');
+    const close = document.getElementById('focus-close');
+
+    function setActiveEye(activeBtn) {
+      eyes.forEach(b => {
+        const isActive = b === activeBtn;
+        b.classList.toggle('active', isActive);
+        const r = b.closest('tr');
+        if (r) r.classList.toggle('focused', isActive);
+      });
+      body.classList.toggle('focus-open', !!activeBtn);
+    }
+    eyes.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActiveEye(btn.classList.contains('active') ? null : btn);
+      });
+    });
+    close?.addEventListener('click', () => setActiveEye(null));
+
+    /* ── Checkboxes ── */
+    const rowChecks = document.querySelectorAll('.dm-master .check');
+    const masterCheck = document.getElementById('master-check');
+    const countEl = document.querySelector('.dm-toolbar .count');
+
+    function updateCount() {
+      const n = document.querySelectorAll('.dm-master .check.on').length;
+      if (countEl) countEl.textContent = n.toLocaleString('en-US');
+      if (!masterCheck) return;
+      masterCheck.classList.remove('on', 'indet');
+      if (n === rowChecks.length && n > 0) masterCheck.classList.add('on');
+      else if (n > 0) masterCheck.classList.add('indet');
+    }
+    rowChecks.forEach(c => {
+      c.addEventListener('click', () => { c.classList.toggle('on'); updateCount(); });
+    });
+    masterCheck?.addEventListener('click', () => {
+      const allOn = [...rowChecks].every(c => c.classList.contains('on'));
+      rowChecks.forEach(c => c.classList.toggle('on', !allOn));
+      updateCount();
+    });
+    updateCount();
+
+    /* Default state: Atlas Logistics expanded inline (matches the
+       canonical example users see on first load). */
+    document.querySelector('.dm-master tbody tr[data-record="A-902184"] .chev')?.click();
+  })();
+</script>
+
+</body>
+</html>
