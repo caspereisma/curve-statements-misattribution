@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, initial-scale=1">
+  <title>Per-column filter — concept</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Caveat:wght@400;700&family=Gloria+Hallelujah&family=Patrick+Hand&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Redacted+Script&display=swap">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body { padding: 40px 24px 80px; }
+
+    .concept-frame { display: grid; grid-template-columns: 1fr 360px; gap: 40px;
+                     max-width: 1280px; margin: 0 auto; }
+    .concept-frame > .annotations { padding-top: 50px; }
+
+    .concept-title { font-family: var(--font-hand); font-weight: var(--weight-bold);
+                     font-size: var(--text-3xl); line-height: var(--leading-tight);
+                     margin: 12px 0 8px; }
+    .concept-sub   { font-family: var(--font-hand); font-size: var(--text-lg);
+                     color: var(--color-fg-muted); max-width: 640px;
+                     margin: 0 0 32px; }
+
+    /* ── Mock table header strip ── */
+    .col-strip {
+      display: grid; grid-template-columns: 30px 36px 1fr 1fr 1fr 1fr 1fr 90px 50px;
+      border: 1.5px solid var(--color-border);
+      background: var(--color-bg-muted);
+      position: relative;
+    }
+    .col-strip > div {
+      padding: 10px 10px; min-width: 0;
+      border-right: 1.5px solid var(--color-border);
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-label); font-weight: var(--weight-semibold);
+      font-size: var(--text-sm); color: var(--color-fg-muted);
+    }
+    .col-strip > div:last-child { border-right: 0; }
+    .col-strip .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .filter-trigger {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 6px; border: 1.5px solid var(--color-border-subtle);
+      border-radius: var(--radius-xs); background: var(--color-bg);
+      color: var(--color-fg-muted); cursor: pointer;
+      font-family: var(--font-mono); font-size: var(--text-2xs);
+    }
+    .filter-trigger:hover  { color: var(--color-fg); border-color: var(--color-border); }
+    .filter-trigger.active { color: var(--color-primary-fg);
+                             background: var(--color-primary);
+                             border-color: var(--color-primary); }
+    .filter-trigger .badge {
+      font-family: var(--font-mono); font-size: var(--text-2xs);
+      padding: 0 4px; border-radius: var(--radius-xs);
+      background: var(--color-primary-fg); color: var(--color-primary);
+      min-width: 14px; text-align: center;
+    }
+    .filter-trigger svg { width: 11px; height: 11px; }
+
+    /* sample rows beneath the strip (visual context, not interactive) */
+    .sample-rows { display: grid; grid-template-columns: 30px 36px 1fr 1fr 1fr 1fr 1fr 90px 50px;
+                   border: 1.5px solid var(--color-border); border-top: 0; }
+    .sample-rows > div {
+      padding: 9px 10px; min-width: 0;
+      border-right: 1.5px solid var(--color-border);
+      border-top: 1.5px solid var(--color-border);
+      font-family: var(--font-hand); font-size: var(--text-base);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      background: var(--color-bg);
+    }
+    .sample-rows > div:nth-child(9n) { border-right: 0; }
+    .sample-rows .ph {
+      background-image: linear-gradient(90deg, var(--color-border-subtle) 25%, transparent 25%, transparent 50%, var(--color-border-subtle) 50%, var(--color-border-subtle) 75%, transparent 75%);
+      background-size: 8px 8px;
+      color: transparent;
+      border-radius: var(--radius-xs);
+      height: 14px; margin: 4px 0;
+    }
+
+    /* ── Filter popover ── */
+    .popover {
+      position: absolute; z-index: 50;
+      width: 320px; background: var(--color-bg);
+      border: var(--border-2) solid var(--color-fg);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-3);
+      padding: 14px;
+      font-family: var(--font-hand); font-size: var(--text-base);
+      display: none;
+    }
+    .popover.open { display: block; }
+
+    .popover .input { min-width: 0; margin-bottom: 10px; padding: 6px 10px; }
+    .popover .input input { font-size: var(--text-base); }
+
+    .popover .opts {
+      display: flex; align-items: center; gap: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px dashed var(--color-border-subtle);
+    }
+    .popover .opts .check { font-size: var(--text-sm); }
+
+    .popover .suggestions {
+      max-height: 240px; overflow-y: auto;
+      margin: 8px 0;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .popover .suggestion {
+      display: grid; grid-template-columns: 18px 1fr auto;
+      gap: 8px; align-items: center;
+      padding: 5px 6px; border-radius: var(--radius-xs);
+      cursor: pointer; min-width: 0;
+    }
+    .popover .suggestion:hover { background: var(--color-bg-muted); }
+    .popover .suggestion .tick {
+      width: 14px; height: 14px;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-xs);
+      background: var(--color-bg);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .popover .suggestion.selected .tick {
+      background: var(--color-fg); border-color: var(--color-fg);
+    }
+    .popover .suggestion.selected .tick::after {
+      content: ""; width: 7px; height: 4px;
+      border-left: 1.5px solid var(--color-white);
+      border-bottom: 1.5px solid var(--color-white);
+      transform: rotate(-45deg) translate(1px,-1px);
+    }
+    .popover .suggestion .val {
+      font-size: var(--text-sm); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .popover .suggestion .count {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      color: var(--color-fg-muted);
+    }
+    .popover .empty {
+      padding: 18px 6px; text-align: center;
+      color: var(--color-fg-muted); font-family: var(--font-hand);
+      font-size: var(--text-base);
+    }
+
+    .popover .actions {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding-top: 8px;
+      border-top: 1.5px dashed var(--color-border-subtle);
+    }
+    .popover .actions .left {
+      font-family: var(--font-hand); font-size: var(--text-sm);
+      color: var(--color-fg-muted);
+    }
+
+    /* ── Annotations sidebar ── */
+    .annotations { font-family: var(--font-hand); font-size: var(--text-base);
+                   line-height: var(--leading-relaxed); color: var(--color-fg); }
+    .annotations .sec { margin-bottom: 22px; }
+    .annotations h3 { font-family: var(--font-label);
+                      font-weight: var(--weight-bold);
+                      font-size: var(--text-xs);
+                      letter-spacing: var(--tracking-widest);
+                      text-transform: uppercase;
+                      color: var(--color-fg-muted);
+                      margin: 0 0 6px; }
+    .annotations p { margin: 0 0 8px; max-width: 320px; }
+    .annotations code { font-family: var(--font-mono); font-size: var(--text-sm);
+                        background: var(--color-bg-muted); padding: 1px 5px;
+                        border-radius: var(--radius-xs); }
+
+    .hint {
+      font-family: var(--font-hand); font-size: var(--text-base);
+      color: var(--color-fg-muted); margin-top: 12px;
+    }
+    .arrow {
+      display: inline-block; padding: 0 6px;
+      font-family: var(--font-mono); color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+
+<script id="data" type="application/json">{"Original Track Title":[{"value":"EVERYTHING A REASON","count":5},{"value":"NO DATA PROVIDED","count":5},{"value":"COME HOME","count":4},{"value":"ROBIN HOOD - AMBUSH","count":4},{"value":"THE ONE I LOVE","count":4},{"value":"DO YOU","count":3},{"value":"WISH YOU WERE HERE -LIVE","count":3},{"value":"5k Running Mix","count":3},{"value":"STILETTO","count":3},{"value":"Suck it and See","count":3},{"value":"NUTTY SLACK","count":3},{"value":"ROBIN HOOD - GODFREY","count":3},{"value":"","count":3},{"value":"TINY DANCER (HOLD ME CLOSER) (FEAT. ELTON JOHN)","count":3},{"value":"ALWAYS LOVING YOU","count":3},{"value":"CHANGE FOR ME","count":3},{"value":"Pay Trevor","count":2},{"value":"FILA BRAZILLIA","count":2},{"value":"SWEETBREADS","count":2},{"value":"MY FAMILY","count":2},{"value":"Airlock Homes","count":2},{"value":"TEACH YOURSELF BRAILLE","count":2},{"value":"Halo","count":2},{"value":"ROBIN HOOD - THE LEGEND BEGINS","count":2},{"value":"CANDOMBE LENTO","count":2},{"value":"We Build Arks","count":2},{"value":"SCIMITAR","count":2},{"value":"The Barney Fade","count":2},{"value":"Outre Lux","count":2},{"value":"SO FINE","count":2},{"value":"PITY THE PLIGHT","count":2},{"value":"SWEET THING","count":2},{"value":"ME & U","count":2},{"value":"SYSTEM ADDICT 1","count":2},{"value":"NO ONE ELSE TO BLAME","count":2},{"value":"PROPHETS OF RAGE","count":2},{"value":"FEAR","count":2},{"value":"MARCHIN ON","count":2},{"value":"NOVEMBER RAIN","count":2},{"value":"DAY 1 ?","count":2},{"value":"WARM ON A CHRISTMAS NIGHT","count":2},{"value":"FOR CRYING OUT LOUD (LIVE)","count":2},{"value":"THIS LAND IS YOUR LAND","count":2},{"value":"WHATEVER IT TAKES","count":2},{"value":"CONTIGO","count":2},{"value":"GREENLIGHT","count":2},{"value":"UNALLOCATED","count":2},{"value":"IT'S LOVE","count":2},{"value":"PUT YOUR HANDS UP 4 DETROIT","count":2},{"value":"I DON T MISS YOU","count":1},{"value":"WOMAN GO WILD","count":1},{"value":"MOTHER NATURES SPIES","count":1},{"value":"Bodies","count":1},{"value":"Divine","count":1},{"value":"Double Take","count":1},{"value":"IT'S GOIN' DOWN","count":1},{"value":"GOT 2 LUV YA","count":1},{"value":"I CAN'T MAKE YOU LOVE ME","count":1},{"value":"ANCHAR","count":1},{"value":"BUMBLEHAUN","count":1},{"value":"LADY ROLL BACK THE YEAR","count":1},{"value":"NATURE BOY","count":1},{"value":"LIGHTS ON THE VIBE","count":1},{"value":"ARGHANE MANINE","count":1},{"value":"AFOURS AFOURS","count":1},{"value":"WEST ALABAMA","count":1},{"value":"SUBUHANALAII","count":1},{"value":"HIGH ROAD","count":1},{"value":"EWOR IMDANE","count":1},{"value":"ELEPHANT'S GRAVEYARD","count":1},{"value":"ARMS OVER JORDAN","count":1},{"value":"YOUR MOTHER'S SON-IN-LAW","count":1},{"value":"TUTTI FRUTTI","count":1},{"value":"YOU'VE GOT YOUR TROUBLES","count":1},{"value":"ON YOUR OWN","count":1},{"value":"WORLD OF THE FARMER","count":1},{"value":"KHALGHI STOMPTHIEVERY CORPORATION REMIX","count":1},{"value":"Kids","count":1},{"value":"KOH END TITLE THEME","count":1},{"value":"CATCHING FEELINGS","count":1},{"value":"TAKE YOU","count":1},{"value":"THERE SHE GO","count":1},{"value":"Cum On Feel The Noize","count":1},{"value":"CHIQUITITA","count":1},{"value":"RUMOURS","count":1},{"value":"WELCOME TO NEW YORK [TAYLORS VERSION]","count":1},{"value":"OTHER PEOPLE S LIVES","count":1},{"value":"FALLING DOWN","count":1},{"value":"TAKE THE LONG WAY HOME","count":1},{"value":"Secrets Live From Zurich","count":1},{"value":"TEARDROP","count":1},{"value":"Objectify (Live)","count":1},{"value":"Superbloodmoon","count":1},{"value":"KIDS (SEEB REMIX)","count":1},{"value":"Warm On A Cold Night","count":1},{"value":"Hello In There","count":1},{"value":"10k Running Mix","count":1},{"value":"Hit This","count":1},{"value":"45987","count":1},{"value":"AXMAN","count":1},{"value":"Don't Stop Wembley, June 27, 1980","count":1},{"value":"LA VITA NUOVA","count":1},{"value":"Tis Autumn","count":1},{"value":"Takako Takahashi","count":1},{"value":"NIATIGI (HOST)","count":1},{"value":"CHIP","count":1},{"value":"DOWN AT THE WHISKY","count":1},{"value":"I'M PUTTING ALL MY EGGS IN ONE BASKET","count":1},{"value":"Archie Moore","count":1},{"value":"I'm Sorry ft. Lil Durk & DaBaby","count":1},{"value":"THE IRISH ROVER","count":1},{"value":"TUNSTALL AND CALIFORNIAN HADDOCK","count":1},{"value":"LA BALLATA DI DON GIOVANNI","count":1},{"value":"TAKE ME DOWN","count":1},{"value":"GREEN ONIONS","count":1},{"value":"EASY MONEY","count":1},{"value":"AUGUST","count":1},{"value":"JUST WHEN I NEEDED YOU MOST","count":1},{"value":"GOOD OL' DAYS","count":1},{"value":"HOW WE ROLL","count":1},{"value":"READY TO ROCK","count":1},{"value":"PHONE BOOTH (END TITLES)","count":1},{"value":"GETTING STARTED","count":1},{"value":"LET ME LIVE / LET ME DIE(undefined)","count":1},{"value":"WILDFIRE(undefined)","count":1},{"value":"DRONE GOES IN","count":1},{"value":"ANOTHER DUMB BLONDE","count":1},{"value":"BREAKTHROUGH","count":1},{"value":"EH EH NOTHING ELSE I CAN SAYPET SHOP BOYS RADIO MIX","count":1},{"value":"LIFT ME UPMICHAEL BRUN REMIX","count":1},{"value":"DRIVETOPIC VIP REMIX","count":1},{"value":"GETTIN' JIGGY WIT ITPRAIA DEL SOL REMIX","count":1},{"value":"IF I LOSE MYSELF","count":1},{"value":"SHE DON'T LIKE THE LIGHTSACOUSTIC","count":1},{"value":"LET ME LOVE YOUMARSHMELLO REMIX","count":1},{"value":"LOVE YOURSELFTHE DJ MIKE D REMIX","count":1},{"value":"The Fighter feat. Ryan Tedder","count":1},{"value":"Burn Slow","count":1},{"value":"Welcome To New York Karaoke Version","count":1},{"value":"BLEU CLAIR","count":1},{"value":"DIAMOND","count":1},{"value":"Dirim Dim Dom","count":1},{"value":"What Do You Mean (Delirious & Alex K Mix)","count":1},{"value":"USE SOMEBODY","count":1},{"value":"PLAYTIME","count":1},{"value":"HOW'S IT FEEL","count":1},{"value":"Tracks Under One Cent","count":1},{"value":"The Apple of My Eye - Live","count":1},{"value":"ROBIN HOOD~DESTINY","count":1},{"value":"ROBIN HOOD - SIEGE","count":1},{"value":"APURANDO POCO A POCO","count":1},{"value":"MAGNETS","count":1},{"value":"messier","count":1},{"value":"APOLOGIZE","count":1},{"value":"COZ I LOVE YOU","count":1},{"value":"Black Suits Comin' (Rock Version) [Instrumental Version]","count":1},{"value":"Bugs Will Bite","count":1},{"value":"Swann Todd","count":1},{"value":"Leonids","count":1},{"value":"CHANDRAHAS","count":1},{"value":"PANGEA","count":1},{"value":"Mother Nature's Spies","count":1},{"value":"Song of Departure","count":1},{"value":"CINQUEDEA","count":1},{"value":"PICKAXE","count":1},{"value":"Monk's Utterance","count":1},{"value":"HOMEBASE","count":1},{"value":"Back for More (TXT Ver.)","count":1},{"value":"ARMANDO A LLAMADA","count":1},{"value":"PARADISE BY THE DASHBOARD LIGHT","count":1},{"value":"Dead Ringer For Love","count":1},{"value":"Just Like Fire Would","count":1},{"value":"FIRE","count":1},{"value":"BALLERINA RADIO ALBUM VERSION","count":1},{"value":"10 000 HOURS","count":1},{"value":"Pray","count":1},{"value":"2STEPN","count":1},{"value":"ATTENTION PLEASE","count":1},{"value":"BACK TWO THEME THEME CLOSING","count":1},{"value":"I WANT EVERYTHING","count":1},{"value":"STRIKE","count":1},{"value":"WE LIKE TO ROCK","count":1},{"value":"SECOND HAND NEWS","count":1},{"value":"TRUST YOU","count":1},{"value":"WHEN YOUR LOVER HAS GONE","count":1},{"value":"BALLAD OF THE DYING MAN","count":1},{"value":"WEE B DOOIN IT","count":1},{"value":"Fever","count":1},{"value":"To Be With You","count":1},{"value":"You Are The Reason?(John Gibbons Remix)","count":1},{"value":"No Angel","count":1},{"value":"Is There Something I Should Know? (2004 Digital Remaster)","count":1},{"value":"JIM KIMO WEST","count":1},{"value":"THE FEEL GOOD VIBE","count":1},{"value":"You're the Best Thing About Me","count":1},{"value":"Loving Kind (Live)","count":1},{"value":"Underway","count":1},{"value":"CURTIS MAYFIELD","count":1},{"value":"Song 4 Mutya (Out of Control)","count":1},{"value":"Not Over You","count":1},{"value":"You Were Loved","count":1},{"value":"by my side (dream edit)","count":1},{"value":"SANTA CLAUS IS COMING TO TOWN","count":1},{"value":"Love Me","count":1},{"value":"Someday At Christmas","count":1},{"value":"Trust","count":1},{"value":"Turn To You ((Mother's Day Dedication))","count":1},{"value":"someday at christmas","count":1},{"value":"Lonely","count":1},{"value":"What Do You Mean?","count":1},{"value":"LET ME SHOW YOU","count":1},{"value":"Good On You(MOTi Remix)","count":1},{"value":"New Song","count":1},{"value":"Wellerman (Sea Shanty)","count":1},{"value":"Wellerman (Sea Shanty / 220 KID x Billen Ted Remix)","count":1},{"value":"Start Again","count":1},{"value":"Rescue Me (Acoustic)","count":1},{"value":"Rescue Me (BUNT. Remix)","count":1},{"value":"Stop And Stare (Album Version)","count":1},{"value":"Take It Out On Me","count":1},{"value":"The Less I Know","count":1},{"value":"Wanted (String Mix)","count":1},{"value":"Sunshine (Acoustic Version)","count":1},{"value":"Wanted (TT Spry Remix)","count":1},{"value":"MADONNA","count":1},{"value":"The Carrot","count":1},{"value":"GIMME","count":1},{"value":"PRAY","count":1},{"value":"Too Good At Goodbyes (Galantis Remix)","count":1},{"value":"Who We Love","count":1},{"value":"I Got 5 On It","count":1},{"value":"American Made","count":1},{"value":"Silent All These Years (LP Version)","count":1},{"value":"Snow Angel","count":1},{"value":"Theme From Sunflower (Live)","count":1},{"value":"Never Be The Same","count":1},{"value":"Unspoken","count":1},{"value":"X","count":1},{"value":"Come Un Pittore","count":1},{"value":"THE SICK NOTE","count":1},{"value":"If I Lose Summertime (Thomas Rush Remix)","count":1},{"value":"NEVER BECOME EMOTIONALLY ATTATCHED TO MAN, WOMAN, BEAST OR CHILD","count":1},{"value":"YOU AND I BOTH","count":1},{"value":"AU REVOIR","count":1},{"value":"NOBODY (FROM KAIJU NO. 8)","count":1},{"value":"PUGSLEY FAILS \"MY FAMILY\" MAZURKA","count":1},{"value":"SOMEONE TO SAVE YOU","count":1},{"value":"A LITTLE BIT OF SUNSHINE","count":1},{"value":"SECOND EMOTION","count":1},{"value":"THE CHRISTMAS SONG (CHESTNUTS ROASTING ON AN OPEN FIRE)","count":1},{"value":"Warrior","count":1},{"value":"RUNNING AND READING","count":1},{"value":"GONNA BE ALRIGHT","count":1},{"value":"MUSIC SOUNDS BETTER WITH U","count":1},{"value":"WITHOUT YOU","count":1},{"value":"ASHES TO ASHES","count":1},{"value":"I'M BEGINNING TO SEE THE LIGHT","count":1},{"value":"Chi Chi","count":1},{"value":"DON'T LEAVE","count":1},{"value":"GULAGUAJIRA I THE DISSOLUTE PRISONER","count":1},{"value":"PIPE DOWN","count":1},{"value":"RETURN TO NOW","count":1},{"value":"TINSELTOWN IN THE RAIN","count":1},{"value":"The Get Down","count":1},{"value":"YOSHI'S HIGHWAY","count":1},{"value":"THE WAY I FEEL","count":1},{"value":"LONELY SOUL","count":1},{"value":"THE BRAVE","count":1},{"value":"CHEAPER BY THE DOZEN 2 (CUES)","count":1},{"value":"HILLBILLY HOLLA","count":1},{"value":"HOW WE ROLL THEME OPENING","count":1},{"value":"LIKE ME","count":1},{"value":"MONEY GRABBER","count":1},{"value":"BEETHOVENS 5 SECRETS","count":1},{"value":"JOIN HANDS","count":1},{"value":"TICKING BOMB","count":1},{"value":"MUSIC SOUNDS BETTER","count":1},{"value":"TELL HIM","count":1},{"value":"USED TO BE","count":1},{"value":"BLACK LEATHER","count":1},{"value":"CATCHER IN THE RYE","count":1},{"value":"LIVE WIRE (KICK ASS 91 REMIX)","count":1},{"value":"Wurlitzer - Fleetwood Mac","count":1},{"value":"PRAYERS FOR THE DAMNED","count":1},{"value":"HYPNOTIZE","count":1},{"value":"WE TAKE CARE OF OUR OWN","count":1},{"value":"RING MY BELL","count":1},{"value":"ROCKETEER FT. (RYAN TEDDER)","count":1},{"value":"DOING IT FOR THE MONEY","count":1},{"value":"GENTLE ON MY MIND","count":1},{"value":"YOUR TIME HAS COME","count":1},{"value":"SOMEDAYS","count":1},{"value":"FACTORY LOVE","count":1},{"value":"GO AS A DREAM","count":1},{"value":"COOL AS A FIRE","count":1},{"value":"BUT I DO","count":1},{"value":"LATCH (LIVE FROM MADISON SQUARE GARDEN)","count":1},{"value":"I DO","count":1},{"value":"DEAD FLOWERS  (LIVE)","count":1},{"value":"MAMA KIN  (LIVE)","count":1},{"value":"LADYSHAVE","count":1},{"value":"FORGET ME NOT ? [INSTRUMENTAL]","count":1},{"value":"DON'T STOP","count":1},{"value":"BRING IT ON HOME","count":1},{"value":"BLIND AS A BAT","count":1},{"value":"CHICKS = TROUBLE","count":1},{"value":"WHILE IM STILL HERE","count":1},{"value":"THE COUNTEROFFENSIVE","count":1},{"value":"REVOLUTION","count":1},{"value":"TOO GOOD AT GOODBYES","count":1},{"value":"LIKE I CAN (RADIO MIX)","count":1},{"value":"MIDNIGHT TRAIN","count":1},{"value":"NO PEACE","count":1},{"value":"THE WOLF IS GETTING MARRIED","count":1},{"value":"GHOSTS ARE GONE","count":1},{"value":"MOONLIGHT (A VAMPIRE'S DREAM)","count":1},{"value":"DUMPLING (TODDLA T REMIX)","count":1},{"value":"WU-TANG CLAN AIN'T NOTHING TA F**K WIT","count":1},{"value":"MAXIMUM FIREPOWER","count":1},{"value":"PRECIOUS THINGS (LIVE 1991)","count":1},{"value":"HERE, IN MY HEAD","count":1},{"value":"THROW ME A TEXT","count":1},{"value":"DON'T RUSH","count":1},{"value":"SHINE","count":1},{"value":"SUNFLOWER SEEDS","count":1},{"value":"THE FALL","count":1},{"value":"CAROLINE SHUT UP","count":1},{"value":"OPINION (FEAT. TOM MORELLO)","count":1},{"value":"CIVIL WAR","count":1},{"value":"YESTERDAYS (LIVE)","count":1},{"value":"ESTRANGED (LIVE)","count":1},{"value":"ATTITUDE  (LIVE)","count":1},{"value":"MY NUMBER 1 (RADIO EDIT)","count":1},{"value":"LA LA LA LA (MEANS I LOVE YOU)","count":1},{"value":"TARANTA","count":1},{"value":"READ 'EM AND WEEP","count":1},{"value":"IF YOU REALLY WANT TO","count":1},{"value":"LIFE IS A LEMON AND I WANT MY MONEY BACK (LIVE)","count":1},{"value":"OBJECTS IN THE REAR VIEW MIRROR MAY APPEAR CLOSER THEN THEY ARE","count":1},{"value":"DON'T LEAVE YOUR MARK ON ME","count":1},{"value":"BAD FOR GOOD","count":1},{"value":"GODZ","count":1},{"value":"FAKE","count":1},{"value":"LIVING GRAVY","count":1},{"value":"STRENGTH IN NUMBERS","count":1},{"value":"WIN MY TRAIN FARE HOME (IF I EVER GET LUCKY)","count":1},{"value":"ONE LAST SONG","count":1},{"value":"PROBLEM (SOLVED)","count":1},{"value":"OUTTA SPACE","count":1},{"value":"HOLY, IVY AND ROSE","count":1},{"value":"THANK YOU (LIVE)","count":1},{"value":"FEED MY FRANKENSTEIN","count":1},{"value":"NO BROKEN HEARTS (FEAT. NICKI MINAJ)","count":1},{"value":"LIFE GOES ON","count":1},{"value":"MAKE YOUR MIND UP","count":1},{"value":"CAN'T WAIT TO BE WITH YOU (LP VERSION)","count":1},{"value":"CAUGHT IN THE MIDDLE (LOVE AND LIFE)","count":1},{"value":"BREAKIN' THE CHAINS OF LOVE","count":1},{"value":"DREAMS (LIVE)","count":1},{"value":"ROSIE","count":1},{"value":"SAD TO KNOW (YOU'RE LEAVING)","count":1},{"value":"ASO","count":1},{"value":"GOING DOWNTOWN","count":1},{"value":"HARD DRUGS","count":1},{"value":"SHOULD I","count":1},{"value":"NOVEMBER RAIN (LIVE)","count":1},{"value":"FACE MY FEARS (ENGLISH VERSION)","count":1},{"value":"REACH OUT","count":1},{"value":"BECOMING MORE LIKE GOD","count":1},{"value":"KENNER (LIVE)","count":1},{"value":"BLUE","count":1},{"value":"TOWERS","count":1},{"value":"TED LASSO THEME","count":1},{"value":"ALL REVVED UP WITH NO PLACE TO GO (LIVE)","count":1},{"value":"BAD ATTITUDE","count":1},{"value":"IF IT RAINS","count":1},{"value":"WHERE THE RUBBER MEETS THE ROAD","count":1},{"value":"TRAIN OF LOVE","count":1},{"value":"LOVING YOU IS A DIRTY JOB (BUT SOMEBODY'S GOTTA DO IT)","count":1},{"value":"EXCUSES (KIA LOVE REMIX)","count":1},{"value":"NO SHELTER","count":1},{"value":"FUCK THA POLICE","count":1},{"value":"LAY ME DOWN (POMO REMIX)","count":1},{"value":"LAY ME DOWN (TODD EDWARDS DUB)","count":1},{"value":"I'M NOT THE ONLY ONE","count":1},{"value":"SWEET CHILD O' MINE/SUBWAY RIDE","count":1},{"value":"TWISTED","count":1},{"value":"TOUCH DOWN (REMIX)","count":1},{"value":"DUMPLING [REMIX] (REMIX)","count":1},{"value":"LEAF WRAPS","count":1},{"value":"WATER BABY","count":1},{"value":"LET FREEDOM RING","count":1},{"value":"THE LIGHTS ARE ON IN SPIDERTOWN","count":1},{"value":"UNTIL THE END","count":1},{"value":"PLAYBOY MOMMY","count":1},{"value":"UPSIDE DOWN (LIVE)","count":1},{"value":"THE POOL","count":1},{"value":"ALADDIN","count":1},{"value":"NO MICKEY MOUSE TING","count":1},{"value":"WHERE ANGELS SING","count":1},{"value":"GORGEOUS","count":1},{"value":"I GOT A FEELING","count":1},{"value":"I WILL FIGHT TO BE WITH YOU (FEAT. MART","count":1},{"value":"Girls & Boys","count":1},{"value":"Come Together","count":1},{"value":"SOUND INTENSE CITY (DECIBEL ANTHEM 2011)","count":1},{"value":"SUGAR SNAP","count":1},{"value":"LIGHTNESS","count":1},{"value":"HOLD OUT FOR LOVE","count":1},{"value":"Lights Of Home","count":1},{"value":"Say It All","count":1},{"value":"Joy of Life Main version","count":1},{"value":"WNDRLND","count":1},{"value":"Day We Met (Betonkust Remix)","count":1},{"value":"Waymo","count":1},{"value":"Take You Places","count":1},{"value":"TELL ME BOY","count":1},{"value":"LUST TAKES TIME","count":1},{"value":"SHE IS SEVENTEEN","count":1},{"value":"FAITH TO CLAY","count":1},{"value":"THERE S NO YOU","count":1},{"value":"END OF THE WORLD","count":1},{"value":"ERASE YOU","count":1},{"value":"BETTER DAYS - GIORNI MIGLIORI (FEAT. NEGRAMARO) -ALBUM VERSION","count":1},{"value":"Apologize _Feat Onerepublic","count":1}],"Original Track Artist":[{"value":"MEAT LOAF","count":19},{"value":"ONEREPUBLIC","count":12},{"value":"MARC STREITENFELD","count":11},{"value":"GUNS N' ROSES","count":11},{"value":"THE CUTLER","count":10},{"value":"Fila Brazillia","count":9},{"value":"ERIKA FECOVA","count":9},{"value":"CARINA DIANNE ROUND-DANIEL BURNS-WILLIAM JON MOHLER","count":8},{"value":"TOM MORELLO: THE NIGHTWATCHMAN","count":8},{"value":"FILA BRAZILLIA","count":7},{"value":"OneRepublic","count":7},{"value":"Justin Bieber","count":7},{"value":"GREGORY ISAACS","count":7},{"value":"SAM SMITH","count":7},{"value":"TORI AMOS","count":7},{"value":"","count":6},{"value":"Fragile State","count":6},{"value":"NO DATA PROVIDED","count":5},{"value":"HONNE","count":5},{"value":"DURAN DURAN","count":4},{"value":"MICHAEL FITZPATRICK-P MICKEY","count":4},{"value":"ELLA FITZGERALD","count":4},{"value":"ROSIE THOMAS","count":4},{"value":"PROPHETS OF RAGE","count":4},{"value":"BRYCE VINE","count":4},{"value":"YOUNG T & BUGSEY","count":4},{"value":"VELVET REVOLVER","count":3},{"value":"Various Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","count":3},{"value":"Fleetwood Mac","count":3},{"value":"ANTONINA ARMATO-TIMOTHY JAMES PRICE","count":3},{"value":"DJ JAZZY JEFF & THE FRESH PRINCE","count":3},{"value":"Sam Smith","count":3},{"value":"Welshly Arms","count":3},{"value":"MÖTLEY CRÜE","count":3},{"value":"AUDIOSLAVE","count":3},{"value":"IRONIC","count":3},{"value":"GAD WHIP","count":2},{"value":"RAGLANS","count":2},{"value":"TERAKAFT","count":2},{"value":"GREGSON HARRY-MARK STEITENFELD","count":2},{"value":"JUSTIN BIEBER","count":2},{"value":"SINEAD O'CONNOR","count":2},{"value":"Guns N' Roses","count":2},{"value":"ONEREPUBLIC FT.SARA BAREILLES","count":2},{"value":"NUTTY SLACK","count":2},{"value":"CHUCK GORMAN-MARK STEITENFELD-MARTIN TILLMAN","count":2},{"value":"BIEBER, JUSTIN","count":2},{"value":"Beyonc","count":2},{"value":"CORDON","count":2},{"value":"BRUCE SPRINGSTEEN","count":2},{"value":"RYAN BENJAMIN TEDDER","count":2},{"value":"Photay feat. Madison McFerrin","count":2},{"value":"PLAN B","count":2},{"value":"Tori Amos","count":2},{"value":"DREW BROWN","count":2},{"value":"SHAYNE WARD","count":2},{"value":"KANDI BURRUSS","count":2},{"value":"FIVE STAR","count":2},{"value":"BLAKE LEWIS","count":2},{"value":"ROBERT PLANT","count":2},{"value":"DIRTY THRILLS","count":2},{"value":"HOWIE DAY","count":2},{"value":"CAROLINE POLACHEK","count":2},{"value":"CHAIRLIFT","count":2},{"value":"JON BATISTE","count":2},{"value":"STEVIE NICKS","count":2},{"value":"MALA RODRÍGUEZ FT. STYLO G","count":2},{"value":"RAGE AGAINST THE MACHINE","count":2},{"value":"UNALLOCATED","count":2},{"value":"LE GRAND, FEDDE","count":2},{"value":"MATTHEWS, ERIC","count":2},{"value":"DAY OLD JOHNSON","count":1},{"value":"PIXIE GELDOF","count":1},{"value":"Drowning Pool (214253)","count":1},{"value":"Harry Deborah Ann (12766), Blondie (11296), Bozewski Clement Anthony (433359), Stein Christopher (433384), Fradley Ken (431078), Dulfer Candy (127588), Destri Jimmy (141027)","count":1},{"value":"Harry Deborah Ann (12766), Pagano Frank (433518), Aaron Robert (299119), Blondie (11296), Bozewski Clement Anthony (433359), Stein Christopher (433384), Leon Webb Cassell (432363), Fradley Ken (431078), Dulfer Candy (127588), Destri Jimmy (141027)","count":1},{"value":"RYAN BENJAMIN TEDDER-SEAN PAUL (US 3)-STORLEER ERIKSEN MIKKEL-TOR ERIK HERMANSEN","count":1},{"value":"MARY COUGHLAN","count":1},{"value":"IBRAHIM DJO EXPERIENCE","count":1},{"value":"SOLID DOCTOR","count":1},{"value":"TINARIWEN","count":1},{"value":"JAPANIC","count":1},{"value":"JUSTIN ADAMS FEATURING JULDEH CAMARA","count":1},{"value":"DUKE SPECIAL","count":1},{"value":"REDEYES","count":1},{"value":"THE SIX SWINGERS","count":1},{"value":"LITTLE RICHARD","count":1},{"value":"THE FORTUNES","count":1},{"value":"BAD POP","count":1},{"value":"ISAACS, GREGORY","count":1},{"value":"TRANSGLOBAL UNDERGROUND","count":1},{"value":"Alexander Schroer","count":1},{"value":"JUSTIN BIEBER-SYMERE WOODS","count":1},{"value":"SLADY","count":1},{"value":"GREGORY ANTHONY ISAACS","count":1},{"value":"TAYLOR SWIFT","count":1},{"value":"THE COLLECTIVE","count":1},{"value":"Holly Humberstone feat. d4vd","count":1},{"value":"Honne","count":1},{"value":"Joan Baez","count":1},{"value":"Various Artists, OneRepublic, Alesso, Avicii, Afrojack, Wrabel, Bastille, Lady Gaga, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Zedd, Matthew Koma, Miriam Bryant, Chase & Status, Moko, Klangkarussell, 3LAU, Bright Lights, Sam Smith","count":1},{"value":"Ebhoni","count":1},{"value":"Tax","count":1},{"value":"ROBBIE ROBERTSON","count":1},{"value":"CHRISTINE AND THE QUEENS, CAROLINE POLACHEK","count":1},{"value":"Ella Fitzgerald","count":1},{"value":"ETUDE NO. 5 IN G-FLAT MAJOR, `BLACK KEY' [HD]","count":1},{"value":"JUSTIN ADAMS & JULDEH CAMARA","count":1},{"value":"CLASH","count":1},{"value":"MOTLEY CRUE","count":1},{"value":"OSCAR PETERSON","count":1},{"value":"Miles Davis","count":1},{"value":"Kevin Gates","count":1},{"value":"The Dubliners","count":1},{"value":"BENITO MERLINO","count":1},{"value":"VINCE GILL & LITTLE BIG TOWN","count":1},{"value":"BLUES BROTHERS","count":1},{"value":"SPRINGSTEEN, BRUCE","count":1},{"value":"MAYS, LYLE","count":1},{"value":"VANWARMER, RANDY","count":1},{"value":"ZIGGY MARLEY & CEDELLA MARLEY","count":1},{"value":"ALOE BLACC-ANDREW DEROBERTS-DESTIN ROUTE-ESTHER RENAY DEAN-JOEL MICHAEL ROUSSEAU-KYLE BRYANT WILLIAMS-RYAN BENJAMIN TEDDER-SHANE L MC ANALLY-SOUNDPAKT-ZACHARY PHILIP SKELTON","count":1},{"value":"DES ROCS","count":1},{"value":"JAMES MERCY & MIA VAILE","count":1},{"value":"ALEX NYE-MARK STEITENFELD","count":1},{"value":"LADY GAGA","count":1},{"value":"CLEAN BANDIT & TOPIC & WES NELSON","count":1},{"value":"SMITH, WILL","count":1},{"value":"TIESTO & ALESSO & ONE REPUBLIC","count":1},{"value":"DJ SNAKE & JUSTIN BIEBER","count":1},{"value":"Gym Class Heroes","count":1},{"value":"Jaira Burns","count":1},{"value":"Taylor Swift","count":1},{"value":"MATRODA","count":1},{"value":"KLINT","count":1},{"value":"CAPOEIRA SENZALA DE SANTOS","count":1},{"value":"CALEB FOLLOWILL-IVAN FOLLOWILL-MATTHEW FOLLOWILL-MICHAEL FOLLOWILL","count":1},{"value":"KHALIL / JUSTIN BIEBER","count":1},{"value":"DAUGHTERS OF BLUEGRASS","count":1},{"value":"Tracks Under One Cent","count":1},{"value":"Damien Dempsey","count":1},{"value":"ANSINA","count":1},{"value":"WAYLAYERS","count":1},{"value":"Tate McRae","count":1},{"value":"ONEREPUBLIC VS. RUDEEJAY & DA BROZZ","count":1},{"value":"THE WONDER STUFF","count":1},{"value":"Smith, Will","count":1},{"value":"MANDRILLUS SPHYNX","count":1},{"value":"TOMORROW X TOGETHER","count":1},{"value":"CUAREIM","count":1},{"value":"MEDUZA/LEONY/ONEREPUBLIC","count":1},{"value":"KINGS OF LEON","count":1},{"value":"DAN SHAY,JUSTIN BIEBER","count":1},{"value":"CODY TAYLOR DICKINSON-LUTHER ANDREWS DICKINSON-MICHAEL FITZPATRICK-P MICKEY","count":1},{"value":"BRANDI NICHOLE FLORES-DENISE LISA MARIA SANEINIA-RYAN BENJAMIN TEDDER","count":1},{"value":"LINDSEY A BUCKINGHAM / LINDSEY A BUCKINGHAM","count":1},{"value":"ROB THOMAS-RYAN BENJAMIN TEDDER","count":1},{"value":"J TILLMAN","count":1},{"value":"Bobby McFerrin , Siedah Garrett , ELLA FITZGERALD , QUINCY JONES , TAKE 6 , AL JARREAU","count":1},{"value":"Calum Scott","count":1},{"value":"Charli Xcx","count":1},{"value":"ESPANIOLO","count":1},{"value":"FEEL GOOD PRODUCTIONS","count":1},{"value":"FM","count":1},{"value":"GIVE ME YOUR LOVE","count":1},{"value":"GROOVE ARMADA","count":1},{"value":"Gavin DeGraw","count":1},{"value":"Gryffin with OneRepublic","count":1},{"value":"HONNE(혼네)","count":1},{"value":"JUSTIN BIEBER(저스틴 비버)","count":1},{"value":"Justin Bieber (저스틴 비버), Benny Blanco","count":1},{"value":"Justin Bieber?(Justin Drew Bieber)","count":1},{"value":"K KLASS","count":1},{"value":"Krewella,Nucleya,MOTi","count":1},{"value":"Maggie Rogers, Del Water Gap","count":1},{"value":"Nathan Evans","count":1},{"value":"Nathan Evans,220 Kid,Billen Ted","count":1},{"value":"One Republic Feat. Logic","count":1},{"value":"OneRepublic(원리퍼블릭)","count":1},{"value":"OneRepublic/TT Spry","count":1},{"value":"RAY OF LIGHT","count":1},{"value":"Rae Morris","count":1},{"value":"SAM SMITH, KOFFEE, JESSIE REYEZ","count":1},{"value":"Sultan & Shepard","count":1},{"value":"The Fallen State","count":1},{"value":"Vladimir & Anton Jablokov","count":1},{"value":"MODA'","count":1},{"value":"DUBLINERS","count":1},{"value":"OneRepublic x Lana Del Rey","count":1},{"value":"THE BRIAN JONESTOWN MASSACRE","count":1},{"value":"DAY OLD JOHNSON-IAN SHERIDEN-TOCA RIVERA","count":1},{"value":"ANTONINA ARMATO-DEFCON-VIC MIZZY","count":1},{"value":"JACQUES WEBSTER-JUSTIN BIEBER","count":1},{"value":"JUSTIN BIEBER-USHER (US)","count":1},{"value":"Mark with a K & Robert Falcon","count":1},{"value":"WILL SMITH","count":1},{"value":"US Tax Withheld","count":1},{"value":"MANN/BIG TIME RUSH","count":1},{"value":"HANS ZIMMER","count":1},{"value":"Trey Songz & Chris Brown","count":1},{"value":"FAITHLESS","count":1},{"value":"LES TRIABOLIQUES","count":1},{"value":"Mikayla Simpson","count":1},{"value":"DRAKE","count":1},{"value":"Ryan Tedder","count":1},{"value":"ANDREA CORR","count":1},{"value":"#SCONOSCIUTO (1)","count":1},{"value":"SUBJECTIVE","count":1},{"value":"CODY TAYLOR DICKINSON-MICHAEL FITZPATRICK-P MICKEY","count":1},{"value":"ADAM PAUL SCHMALHOLZ-ANTONINA ARMATO-DEFCON-JONATHAN L VELLA-TAS","count":1},{"value":"ANDREW BROWN-BRENT KUTZLE-EDDIE FISHER-RYAN BENJAMIN TEDDER-ZACHARY DOUGLAS FILKINS","count":1},{"value":"BIG C (GB)-JONATHAN WHITE-SIMBA (GB)-THE HOURS-TIMOTHY JOHN HUTTON","count":1},{"value":"ADAM PAUL SCHMALHOLZ-ALOE BLACC-ANTONINA ARMATO-DEFCON","count":1},{"value":"ALAIN EMMANUEL QUEME-BENJAMIN G COHEN-BIG TIME RUSH-BRENT KUTZLE-BUGATTI DOMINIC-DAFT PUNK-ERIC A BELLINGER-FRANK MUSKER-JAMES MASLOW-KENDALL FRANCIS SCHMIDT-LOGAN HENDERSON-MICHAEL CAREN-NOEL P ZANCA","count":1},{"value":"JONAS BROTHERS","count":1},{"value":"GUNS `N` ROSES","count":1},{"value":"LINDSEY BUCKINGHAM","count":1},{"value":"SIXX A.M","count":1},{"value":"DJ JAZZY JEFF","count":1},{"value":"FAR EAST MOVEMENT","count":1},{"value":"FOSTER THE PEOPLE","count":1},{"value":"JOHNNY CASH__WITH__GLEN CAMPBELL","count":1},{"value":"CLARENCE \"FROGMAN\" HENRY","count":1},{"value":"DISCLOSURE FEAT. SAM SMITH","count":1},{"value":"GUSGUS","count":1},{"value":"LINDSEY BUCKINGHAM | LITTLE BIG TOWN","count":1},{"value":"NINE INCH NAILS","count":1},{"value":"ROYAL DELUXE","count":1},{"value":"SAM SMITH FEAT. YEBBA","count":1},{"value":"STYLO G FEAT. JAY1 & SEAN PAUL","count":1},{"value":"TOM MORELLO, CHAD SMITH & WU-TANG CLAN","count":1},{"value":"YOUNG T & BUGSEY FEAT. DADJU","count":1},{"value":"BIRDY","count":1},{"value":"DEVICE FEAT. TOM MORELLO","count":1},{"value":"GYPTIAN | STYLO G","count":1},{"value":"HRVY FEAT. STYLO G","count":1},{"value":"LUDOVICO EINAUDI","count":1},{"value":"NOT3S FEAT. YOUNG T & BUGSEY","count":1},{"value":"SBTRKT FEAT. JESSIE WARE","count":1},{"value":"STYLO G & BUSTA RHYMES","count":1},{"value":"ALICE COOPER","count":1},{"value":"BEBE REXHA","count":1},{"value":"FITZ  AND  THE TANTRUMS","count":1},{"value":"FLEETWOOD MAC","count":1},{"value":"HIKARU UTADA & SKRILLEX","count":1},{"value":"HILLARY DUFF","count":1},{"value":"JAH WOBBLE'S INVADERS OF THE HEART","count":1},{"value":"KAMAL","count":1},{"value":"LITTLE MIX","count":1},{"value":"MARCUS MUMFORD & TOM HOWE","count":1},{"value":"MEAT LOAF FT. STACY MICHELLE","count":1},{"value":"OLLY MURS","count":1},{"value":"SHERYL CROW","count":1},{"value":"STEVIE NICKS & LINDSEY BUCKINGHAM","count":1},{"value":"STYLO G & THE FANATIX FEAT. NICKI MINAJ & VYBZ KARTEL","count":1},{"value":"STYLO G FT. SEAN PAUL & SPICE","count":1},{"value":"THE HOMIES FEAT. JACK HARLOW","count":1},{"value":"TOM MISCH FEAT. LOYLE CARNER","count":1},{"value":"WILLARD CAROLL SMITH","count":1},{"value":"SAINT JHN","count":1},{"value":"THE BLACK EYED PEAS","count":1},{"value":"Viagra Boys","count":1},{"value":"Shannon Lay","count":1},{"value":"DJ ZANY","count":1},{"value":"TORA","count":1},{"value":"DEAD TIMES","count":1},{"value":"KING, CAROLE","count":1},{"value":"U2","count":1},{"value":"Liam Payne","count":1},{"value":"Graham Donald Harry Preskett","count":1},{"value":"BIMINI, Britt Lari","count":1},{"value":"Fatima Yamaha","count":1},{"value":"HoneyLuv-Aluna","count":1},{"value":"SIDEPIECE & Westend","count":1},{"value":"2 ELEMENTS","count":1},{"value":"AVI BUFFALO","count":1},{"value":"MIMI WEBB","count":1},{"value":"ERMANNO CARLA'/ANDREA ANTONIO DE ROCCO/GIULIANO SANGIORGI/EMANUELE SPEDICATO/DANILO TASCO","count":1},{"value":"Timbaland","count":1}],"Original ISRC":[{"value":"ABRAMUSEVERYTHINGAREASONCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","count":5},{"value":"SOUNDEXCHANGEROBINHOODAMBUSHMARCSTREITENFELD","count":4},{"value":"ROSIETHOMASTHEONEILOVE(undefined)","count":4},{"value":"ABRAMUSDOYOUCARINADIANNEROUNDDANIELBURNSWILLIAMJONMOHLER","count":3},{"value":"AIEWISHYOUWEREHERELIVEVELVETREVOLVER","count":3},{"value":"PPLSudhaKheterpalNODATAPROVIDED","count":3},{"value":"GVL5kRunningMixVariousArtists,OneRepublic,Alesso,Avicii,Bastille,EllieGoulding,LucasNord,ToveLo,OttoKnows,Klangkarussell,SamSmith","count":3},{"value":"SOUNDEXCHANGESTILETTOTHECUTLER","count":3},{"value":"GBMRG0700005","count":3},{"value":"SOUNDEXCHANGENUTTYSLACKFILABRAZILLIA","count":3},{"value":"SOUNDEXCHANGEROBINHOODGODFREYMARCSTREITENFELD","count":3},{"value":"EJITINYDANCER(HOLDMECLOSER)(FEATELTONJOHN)IRONIC","count":3},{"value":"ERIKAFECOVAALWAYSLOVINGYOU(undefined)","count":3},{"value":"ERIKAFECOVACHANGEFORME(undefined)","count":3},{"value":"PPLPayTrevorGADWHIP","count":2},{"value":"HUZIPCOMEHOMEONEREPUBLICFTSARABAREILLES","count":2},{"value":"SXTWENTYTHREERECORDSLTDFILABRAZILLIA","count":2},{"value":"ABRAMUSSWEETBREADSCHUCKGORMANMARKSTEITENFELDMARTINTILLMAN","count":2},{"value":"ABRAMUSMYFAMILY","count":2},{"value":"GBEEF0100067","count":2},{"value":"SOUNDEXCHANGETEACHYOURSELFBRAILLETHECUTLER","count":2},{"value":"USSM10900876","count":2},{"value":"SOUNDEXCHANGEROBINHOODTHELEGENDBEGINSMARCSTREITENFELD","count":2},{"value":"SOUNDEXCHANGECANDOMBELENTOCORDON","count":2},{"value":"GBEEF0100085","count":2},{"value":"SOUNDEXCHANGESCIMITARTHECUTLER","count":2},{"value":"GBMRG0700002","count":2},{"value":"PROPHONOutreLuxPhotayfeatMadisonMcFerrin","count":2},{"value":"PPLPITYTHEPLIGHTPLANB","count":2},{"value":"USUM70758798","count":2},{"value":"SOUNDEXCHANGESWEETTHINGDREWBROWN","count":2},{"value":"AIEMEUKANDIBURRUSS","count":2},{"value":"AIESYSTEMADDICT1FIVESTAR","count":2},{"value":"AIENOONEELSETOBLAMEHOWIEDAY","count":2},{"value":"EJIPROPHETSOFRAGEPROPHETSOFRAGE","count":2},{"value":"EJIFEARONEREPUBLIC","count":2},{"value":"EJIMARCHINONONEREPUBLIC","count":2},{"value":"EJINOVEMBERRAINGUNSN'ROSES","count":2},{"value":"EJIDAY1HONNE","count":2},{"value":"EJIWARMONACHRISTMASNIGHTHONNE","count":2},{"value":"EJIFORCRYINGOUTLOUD(LIVE)MEATLOAF","count":2},{"value":"EJITHISLANDISYOURLANDTOMMORELLOTHENIGHTWATCHMAN","count":2},{"value":"EJIWHATEVERITTAKESTOMMORELLOTHENIGHTWATCHMAN","count":2},{"value":"EJICONTIGOMALARODRGUEZFTSTYLOG","count":2},{"value":"EJIGREENLIGHTYOUNGTBUGSEY","count":2},{"value":"EJIUNALLOCATEDUNALLOCATED","count":2},{"value":"ERIKAFECOVAIT'SLOVE(undefined)","count":2},{"value":"GBHAD0600311","count":2},{"value":"ABRAMUSIDONTMISSYOUDAYOLDJOHNSON","count":1},{"value":"PPLWOMANGOWILDPIXIEGELDOF","count":1},{"value":"PPLMOTHERNATURESSPIESFILABRAZILLIA","count":1},{"value":"INTERBodiesDrowningPool(214253)","count":1},{"value":"INTERDivineHarryDeborahAnn(12766),Blondie(11296),BozewskiClementAnthony(433359),SteinChristopher(433384),FradleyKen(431078),DulferCandy(127588),DestriJimmy(141027)","count":1},{"value":"INTERDoubleTakeHarryDeborahAnn(12766),PaganoFrank(433518),AaronRobert(299119),Blondie(11296),BozewskiClementAnthony(433359),SteinChristopher(433384),LeonWebbCassell(432363),FradleyKen(431078),DulferCandy(127588),DestriJimmy(141027)","count":1},{"value":"ABRAMUSIT'SGOIN'DOWN","count":1},{"value":"ABRAMUSGOT2LUVYARYANBENJAMINTEDDERSEANPAUL(US3)STORLEERERIKSENMIKKELTORERIKHERMANSEN","count":1},{"value":"IEAAR9400102","count":1},{"value":"GBQRF1247091","count":1},{"value":"GBEEF0100081","count":1},{"value":"PPLRAGLANSLADYROLLBACKTHEYEAR","count":1},{"value":"PPLFILABRAZILLIANATUREBOY","count":1},{"value":"PPLSOLIDDOCTORLIGHTSONTHEVIBE","count":1},{"value":"USWR40708412","count":1},{"value":"FR9W10000492","count":1},{"value":"PPLJAPANICWESTALABAMA","count":1},{"value":"USWR40707607","count":1},{"value":"GBGRJ1341531","count":1},{"value":"USWR40708408","count":1},{"value":"PPLDUKESPECIALELEPHANT'SGRAVEYARD","count":1},{"value":"PPLREDEYESARMSOVERJORDAN","count":1},{"value":"GBN8H1207834","count":1},{"value":"EJITUTTIFRUTTILITTLERICHARD","count":1},{"value":"EJIYOU'VEGOTYOURTROUBLESTHEFORTUNES","count":1},{"value":"QMBZ91726945","count":1},{"value":"SENAWORLDOFTHEFARMERISAACS,GREGORY","count":1},{"value":"SENAKHALGHISTOMPTHIEVERYCORPORATIONREMIXTRANSGLOBALUNDERGROUND","count":1},{"value":"GVLKidsAlexanderSchroer","count":1},{"value":"ABRAMUSKOHENDTITLETHEMEGREGSONHARRYMARKSTEITENFELD","count":1},{"value":"USUM71205333","count":1},{"value":"USUM71205350","count":1},{"value":"USUM72102642","count":1},{"value":"UKN492403085","count":1},{"value":"PPLCHIQUITITASINEADO'CONNOR","count":1},{"value":"GBCEN0900670","count":1},{"value":"USUG12306672","count":1},{"value":"PPLDURANDURANOTHERPEOPLESLIVES","count":1},{"value":"PPLDURANDURANFALLINGDOWN","count":1},{"value":"PPLChristopherBrownNODATAPROVIDEDNODATAPROVIDEDPPLChristopherBrownNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDED","count":1},{"value":"PPLSimeonListerNODATAPROVIDED","count":1},{"value":"GVLSecretsLiveFromZurichOneRepublic","count":1},{"value":"HUZIPTEARDROPTHECOLLECTIVE","count":1},{"value":"PRObjectify(Live)GunsN'Roses","count":1},{"value":"PRSuperbloodmoonHollyHumberstonefeatd4vd","count":1},{"value":"HUZIPKIDS(SEEBREMIX)ONEREPUBLIC","count":1},{"value":"GVLWarmOnAColdNightHonne","count":1},{"value":"GVLHelloInThereJoanBaez","count":1},{"value":"GVL10kRunningMixVariousArtists,OneRepublic,Alesso,Avicii,Afrojack,Wrabel,Bastille,LadyGaga,EllieGoulding,LucasNord,ToveLo,OttoKnows,Zedd,MatthewKoma,MiriamBryant,ChaseStatus,Moko,Klangkarussell,3LAU,BrightLights,SamSmith","count":1},{"value":"GVLHitThisEbhoni","count":1},{"value":"PR45987Tax","count":1},{"value":"HUZIPAXMANROBBIEROBERTSON","count":1},{"value":"GVLDon'tStopWembley,June27,1980FleetwoodMac","count":1},{"value":"HUZIPLAVITANUOVACHRISTINEANDTHEQUEENS,CAROLINEPOLACHEK","count":1},{"value":"GDK'TisAutumnEllaFitzgerald","count":1},{"value":"SXTWENTYTHREERECORDSLTDTakakoTakahashi","count":1},{"value":"RAAPNIATIGI(HOST)JUSTINADAMSJULDEHCAMARA","count":1},{"value":"RAAPCHIPCLASH","count":1},{"value":"ACTDOWNATTHEWHISKYMOTLEYCRUE","count":1},{"value":"ACTI'MPUTTINGALLMYEGGSINONEBASKETOSCARPETERSON","count":1},{"value":"SWISSArchieMooreMilesDavis","count":1},{"value":"SOUNDEXCHANGEI'mSorryftLilDurkDaBabyKevinGates","count":1},{"value":"GBGRJ1230781,GBRXC1215692","count":1},{"value":"PPLTUNSTALLANDCALIFORNIANHADDOCKFILABRAZILLIA","count":1},{"value":"PPLLABALLATADIDONGIOVANNIBENITOMERLINO","count":1},{"value":"PPLTAKEMEDOWNVINCEGILLLITTLEBIGTOWN","count":1},{"value":"PPLGREENONIONSBLUESBROTHERS","count":1},{"value":"PPLEASYMONEYSPRINGSTEEN,BRUCE","count":1},{"value":"PPLAUGUSTMAYS,LYLE","count":1},{"value":"PPLJUSTWHENINEEDEDYOUMOSTVANWARMER,RANDY","count":1},{"value":"PPLGOODOL'DAYSZIGGYMARLEYCEDELLAMARLEY","count":1},{"value":"ABRAMUSHOWWEROLLMICHAELFITZPATRICKPMICKEY","count":1},{"value":"ABRAMUSREADYTOROCK","count":1},{"value":"ABRAMUSPHONEBOOTH(ENDTITLES)GREGSONHARRYMARKSTEITENFELD","count":1},{"value":"ABRAMUSGETTINGSTARTEDALOEBLACCANDREWDEROBERTSDESTINROUTEESTHERRENAYDEANJOELMICHAELROUSSEAUKYLEBRYANTWILLIAMSRYANBENJAMINTEDDERSHANELMCANALLYSOUNDPAKTZACHARYPHILIPSKELTON","count":1},{"value":"GBKPL1812549","count":1},{"value":"QM24S1702734","count":1},{"value":"ABRAMUSDRONEGOESINALEXNYEMARKSTEITENFELD","count":1},{"value":"ABRAMUSANOTHERDUMBBLONDEANTONINAARMATOTIMOTHYJAMESPRICE","count":1},{"value":"ABRAMUSBREAKTHROUGHANTONINAARMATOTIMOTHYJAMESPRICE","count":1},{"value":"LADYGAGAEHEHNOTHINGELSEICANSAYPETSHOPBOYSRADIOMIX","count":1},{"value":"ONEREPUBLICLIFTMEUPMICHAELBRUNREMIX","count":1},{"value":"CLEANBANDITTOPICWESNELSONDRIVETOPICVIPREMIX","count":1},{"value":"SMITH,WILLGETTIN'JIGGYWITITPRAIADELSOLREMIX","count":1},{"value":"TIESTOALESSOONEREPUBLICIFILOSEMYSELF","count":1},{"value":"BIEBER,JUSTINSHEDON'TLIKETHELIGHTSACOUSTIC","count":1},{"value":"DJSNAKEJUSTINBIEBERLETMELOVEYOUMARSHMELLOREMIX","count":1},{"value":"BIEBER,JUSTINLOVEYOURSELFTHEDJMIKEDREMIX","count":1},{"value":"GVLTheFighterfeatRyanTedderGymClassHeroes","count":1},{"value":"GVLBurnSlowJairaBurns","count":1},{"value":"GVLWelcomeToNewYorkKaraokeVersionTaylorSwift","count":1},{"value":"BLEUCLAIRBLEUCLAIR","count":1},{"value":"PPLDIAMONDKLINT","count":1},{"value":"PPLDirimDimDomCAPOEIRASENZALADESANTOS","count":1},{"value":"SAMIWhatDoYouMean(DeliriousAlexKMix)JustinBieber","count":1},{"value":"ABRAMUSUSESOMEBODYCALEBFOLLOWILLIVANFOLLOWILLMATTHEWFOLLOWILLMICHAELFOLLOWILL","count":1},{"value":"ABRAMUSPLAYTIMEKHALILJUSTINBIEBER","count":1},{"value":"SOUNDEXCHANGEHOW'SITFEELDAUGHTERSOFBLUEGRASS","count":1},{"value":"BrentKutzleTracksUnderOneCent","count":1},{"value":"GBXWM1700067","count":1},{"value":"SOUNDEXCHANGEROBINHOODDESTINYMARCSTREITENFELD","count":1},{"value":"SOUNDEXCHANGEROBINHOODSIEGEMARCSTREITENFELD","count":1},{"value":"SOUNDEXCHANGEAPURANDOPOCOAPOCOANSINA","count":1},{"value":"SOUNDEXCHANGEMAGNETSWAYLAYERS","count":1},{"value":"USRC12303351","count":1},{"value":"SOUNDEXCHANGEAPOLOGIZEONEREPUBLICVSRUDEEJAYDABROZZ","count":1},{"value":"SOUNDEXCHANGECOZILOVEYOUTHEWONDERSTUFF","count":1},{"value":"USPSU1247359","count":1},{"value":"GBEEF0100066","count":1},{"value":"GBEEF0100070","count":1},{"value":"GBEEF0100076","count":1},{"value":"SOUNDEXCHANGECHANDRAHASTHECUTLER","count":1},{"value":"SOUNDEXCHANGEPANGEAMANDRILLUSSPHYNX","count":1},{"value":"GBEEF0100090","count":1},{"value":"GBMRG0700001","count":1},{"value":"SOUNDEXCHANGECINQUEDEATHECUTLER","count":1},{"value":"SOUNDEXCHANGEPICKAXETHECUTLER","count":1},{"value":"GBEEF0100087","count":1},{"value":"SOUNDEXCHANGEHOMEBASEDJJAZZYJEFFTHEFRESHPRINCE","count":1},{"value":"USA2P2342331","count":1},{"value":"SOUNDEXCHANGEARMANDOALLAMADACUAREIM","count":1},{"value":"PIPARADISEBYTHEDASHBOARDLIGHTMEATLOAF","count":1},{"value":"PIDeadRingerForLoveMEATLOAF","count":1},{"value":"PIJustLikeFireWouldBRUCESPRINGSTEEN","count":1},{"value":"PIFIREMEDUZALEONYONEREPUBLIC","count":1},{"value":"PIBALLERINARADIOALBUMVERSIONKINGSOFLEON","count":1},{"value":"PI10000HOURSDANSHAY,JUSTINBIEBER","count":1},{"value":"PIPrayJustinBieber","count":1},{"value":"ABRAMUS2STEPNCODYTAYLORDICKINSONLUTHERANDREWSDICKINSONMICHAELFITZPATRICKPMICKEY","count":1},{"value":"ABRAMUSATTENTIONPLEASERYANBENJAMINTEDDER","count":1},{"value":"ABRAMUSBACKTWOTHEMETHEMECLOSINGMICHAELFITZPATRICKPMICKEY","count":1},{"value":"ABRAMUSIWANTEVERYTHINGANTONINAARMATOTIMOTHYJAMESPRICE","count":1},{"value":"ABRAMUSSTRIKEBRANDINICHOLEFLORESDENISELISAMARIASANEINIARYANBENJAMINTEDDER","count":1},{"value":"ABRAMUSWELIKETOROCKMICHAELFITZPATRICKPMICKEY","count":1},{"value":"QZAMM1985519","count":1},{"value":"USATV1600029","count":1},{"value":"USCHR1372494","count":1},{"value":"USSUB1620024","count":1},{"value":"PROPHONWEEBDOOINITBobbyMcFerrin,SiedahGarrett,ELLAFITZGERALD,QUINCYJONES,TAKE6,ALJARREAU","count":1},{"value":"PROPHONFeverELLAFITZGERALD","count":1},{"value":"PROPHONToBeWithYouMEATLOAF","count":1},{"value":"PPLYouAreTheReason(JohnGibbonsRemix)CalumScott","count":1},{"value":"PPLNoAngelCharliXcx","count":1},{"value":"PPLIsThereSomethingIShouldKnow(2004DigitalRemaster)DURANDURAN","count":1},{"value":"PPLJIMKIMOWESTESPANIOLO","count":1},{"value":"PPLTHEFEELGOODVIBEFEELGOODPRODUCTIONS","count":1},{"value":"PPLYou'retheBestThingAboutMeFM","count":1},{"value":"PPLLovingKind(Live)FleetwoodMac","count":1},{"value":"PPLUnderwayFleetwoodMac","count":1},{"value":"PPLCURTISMAYFIELDGIVEMEYOURLOVE","count":1},{"value":"PPLSong4Mutya(OutofControl)GROOVEARMADA","count":1},{"value":"PPLNotOverYouGavinDeGraw","count":1},{"value":"PPLYouWereLovedGryffinwithOneRepublic","count":1},{"value":"PPLSOFINEGunsN'Roses","count":1},{"value":"PPLbymyside(dreamedit)HONNE()","count":1},{"value":"PPLSANTACLAUSISCOMINGTOTOWNJUSTINBIEBER()","count":1},{"value":"PPLLoveMeJustinBieber","count":1},{"value":"PPLSomedayAtChristmasJustinBieber","count":1},{"value":"PPLTrustJustinBieber","count":1},{"value":"PPLTurnToYou((Mother'sDayDedication))JustinBieber","count":1},{"value":"PPLsomedayatchristmasJustinBieber","count":1},{"value":"PPLLonelyJustinBieber(),BennyBlanco","count":1},{"value":"PPLWhatDoYouMeanJustinBieber(JustinDrewBieber)","count":1},{"value":"PPLLETMESHOWYOUKKLASS","count":1},{"value":"PPLGoodOnYou(MOTiRemix)Krewella,Nucleya,MOTi","count":1},{"value":"PPLNewSongMaggieRogers,DelWaterGap","count":1},{"value":"PPLWellerman(SeaShanty)NathanEvans","count":1},{"value":"PPLWellerman(SeaShanty220KIDxBillenTedRemix)NathanEvans,220Kid,BillenTed","count":1},{"value":"PPLStartAgainOneRepublicFeatLogic","count":1},{"value":"PPLRescueMe(Acoustic)OneRepublic","count":1},{"value":"PPLRescueMe(BUNTRemix)OneRepublic","count":1},{"value":"PPLStopAndStare(AlbumVersion)OneRepublic","count":1},{"value":"PPLTakeItOutOnMeOneRepublic","count":1},{"value":"PPLTheLessIKnowOneRepublic","count":1},{"value":"PPLWanted(StringMix)OneRepublic","count":1},{"value":"PPLSunshine(AcousticVersion)OneRepublic()","count":1},{"value":"PPLWanted(TTSpryRemix)OneRepublicTTSpry","count":1},{"value":"PPLMADONNARAYOFLIGHT","count":1},{"value":"PPLTheCarrotRaeMorris","count":1},{"value":"PPLGIMMESAMSMITH,KOFFEE,JESSIEREYEZ","count":1},{"value":"PPLPRAYSamSmith","count":1},{"value":"PPLTooGoodAtGoodbyes(GalantisRemix)SamSmith","count":1},{"value":"PPLWhoWeLoveSamSmith","count":1},{"value":"PPLIGot5OnItSultanShepard","count":1},{"value":"PPLAmericanMadeTheFallenState","count":1},{"value":"PPLSilentAllTheseYears(LPVersion)ToriAmos","count":1},{"value":"PPLSnowAngelToriAmos","count":1},{"value":"PPLThemeFromSunflower(Live)VladimirAntonJablokov","count":1},{"value":"PPLNeverBeTheSameWelshlyArms","count":1},{"value":"PPLUnspokenWelshlyArms","count":1},{"value":"PPLXWelshlyArms","count":1},{"value":"ITAP61000021","count":1},{"value":"PPLTHESICKNOTEDUBLINERS","count":1},{"value":"SOUNDEXCHANGEIfILoseSummertime(ThomasRushRemix)OneRepublicxLanaDelRey","count":1},{"value":"SOUNDEXCHANGENEVERBECOMEEMOTIONALLYATTATCHEDTOMAN,WOMAN,BEASTORCHILDTHEBRIANJONESTOWNMASSACRE","count":1},{"value":"USEE10340740","count":1},{"value":"USUM71301510","count":1},{"value":"USUM72405483","count":1},{"value":"ABRAMUSPUGSLEYFAILS\"MYFAMILY\"MAZURKAANTONINAARMATODEFCONVICMIZZY","count":1},{"value":"USUM70758803","count":1},{"value":"USUV72106730","count":1},{"value":"USUM72001308","count":1},{"value":"USUV72106643","count":1},{"value":"NLE711700213","count":1},{"value":"SOUNDEXCHANGERUNNINGANDREADINGWILLSMITH","count":1},{"value":"SOUNDEXCHANGEUSTaxWithheld","count":1},{"value":"AIEGONNABEALRIGHTSHAYNEWARD","count":1},{"value":"AIEMUSICSOUNDSBETTERWITHUMANNBIGTIMERUSH","count":1},{"value":"AIEWITHOUTYOUBLAKELEWIS","count":1},{"value":"AIEASHESTOASHESHANSZIMMER","count":1},{"value":"PPLI'MBEGINNINGTOSEETHELIGHTELLAFITZGERALD","count":1},{"value":"PPLChiChiTreySongzChrisBrown","count":1},{"value":"PPLDON'TLEAVEFAITHLESS","count":1},{"value":"PPLGULAGUAJIRAITHEDISSOLUTEPRISONERLESTRIABOLIQUES","count":1},{"value":"PPLNODATAPROVIDEDMikaylaSimpson","count":1},{"value":"PPLPIPEDOWNDRAKE","count":1},{"value":"PPLRETURNTONOWDURANDURAN","count":1},{"value":"PPLRyanTedder","count":1},{"value":"PPLTINSELTOWNINTHERAINANDREACORR","count":1},{"value":"PPLTheGetDown#SCONOSCIUTO(1)","count":1},{"value":"PPLYOSHI'SHIGHWAYSUBJECTIVE","count":1},{"value":"PPLTHEWAYIFEELROBERTPLANT","count":1},{"value":"PPLLONELYSOULDIRTYTHRILLS","count":1},{"value":"PPLTHEBRAVEDIRTYTHRILLS","count":1},{"value":"ABRAMUSCHEAPERBYTHEDOZEN2(CUES)RYANBENJAMINTEDDER","count":1},{"value":"ABRAMUSHILLBILLYHOLLACODYTAYLORDICKINSONMICHAELFITZPATRICKPMICKEY","count":1},{"value":"ABRAMUSHOWWEROLLTHEMEOPENINGMICHAELFITZPATRICKPMICKEY","count":1},{"value":"ABRAMUSLIKEMEADAMPAULSCHMALHOLZANTONINAARMATODEFCONJONATHANLVELLATAS","count":1},{"value":"ABRAMUSMONEYGRABBER","count":1},{"value":"ABRAMUSBEETHOVENS5SECRETSANDREWBROWNBRENTKUTZLEEDDIEFISHERRYANBENJAMINTEDDERZACHARYDOUGLASFILKINS","count":1},{"value":"ABRAMUSJOINHANDSBIGC(GB)JONATHANWHITESIMBA(GB)THEHOURSTIMOTHYJOHNHUTTON","count":1},{"value":"ABRAMUSTICKINGBOMBADAMPAULSCHMALHOLZALOEBLACCANTONINAARMATODEFCON","count":1},{"value":"ABRAMUSMUSICSOUNDSBETTERALAINEMMANUELQUEMEBENJAMINGCOHENBIGTIMERUSHBRENTKUTZLEBUGATTIDOMINICDAFTPUNKERICABELLINGERFRANKMUSKERJAMESMASLOWKENDALLFRANCISSCHMIDTLOGANHENDERSONMICHAELCARENNOELPZANCA","count":1},{"value":"AIETELLHIMSHAYNEWARD","count":1},{"value":"USUG11901282","count":1},{"value":"EJIBLACKLEATHERGUNSN'ROSES","count":1},{"value":"EJICATCHERINTHERYEGUNSNROSES","count":1},{"value":"EJILIVEWIRE(KICKASS91REMIX)MTLEYCRE","count":1},{"value":"EJIWurlitzerFleetwoodMacLINDSEYBUCKINGHAM","count":1},{"value":"EJIPRAYERSFORTHEDAMNEDSIXXAM","count":1},{"value":"EJIHYPNOTIZEAUDIOSLAVE","count":1},{"value":"EJIWETAKECAREOFOUROWNBRUCESPRINGSTEEN","count":1},{"value":"EJIRINGMYBELLDJJAZZYJEFF","count":1},{"value":"EJIROCKETEERFT(RYANTEDDER)FAREASTMOVEMENT","count":1},{"value":"EJIDOINGITFORTHEMONEYFOSTERTHEPEOPLE","count":1},{"value":"EJIGENTLEONMYMINDJOHNNYCASH__WITH__GLENCAMPBELL","count":1},{"value":"EJIYOURTIMEHASCOMEAUDIOSLAVE","count":1},{"value":"EJISOMEDAYSAUDIOSLAVE","count":1},{"value":"EJIFACTORYLOVEBRYCEVINE","count":1},{"value":"EJIGOASADREAMCAROLINEPOLACHEK","count":1},{"value":"EJICOOLASAFIRECHAIRLIFT","count":1},{"value":"EJIBUTIDOCLARENCE\"FROGMAN\"HENRY","count":1},{"value":"EJILATCH(LIVEFROMMADISONSQUAREGARDEN)DISCLOSUREFEATSAMSMITH","count":1},{"value":"EJIIDOGREGORYISAACS","count":1},{"value":"EJISOFINEGUNSN'ROSES","count":1},{"value":"EJIDEADFLOWERS(LIVE)GUNSN'ROSES","count":1},{"value":"EJIMAMAKIN(LIVE)GUNSN'ROSES","count":1},{"value":"EJILADYSHAVEGUSGUS","count":1},{"value":"EJIFORGETMENOTINSTRUMENTALHONNE","count":1},{"value":"EJIDON'TSTOPJONBATISTE","count":1},{"value":"EJIBRINGITONHOMELINDSEYBUCKINGHAMLITTLEBIGTOWN","count":1},{"value":"EJIBLINDASABATMEATLOAF","count":1},{"value":"EJICHICKSTROUBLEMTLEYCRE","count":1},{"value":"EJIWHILEIMSTILLHERENINEINCHNAILS","count":1},{"value":"EJITHECOUNTEROFFENSIVEPROPHETSOFRAGE","count":1},{"value":"EJIREVOLUTIONROYALDELUXE","count":1},{"value":"EJITOOGOODATGOODBYESSAMSMITH","count":1},{"value":"EJILIKEICAN(RADIOMIX)SAMSMITH","count":1},{"value":"EJIMIDNIGHTTRAINSAMSMITH","count":1},{"value":"EJINOPEACESAMSMITHFEATYEBBA","count":1},{"value":"EJITHEWOLFISGETTINGMARRIEDSINEADO'CONNOR","count":1},{"value":"EJIGHOSTSAREGONESTEVIENICKS","count":1},{"value":"EJIMOONLIGHT(AVAMPIRE'SDREAM)STEVIENICKS","count":1},{"value":"EJIDUMPLING(TODDLATREMIX)STYLOGFEATJAY1SEANPAUL","count":1},{"value":"EJIWUTANGCLANAIN'TNOTHINGTAFKWITTOMMORELLO,CHADSMITHWUTANGCLAN","count":1},{"value":"EJIMAXIMUMFIREPOWERTOMMORELLOTHENIGHTWATCHMAN","count":1},{"value":"EJIPRECIOUSTHINGS(LIVE1991)TORIAMOS","count":1},{"value":"EJIHERE,INMYHEADTORIAMOS","count":1},{"value":"EJITHROWMEATEXTYOUNGTBUGSEY","count":1},{"value":"EJIDON'TRUSHYOUNGTBUGSEYFEATDADJU","count":1},{"value":"EJISHINEBIRDY","count":1},{"value":"EJISUNFLOWERSEEDSBRYCEVINE","count":1},{"value":"EJITHEFALLBRYCEVINE","count":1},{"value":"EJICAROLINESHUTUPCAROLINEPOLACHEK","count":1},{"value":"EJIOPINION(FEATTOMMORELLO)DEVICEFEATTOMMORELLO","count":1},{"value":"EJICIVILWARGUNSN'ROSES","count":1},{"value":"EJIYESTERDAYS(LIVE)GUNSN'ROSES","count":1},{"value":"EJIESTRANGED(LIVE)GUNSN'ROSES","count":1},{"value":"EJIATTITUDE(LIVE)GUNSN'ROSES","count":1},{"value":"EJIMYNUMBER1(RADIOEDIT)GYPTIANSTYLOG","count":1},{"value":"EJILALALALA(MEANSILOVEYOU)HRVYFEATSTYLOG","count":1},{"value":"EJITARANTALUDOVICOEINAUDI","count":1},{"value":"EJIREAD'EMANDWEEPMEATLOAF","count":1},{"value":"EJIIFYOUREALLYWANTTOMEATLOAF","count":1},{"value":"EJILIFEISALEMONANDIWANTMYMONEYBACK(LIVE)MEATLOAF","count":1},{"value":"EJIOBJECTSINTHEREARVIEWMIRRORMAYAPPEARCLOSERTHENTHEYAREMEATLOAF","count":1},{"value":"EJIDON'TLEAVEYOURMARKONMEMEATLOAF","count":1},{"value":"EJIBADFORGOODMEATLOAF","count":1},{"value":"EJIGODZMEATLOAF","count":1},{"value":"EJIFAKEMTLEYCRE","count":1},{"value":"EJILIVINGGRAVYNOT3SFEATYOUNGTBUGSEY","count":1},{"value":"EJISTRENGTHINNUMBERSPROPHETSOFRAGE","count":1},{"value":"EJIWINMYTRAINFAREHOME(IFIEVERGETLUCKY)ROBERTPLANT","count":1},{"value":"EJIONELASTSONGSAMSMITH","count":1},{"value":"EJIPROBLEM(SOLVED)SBTRKTFEATJESSIEWARE","count":1},{"value":"EJIOUTTASPACESTYLOGBUSTARHYMES","count":1},{"value":"EJIHOLY,IVYANDROSETORIAMOS","count":1},{"value":"EJITHANKYOU(LIVE)TORIAMOS","count":1},{"value":"EJIFEEDMYFRANKENSTEINALICECOOPER","count":1},{"value":"EJINOBROKENHEARTS(FEATNICKIMINAJ)BEBEREXHA","count":1},{"value":"EJILIFEGOESONBRYCEVINE","count":1},{"value":"EJIMAKEYOURMINDUPCHAIRLIFT","count":1},{"value":"EJICAN'TWAITTOBEWITHYOU(LPVERSION)DJJAZZYJEFFTHEFRESHPRINCE","count":1},{"value":"EJICAUGHTINTHEMIDDLE(LOVEANDLIFE)DJJAZZYJEFFTHEFRESHPRINCE","count":1},{"value":"EJIBREAKIN'THECHAINSOFLOVEFITZANDTHETANTRUMS","count":1},{"value":"EJIDREAMS(LIVE)FLEETWOODMAC","count":1},{"value":"EJIROSIEGREGORYISAACS","count":1},{"value":"EJISADTOKNOW(YOU'RELEAVING)GREGORYISAACS","count":1},{"value":"EJIASOGREGORYISAACS","count":1},{"value":"EJIGOINGDOWNTOWNGREGORYISAACS","count":1},{"value":"EJIHARDDRUGSGREGORYISAACS","count":1},{"value":"EJISHOULDIGREGORYISAACS","count":1},{"value":"EJINOVEMBERRAIN(LIVE)GUNSN'ROSES","count":1},{"value":"EJIFACEMYFEARS(ENGLISHVERSION)HIKARUUTADASKRILLEX","count":1},{"value":"EJIREACHOUTHILLARYDUFF","count":1},{"value":"EJIBECOMINGMORELIKEGODJAHWOBBLE'SINVADERSOFTHEHEART","count":1},{"value":"EJIKENNER(LIVE)JONBATISTE","count":1},{"value":"EJIBLUEKAMAL","count":1},{"value":"EJITOWERSLITTLEMIX","count":1},{"value":"EJITEDLASSOTHEMEMARCUSMUMFORDTOMHOWE","count":1},{"value":"EJIALLREVVEDUPWITHNOPLACETOGO(LIVE)MEATLOAF","count":1},{"value":"EJIBADATTITUDEMEATLOAF","count":1},{"value":"EJIIFITRAINSMEATLOAF","count":1},{"value":"EJIWHERETHERUBBERMEETSTHEROADMEATLOAF","count":1},{"value":"EJITRAINOFLOVEMEATLOAF","count":1},{"value":"EJILOVINGYOUISADIRTYJOB(BUTSOMEBODY'SGOTTADOIT)MEATLOAFFTSTACYMICHELLE","count":1},{"value":"EJIEXCUSES(KIALOVEREMIX)OLLYMURS","count":1},{"value":"EJINOSHELTERRAGEAGAINSTTHEMACHINE","count":1},{"value":"EJIFUCKTHAPOLICERAGEAGAINSTTHEMACHINE","count":1},{"value":"EJILAYMEDOWN(POMOREMIX)SAMSMITH","count":1},{"value":"EJILAYMEDOWN(TODDEDWARDSDUB)SAMSMITH","count":1},{"value":"EJII'MNOTTHEONLYONESAMSMITH","count":1},{"value":"EJISWEETCHILDO'MINESUBWAYRIDESHERYLCROW","count":1},{"value":"EJITWISTEDSTEVIENICKSLINDSEYBUCKINGHAM","count":1},{"value":"EJITOUCHDOWN(REMIX)STYLOGTHEFANATIXFEATNICKIMINAJVYBZKARTEL","count":1},{"value":"EJIDUMPLINGREMIX(REMIX)STYLOGFTSEANPAULSPICE","count":1},{"value":"EJILEAFWRAPSTHEHOMIESFEATJACKHARLOW","count":1},{"value":"EJIWATERBABYTOMMISCHFEATLOYLECARNER","count":1},{"value":"EJILETFREEDOMRINGTOMMORELLOTHENIGHTWATCHMAN","count":1},{"value":"EJITHELIGHTSAREONINSPIDERTOWNTOMMORELLOTHENIGHTWATCHMAN","count":1},{"value":"EJIUNTILTHEENDTOMMORELLOTHENIGHTWATCHMAN","count":1},{"value":"EJIPLAYBOYMOMMYTORIAMOS","count":1},{"value":"EJIUPSIDEDOWN(LIVE)TORIAMOS","count":1},{"value":"EJITHEPOOLTORIAMOS","count":1},{"value":"EJIALADDINWILLARDCAROLLSMITH","count":1},{"value":"EJINOMICKEYMOUSETINGYOUNGTBUGSEY","count":1},{"value":"EJIWHEREANGELSSINGMEATLOAF","count":1},{"value":"EJIGORGEOUSSAINTJHN","count":1},{"value":"EJIIGOTAFEELINGTHEBLACKEYEDPEAS","count":1},{"value":"ERIKAFECOVAIWILLFIGHTTOBEWITHYOU(FEATMART(undefined)","count":1},{"value":"SE5AJ2001182","count":1},{"value":"ShannonLayComeTogether(undefined)","count":1},{"value":"NLQS91100048","count":1},{"value":"QM4TX1533186","count":1},{"value":"TCACH1532019","count":1},{"value":"ITQ031000019","count":1},{"value":"null(undefined)","count":1},{"value":"GVLLightsOfHomeU2","count":1},{"value":"GVLSayItAllLiamPayne","count":1},{"value":"GVLJoyofLifeMainversionGrahamDonaldHarryPreskett","count":1},{"value":"WNDRLNDBIMINI,BrittLari","count":1},{"value":"DayWeMet(BetonkustRemix)DayWeMet(Remixes)","count":1},{"value":"WaymoWaymo","count":1},{"value":"TakeYouPlacesWestend","count":1},{"value":"DEN061202811","count":1},{"value":"USSUB0200186","count":1},{"value":"USSUB1404707","count":1},{"value":"USSUB0200183","count":1},{"value":"AIETHERESNOYOUELLAFITZGERALD","count":1},{"value":"AIEENDOFTHEWORLDBLAKELEWIS","count":1},{"value":"USSM12405201","count":1},{"value":"USUM72009607","count":1},{"value":"USUM70722793","count":1}],"Original Contract ID":[{"value":"Downtown","count":35},{"value":"","count":33},{"value":"THOMAS MORELLO","count":21},{"value":"BUTLER REUBEN","count":20},{"value":"MICHAEL ADAY","count":17},{"value":"MICHAEL ANDREW MCKAGAN","count":13},{"value":"Independent Records Limited","count":11},{"value":"Marc Streitenfeld","count":11},{"value":"DANIELBURNS","count":8},{"value":"LINDSEY BUCKINGHAM","count":8},{"value":"JASON MCDERMOTT","count":8},{"value":"MICHAELFITZPATRICK","count":7},{"value":"GREGORY ANTHONY ISAACS","count":7},{"value":"TORI MYRA ELLEN AMOS","count":7},{"value":"Twentythree Records Ltd","count":6},{"value":"TIMOTHY JAMESPRICE","count":6},{"value":"JUSTIN ALEXANDER ADAMS","count":6},{"value":"Stephen Jordan","count":6},{"value":"Reuben Butler","count":6},{"value":"RA'CHARD TUCKER","count":6},{"value":"MARCSTREITENFELD","count":5},{"value":"Sudha Kheterpal","count":5},{"value":"NIKKI SIXX","count":5},{"value":"POLACHEK CAROLINE","count":5},{"value":"ANTONINAARMATO","count":4},{"value":"WILLARD CAROLL SMITH","count":4},{"value":"BRYCE ROSS-JOHNSON","count":4},{"value":"DOWNTOWN","count":3},{"value":"MCKAGAN MICHAEL ANDREW","count":3},{"value":"Justin Alexander Adams","count":3},{"value":"TWENTYTHREE RECORDS LTD","count":3},{"value":"David Phelan","count":3},{"value":"Christopher Brown","count":3},{"value":"JAHMAAL FYFFE","count":3},{"value":"Kryptic Media Limited","count":2},{"value":"Stranger Records Ltd","count":2},{"value":"Global Vibes Ltd","count":2},{"value":"Gregory Anthony Isaacs","count":2},{"value":"Downtown Music UK Limited","count":2},{"value":"Ryan TedderBeyoncHaloUSSM10900876","count":2},{"value":"Will Smith","count":2},{"value":"MICHAEL LEEADAY","count":2},{"value":"Madison McFerrin","count":2},{"value":"Ella Fitzgerald","count":2},{"value":"Dominic Brown","count":2},{"value":"Lindsey Buckingham","count":2},{"value":"Mikayla Simpson","count":2},{"value":"Tori Amos","count":2},{"value":"James Weaver","count":2},{"value":"Andrew John BrownDREW BROWNSWEET THINGSOUNDEXCHANGESWEETTHINGDREWBROWN","count":2},{"value":"TEDDER RYAN BENJAMINME  UKANDI BURRUSS","count":2},{"value":"TEDDER RYAN BENJAMINSYSTEM ADDICT 1FIVE STAR","count":2},{"value":"Leon Thomas III","count":2},{"value":"Jack Fawdry","count":2},{"value":"TEDDER RYAN BENJAMINNO ONE ELSE TO BLAMEHOWIE DAY","count":2},{"value":"JONATHAN BATISTE","count":2},{"value":"JASON THOMASMRAZI DON T MISS YOUABRAMUSIDONTMISSYOUDAYOLDJOHNSON","count":1},{"value":"RYAN BENJAMINTEDDERGOT 2 LUV YAABRAMUSGOT2LUVYARYANBENJAMINTEDDERSEANPAUL(US3)STORLEERERIKSENMIKKELTORERIKHERMANSEN","count":1},{"value":"ANDREW BROWNYOU'VE GOT YOUR TROUBLESTHE FORTUNES","count":1},{"value":"Richard Eric Hilton","count":1},{"value":"Andrew  BrownKidsAlexander Schroer","count":1},{"value":"JUSTIN DREWBIEBERCATCHING FEELINGSUSUM71205333","count":1},{"value":"JUSTIN DREWBIEBERTAKE YOUUSUM71205350","count":1},{"value":"JUSTIN DREWBIEBERTHERE SHE GOUSUM72102642","count":1},{"value":"Ryan TedderWELCOME TO NEW YORK TAYLORS VERSIONTAYLOR SWIFT","count":1},{"value":"Dominic BrownDURAN DURANOTHER PEOPLE S LIVESPPLDURANDURANOTHERPEOPLESLIVES","count":1},{"value":"Dominic BrownDURAN DURANFALLING DOWNPPLDURANDURANFALLINGDOWN","count":1},{"value":"Christopher BrownNO DATA PROVIDEDNO DATA PROVIDEDPPLChristopherBrownNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDEDNODATAPROVIDED","count":1},{"value":"Simeon Lister","count":1},{"value":"Andrew  BrownSecrets Live From ZurichOneRepublic","count":1},{"value":"Andrew  Brown5k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","count":1},{"value":"JAHMAAL NOEL FYFFE","count":1},{"value":"McKagan, Michael Andrew","count":1},{"value":"Burke, David Anthony","count":1},{"value":"EDDIE RAY FISHERKIDS (SEEB REMIX)ONEREPUBLIC","count":1},{"value":"Reuben  Butler","count":1},{"value":"David Malcolm  Kershenbaum","count":1},{"value":"Zachary D  Filkins10k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Afrojack, Wrabel, Bastille, Lady Gaga, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Zedd, Matthew Koma, Miriam Bryant, Chase  Status, Moko, Klangkarussell, 3LAU, Bright Lights, Sam Smith","count":1},{"value":"Zachary D  Filkins5k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","count":1},{"value":"Andron  Cross","count":1},{"value":"Michael Aday","count":1},{"value":"THOMAS BAPTIST MORELLO","count":1},{"value":"Lindsey  Buckingham","count":1},{"value":"EDDIE RAY FISHERCOME HOMEONEREPUBLIC FTSARA BAREILLES","count":1},{"value":"ANDREW JOHN BROWNCOME HOMEONEREPUBLIC FTSARA BAREILLES","count":1},{"value":"CAROLINE ELIZABETH POLACHEK","count":1},{"value":"Ella Jane Fitzgerald","count":1},{"value":"JUSTIN ALEXANDERADAMS","count":1},{"value":"JAHMAALFYFFE","count":1},{"value":"FRANK CARLTON SERAFINO FERANNA","count":1},{"value":"ELLA JANE FITZGERALD","count":1},{"value":"Miles Davis","count":1},{"value":"Jonathan Lyndale Kirk","count":1},{"value":"RYAN BENJAMINTEDDERGETTING STARTEDABRAMUSGETTINGSTARTEDALOEBLACCANDREWDEROBERTSDESTINROUTEESTHERRENAYDEANJOELMICHAELROUSSEAUKYLEBRYANTWILLIAMSRYANBENJAMINTEDDERSHANELMCANALLYSOUNDPAKTZACHARYPHILIPSKELTON","count":1},{"value":"DES ROCSLET ME LIVE  LET ME DIE(undefined)","count":1},{"value":"JAMES MERCY  MIA VAILEWILDFIRE(undefined)","count":1},{"value":"MARTIN KIERSZENBAUM","count":1},{"value":"Brent Michael KutzleONEREPUBLICLIFT ME UPMICHAEL BRUN REMIXONEREPUBLICLIFTMEUPMICHAELBRUNREMIX","count":1},{"value":"Willard Carroll Smith II","count":1},{"value":"Brent Michael KutzleTIESTO  ALESSO  ONE REPUBLICIF I LOSE MYSELFTIESTOALESSOONEREPUBLICIFILOSEMYSELF","count":1},{"value":"Justin BieberBIEBER, JUSTINSHE DON'T LIKE THE LIGHTSACOUSTICBIEBER,JUSTINSHEDON'TLIKETHELIGHTSACOUSTIC","count":1},{"value":"Justin BieberDJ SNAKE  JUSTIN BIEBERLET ME LOVE YOUMARSHMELLO REMIXDJSNAKEJUSTINBIEBERLETMELOVEYOUMARSHMELLOREMIX","count":1},{"value":"Justin BieberBIEBER, JUSTINLOVE YOURSELFTHE DJ MIKE D REMIXBIEBER,JUSTINLOVEYOURSELFTHEDJMIKEDREMIX","count":1},{"value":"Ryan  TedderThe Fighter feat Ryan TedderGym Class Heroes","count":1},{"value":"Ryan  TedderBurn SlowJaira Burns","count":1},{"value":"Ryan  TedderWelcome To New York Karaoke VersionTaylor Swift","count":1},{"value":"JUSTIN BIEBERJustin BieberWhat Do You Mean (Delirious  Alex K Mix)","count":1},{"value":"CAMERON MATTHEWFOLLOWILL","count":1},{"value":"JUSTIN DREWBIEBERPLAYTIMEABRAMUSPLAYTIMEKHALILJUSTINBIEBER","count":1},{"value":"Brent KutzleTracks Under One CentTracks Under One CentBrentKutzleTracksUnderOneCent","count":1},{"value":"Damien Dempsey","count":1},{"value":"Ryan TedderTate McRaemessierUSRC12303351","count":1},{"value":"Zach FilkinsONEREPUBLIC VS RUDEEJAY  DA BROZZAPOLOGIZESOUNDEXCHANGEAPOLOGIZEONEREPUBLICVSRUDEEJAYDABROZZ","count":1},{"value":"Miles Hunt","count":1},{"value":"Ryan TedderTOMORROW X TOGETHERBack for More (TXT Ver)USA2P2342331","count":1},{"value":"THOMAS BAPTISTMORELLO","count":1},{"value":"BRIANWILLETT","count":1},{"value":"ANTHONYFOLLOWILL","count":1},{"value":"JUSTINBIEBER10 000 HOURSDAN SHAY,JUSTIN BIEBER","count":1},{"value":"JUSTINBIEBERPrayJustin Bieber","count":1},{"value":"RYAN BENJAMINTEDDERATTENTION PLEASEABRAMUSATTENTIONPLEASERYANBENJAMINTEDDER","count":1},{"value":"RYAN BENJAMINTEDDERSTRIKEABRAMUSSTRIKEBRANDINICHOLEFLORESDENISELISAMARIASANEINIARYANBENJAMINTEDDER","count":1},{"value":"LINDSEYBUCKINGHAM","count":1},{"value":"RYAN BENJAMINTEDDERTRUST YOUUSATV1600029","count":1},{"value":"ELLAFITZGERALD","count":1},{"value":"SUB POP RECORDS","count":1},{"value":"Michael Lee Aday","count":1},{"value":"Andrew BrownESPANIOLOJIM KIMO WESTPPLJIMKIMOWESTESPANIOLO","count":1},{"value":"Luca Gatti","count":1},{"value":"Ryan TedderFMYou're the Best Thing About MePPLYou'retheBestThingAboutMeFM","count":1},{"value":"Brent KutzleGIVE ME YOUR LOVECURTIS MAYFIELDPPLCURTISMAYFIELDGIVEMEYOURLOVE","count":1},{"value":"Jonathan White","count":1},{"value":"Ryan TedderGavin DeGrawNot Over YouPPLNotOverYouGavinDeGraw","count":1},{"value":"Ryan TedderGryffin with OneRepublicYou Were LovedPPLYouWereLovedGryffinwithOneRepublic","count":1},{"value":"Michael McKagan","count":1},{"value":"Justin BieberJUSTIN BIEBER( )SANTA CLAUS IS COMING TO TOWNPPLSANTACLAUSISCOMINGTOTOWNJUSTINBIEBER()","count":1},{"value":"Justin BieberJustin BieberLove MePPLLoveMeJustinBieber","count":1},{"value":"Justin BieberJustin BieberSomeday At ChristmasPPLSomedayAtChristmasJustinBieber","count":1},{"value":"Justin BieberJustin BieberTrustPPLTrustJustinBieber","count":1},{"value":"Justin BieberJustin BieberTurn To You ((Mother's Day Dedication))PPLTurnToYou((Mother'sDayDedication))JustinBieber","count":1},{"value":"Justin BieberJustin Biebersomeday at christmasPPLsomedayatchristmasJustinBieber","count":1},{"value":"Justin BieberJustin Bieber ( ), Benny BlancoLonelyPPLLonelyJustinBieber(),BennyBlanco","count":1},{"value":"Justin BieberJustin Bieber(Justin Drew Bieber)What Do You MeanPPLWhatDoYouMeanJustinBieber(JustinDrewBieber)","count":1},{"value":"Ryan TedderKrewella,Nucleya,MOTiGood On You(MOTi Remix)PPLGoodOnYou(MOTiRemix)Krewella,Nucleya,MOTi","count":1},{"value":"Andrew BrownMaggie Rogers, Del Water GapNew SongPPLNewSongMaggieRogers,DelWaterGap","count":1},{"value":"Alexander Oriet","count":1},{"value":"Zach FilkinsOne Republic Feat LogicStart AgainPPLStartAgainOneRepublicFeatLogic","count":1},{"value":"Eddie FisherOneRepublicRescue Me (Acoustic)PPLRescueMe(Acoustic)OneRepublic","count":1},{"value":"Zach FilkinsOneRepublicRescue Me (BUNT Remix)PPLRescueMe(BUNTRemix)OneRepublic","count":1},{"value":"Zach FilkinsOneRepublicStop And Stare (Album Version)PPLStopAndStare(AlbumVersion)OneRepublic","count":1},{"value":"Brent KutzleOneRepublicTake It Out On MePPLTakeItOutOnMeOneRepublic","count":1},{"value":"Eddie FisherOneRepublicThe Less I KnowPPLTheLessIKnowOneRepublic","count":1},{"value":"Brent KutzleOneRepublicWanted (String Mix)PPLWanted(StringMix)OneRepublic","count":1},{"value":"Eddie FisherOneRepublic()Sunshine (Acoustic Version)PPLSunshine(AcousticVersion)OneRepublic()","count":1},{"value":"Ryan TedderOneRepublicTT SpryWanted (TT Spry Remix)PPLWanted(TTSpryRemix)OneRepublicTTSpry","count":1},{"value":"Andrew BrownRAY OF LIGHTMADONNAPPLMADONNARAYOFLIGHT","count":1},{"value":"Andrew BrownSultan  ShepardI Got 5 On ItPPLIGot5OnItSultanShepard","count":1},{"value":"Richard Walker","count":1},{"value":"Andrew BrownVladimir  Anton JablokovTheme From Sunflower (Live)PPLThemeFromSunflower(Live)VladimirAntonJablokov","count":1},{"value":"Brett Lindemann","count":1},{"value":"Andrew John BrownCome Un PittoreMODA'","count":1},{"value":"Eddie FisherOneRepublic x Lana Del ReyIf I Lose Summertime (Thomas Rush Remix)SOUNDEXCHANGEIfILoseSummertime(ThomasRushRemix)OneRepublicxLanaDelRey","count":1},{"value":"Anton Newcombe","count":1},{"value":"JASON THOMASMRAZYOU AND I BOTHUSEE10340740","count":1},{"value":"ZACHARY DOUGLASFILKINSCOME HOMEUSUM70758798","count":1},{"value":"ANDREW JOHNBROWNCOME HOMEUSUM70758798","count":1},{"value":"EDDIE RAYFISHERAU REVOIRUSUM71301510","count":1},{"value":"BRENT MICHAELKUTZLENOBODY (FROM KAIJU NO 8)USUM72405483","count":1},{"value":"RYAN BENJAMINTEDDERSOMEONE TO SAVE YOUUSUM70758803","count":1},{"value":"EDDIE RAYFISHERA LITTLE BIT OF SUNSHINEUSUV72106730","count":1},{"value":"JUSTIN DREWBIEBERSECOND EMOTIONUSUM72001308","count":1},{"value":"JUSTIN DREWBIEBERTHE CHRISTMAS SONG (CHESTNUTS ROASTING ON AN OPEN FIRE)USUV72106643","count":1},{"value":"Kimbra Johnson","count":1},{"value":"WILL SMITH","count":1},{"value":"Jonathan Male","count":1},{"value":"TEDDER RYAN BENJAMINGONNA BE ALRIGHTSHAYNE WARD","count":1},{"value":"TEDDER RYAN BENJAMINMUSIC SOUNDS BETTER WITH UMANNBIG TIME RUSH","count":1},{"value":"TEDDER RYAN BENJAMINWITHOUT YOUBLAKE LEWIS","count":1},{"value":"STREITENFELD MARC","count":1},{"value":"ELLA FITZGERALD","count":1},{"value":"Ryan TedderRyan TedderPPLRyanTedder","count":1},{"value":"Marley Munroe","count":1},{"value":"David Barratt","count":1},{"value":"RYAN BENJAMINTEDDERCHEAPER BY THE DOZEN 2 (CUES)ABRAMUSCHEAPERBYTHEDOZEN2(CUES)RYANBENJAMINTEDDER","count":1},{"value":"ZACHARY DOUGLASFILKINSBEETHOVENS 5 SECRETSABRAMUSBEETHOVENS5SECRETSANDREWBROWNBRENTKUTZLEEDDIEFISHERRYANBENJAMINTEDDERZACHARYDOUGLASFILKINS","count":1},{"value":"ANDREW JOHNTREACEY","count":1},{"value":"BRENT MICHAELKUTZLEMUSIC SOUNDS BETTERABRAMUSMUSICSOUNDSBETTERALAINEMMANUELQUEMEBENJAMINGCOHENBIGTIMERUSHBRENTKUTZLEBUGATTIDOMINICDAFTPUNKERICABELLINGERFRANKMUSKERJAMESMASLOWKENDALLFRANCISSCHMIDTLOGANHENDERSONMICHAELCARENNOELPZANCA","count":1},{"value":"TEDDER RYAN BENJAMINTELL HIMSHAYNE WARD","count":1},{"value":"TEDDER RYAN BENJAMINUSED TO BEJONAS BROTHERS","count":1},{"value":"ZACHARY FILKINSFEARONEREPUBLIC","count":1},{"value":"ANDREW BROWNMARCHIN ONONEREPUBLIC","count":1},{"value":"RYAN TEDDERFEARONEREPUBLIC","count":1},{"value":"RYAN TEDDERROCKETEER FT (RYAN TEDDER)FAR EAST MOVEMENT","count":1},{"value":"RYAN TEDDERDOING IT FOR THE MONEYFOSTER THE PEOPLE","count":1},{"value":"GETZ SAMUEL","count":1},{"value":"ANDREW BROWNSHINEBIRDY","count":1},{"value":"DAVID PHELAN","count":1},{"value":"MICHAEL FITZPATRICK","count":1},{"value":"RYAN TEDDERREACH OUTHILLARY DUFF","count":1},{"value":"JACKMAN THOMAS HARLOW","count":1},{"value":"ZACHARY FILKINSMARCHIN ONONEREPUBLIC","count":1},{"value":"CARLOS PHILLIPS","count":1},{"value":"KIMBRA JOHNSON","count":1},{"value":"Zachary Filkins","count":1},{"value":"Michael Andrew Mckagan","count":1},{"value":"Brent KutzleLights Of HomeU2","count":1},{"value":"Ryan TedderSay It AllLiam Payne","count":1},{"value":"Ryan Tedder5k Running MixVarious Artists, OneRepublic, Alesso, Avicii, Bastille, Ellie Goulding, Lucas Nord, Tove Lo, Otto Knows, Klangkarussell, Sam Smith","count":1},{"value":"Justin BieberJoy of Life Main versionGraham Donald Harry Preskett","count":1},{"value":"FITZGERALD ELLA JANE","count":1},{"value":"TEDDER RYAN BENJAMINEND OF THE WORLDBLAKE LEWIS","count":1},{"value":"TEDDER RYAN BENJAMINERASE YOUMIMI WEBB","count":1},{"value":"TEDDER RYAN BENJAMINBETTER DAYS - GIORNI MIGLIORI (FEAT NEGRAMARO) -ALBUM VERSIONERMANNO CARLA'ANDREA ANTONIO DE ROCCOGIULIANO SANGIORGIEMANUELE SPEDICATODANILO TASCO","count":1},{"value":"Zachary D FilkinsApologize _Feat OnerepublicTimbaland","count":1}],"Source":[{"value":"EJI HU","count":153},{"value":"PPL UK","count":107},{"value":"SoundExchange US","count":71},{"value":"ABRAMUS BR","count":38},{"value":"AIE ES","count":19},{"value":"ABRAMUS","count":19},{"value":"GVL DE","count":16},{"value":"AGEDI ES","count":16},{"value":"SENA","count":10},{"value":"SIMIM BE","count":10},{"value":"PI RS","count":7},{"value":"HUZIP HR","count":6},{"value":"PROPHON BG","count":5},{"value":"INTERGRAM CZ","count":3},{"value":"PLAYRIGHT BE","count":3},{"value":"SENA NL","count":2},{"value":"RAAP IE","count":2},{"value":"ACTRA RACS CA","count":2},{"value":"ITSRIGHT IT","count":2},{"value":"RMNZ NZ","count":1},{"value":"GRAMEX DK","count":1},{"value":"SWISSPERFORM CH","count":1},{"value":"SoundExchange","count":1},{"value":"SAMI SE","count":1},{"value":"CONNECT CA","count":1}],"Catalogue Type":[{"value":"Contract","count":463},{"value":"Track","count":33},{"value":"ABRAMUS BR","count":1}]}</script>
+
+<div class="concept-frame">
+
+  <div>
+    <span class="sec-eyebrow">Concept · filter component</span>
+    <h1 class="concept-title">Per-column filter</h1>
+    <p class="concept-sub">
+      Search with autosuggest + fuzzy toggle. Same component repeats under every data column header.
+      Click the small <code>⌄</code> beneath any column to demo it.
+    </p>
+
+    <!-- Column header strip — chev / check / 6 data cols / eye -->
+    <div class="col-strip" id="col-strip" style="position: relative;">
+      <div></div>
+      <div></div>
+      <div>
+        <span class="label">track title</span>
+        <button class="filter-trigger" data-col="Original Track Title">⌄</button>
+      </div>
+      <div>
+        <span class="label">track artist</span>
+        <button class="filter-trigger" data-col="Original Track Artist">⌄</button>
+      </div>
+      <div>
+        <span class="label">isrc</span>
+        <button class="filter-trigger" data-col="Original ISRC">⌄</button>
+      </div>
+      <div>
+        <span class="label">orig. contract id</span>
+        <button class="filter-trigger" data-col="Original Contract ID">⌄</button>
+      </div>
+      <div>
+        <span class="label">source</span>
+        <button class="filter-trigger" data-col="Source">⌄</button>
+      </div>
+      <div>
+        <span class="label">cat. type</span>
+        <button class="filter-trigger" data-col="Catalogue Type">⌄</button>
+      </div>
+      <div></div>
+    </div>
+
+    <!-- Sample row placeholders so the column strip reads as a table head -->
+    <div class="sample-rows">
+      <!-- 3 ghost rows -->
+      <div></div><div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div></div>
+      <div></div><div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div></div>
+      <div></div><div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div><div class="ph"></div></div><div></div>
+    </div>
+
+    <p class="hint">
+      <span class="arrow">↑</span>
+      Try the <code>source</code> column — small distinct set, easy to see autosuggest filter. Then try a high-cardinality one like <code>track title</code> (~425 unique values).
+    </p>
+
+    <!-- The popover lives once in the DOM; we move it under whichever
+         trigger was clicked. -->
+    <div class="popover" id="popover">
+      <div class="input">
+        <input type="text" id="q" placeholder="search values…" autocomplete="off">
+      </div>
+      <div class="opts">
+        <label class="check" id="fuzzy-toggle">
+          <span class="box"></span>
+          fuzzy match
+        </label>
+        <span style="font-family: var(--font-hand); font-size: var(--text-xs); color: var(--color-fg-muted);">
+          tolerates typos &amp; transpositions
+        </span>
+      </div>
+      <div class="suggestions" id="list"></div>
+      <div class="actions">
+        <span class="left" id="sel-status">0 selected · 25 of 25 shown</span>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn outline sm" id="clear-btn">Clear</button>
+          <button class="btn sm" id="apply-btn">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="annotations">
+    <div class="sec">
+      <h3>Anatomy</h3>
+      <p><b>Trigger</b> — small <code>⌄</code> chip per column. Sits under the column name. Turns solid blue with a count badge when filters are applied.</p>
+      <p><b>Search input</b> — instant filtering of the suggestion list as you type. Empty input shows all values, sorted by frequency descending.</p>
+      <p><b>Fuzzy toggle</b> — off: case-insensitive substring match. On: chars-in-order match (e.g. <code>abrms</code> still finds <code>ABRAMUS</code>).</p>
+      <p><b>Suggestion list</b> — each row shows the value + record count. Click to toggle selection (multi-select).</p>
+      <p><b>Apply / Clear</b> — Apply persists, closes the popover, badges the trigger. Clear unselects everything.</p>
+    </div>
+
+    <div class="sec">
+      <h3>Match semantics</h3>
+      <p>Filtering one column with <i>n</i> selected values shows rows whose value <b>matches any</b> selected value.</p>
+      <p>Filtering across multiple columns combines with <b>AND</b> across columns.</p>
+    </div>
+
+    <div class="sec">
+      <h3>Open questions</h3>
+      <p>· Numeric columns (Net/Gross amount) — same picker? Or range slider?</p>
+      <p>· Date columns — date range picker, not value-list?</p>
+      <p>· "Apply" implicit on selection vs explicit button — explicit is shown here.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const data = JSON.parse(document.getElementById('data').textContent);
+  const popover  = document.getElementById('popover');
+  const q        = document.getElementById('q');
+  const list     = document.getElementById('list');
+  const status   = document.getElementById('sel-status');
+  const applyBtn = document.getElementById('apply-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const fuzzy    = document.getElementById('fuzzy-toggle');
+
+  /* Persistent filter state, keyed by column name.
+     Each entry is a Set of selected values + the fuzzy toggle state. */
+  const filters = {};        // colName → { selected: Set, fuzzy: bool }
+
+  let openCol = null;        // currently open column
+
+  function ensureFilter(col) {
+    if (!filters[col]) filters[col] = { selected: new Set(), fuzzy: false };
+    return filters[col];
+  }
+
+  /* ── Matching ── */
+  function substring(needle, hay) {
+    return hay.toLowerCase().includes(needle.toLowerCase());
+  }
+  function fuzzyMatch(needle, hay) {
+    needle = needle.toLowerCase(); hay = hay.toLowerCase();
+    let i = 0;
+    for (const ch of hay) {
+      if (ch === needle[i]) i++;
+      if (i === needle.length) return true;
+    }
+    return needle.length === 0;
+  }
+
+  /* ── Popover positioning ── */
+  function positionPopover(trigger) {
+    const strip = document.getElementById('col-strip');
+    const sRect = strip.getBoundingClientRect();
+    const tRect = trigger.getBoundingClientRect();
+    // Anchor popover top-left near trigger; clamp to strip width.
+    let left = tRect.left - sRect.left;
+    const maxLeft = strip.offsetWidth - 320 - 2;
+    if (left > maxLeft) left = maxLeft;
+    if (left < 0) left = 0;
+    popover.style.left = left + 'px';
+    popover.style.top  = (strip.offsetHeight + 6) + 'px';
+  }
+
+  /* ── Suggestion list rendering ── */
+  function renderList() {
+    if (!openCol) return;
+    const items = data[openCol] || [];
+    const f = ensureFilter(openCol);
+    const needle = q.value.trim();
+    const matcher = f.fuzzy ? fuzzyMatch : substring;
+    const filtered = needle === ''
+      ? items
+      : items.filter(it => matcher(needle, it.value || ''));
+
+    list.innerHTML = filtered.length === 0
+      ? '<div class="empty">No values match.</div>'
+      : filtered.map(it => {
+          const selected = f.selected.has(it.value);
+          const display = (it.value === '') ? '(empty)' : it.value;
+          const cls = 'suggestion' + (selected ? ' selected' : '');
+          return '<div class="' + cls + '" data-value="' + encodeURIComponent(it.value) + '">' +
+                 '<span class="tick"></span>' +
+                 '<span class="val" title="' + escAttr(display) + '">' + escHtml(display) + '</span>' +
+                 '<span class="count">' + it.count + '</span></div>';
+        }).join('');
+
+    status.textContent = f.selected.size + ' selected · ' + filtered.length + ' of ' + items.length + ' shown';
+  }
+
+  function escAttr(s) { return String(s).replace(/"/g, '&quot;'); }
+  function escHtml(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+  /* ── Open / close ── */
+  function openFor(trigger) {
+    const col = trigger.dataset.col;
+    openCol = col;
+    const f = ensureFilter(col);
+    q.value = '';
+    fuzzy.classList.toggle('on', f.fuzzy);
+    positionPopover(trigger);
+    popover.classList.add('open');
+    renderList();
+    setTimeout(() => q.focus(), 50);
+  }
+  function close() {
+    popover.classList.remove('open');
+    openCol = null;
+  }
+
+  /* ── Trigger clicks ── */
+  document.querySelectorAll('.filter-trigger').forEach(t => {
+    t.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (openCol === t.dataset.col) { close(); return; }
+      openFor(t);
+    });
+  });
+
+  /* Click-outside to close */
+  document.addEventListener('click', (e) => {
+    if (!popover.contains(e.target) && !e.target.closest('.filter-trigger')) close();
+  });
+
+  /* ── Search input ── */
+  q.addEventListener('input', renderList);
+
+  /* ── Fuzzy toggle ── */
+  fuzzy.addEventListener('click', () => {
+    if (!openCol) return;
+    const f = ensureFilter(openCol);
+    f.fuzzy = !f.fuzzy;
+    fuzzy.classList.toggle('on', f.fuzzy);
+    renderList();
+  });
+
+  /* ── Suggestion click toggles selection ── */
+  list.addEventListener('click', (e) => {
+    const sug = e.target.closest('.suggestion');
+    if (!sug || !openCol) return;
+    const val = decodeURIComponent(sug.dataset.value);
+    const f = ensureFilter(openCol);
+    if (f.selected.has(val)) f.selected.delete(val);
+    else f.selected.add(val);
+    renderList();
+  });
+
+  /* ── Clear / Apply ── */
+  clearBtn.addEventListener('click', () => {
+    if (!openCol) return;
+    ensureFilter(openCol).selected.clear();
+    renderList();
+    refreshTriggers();
+  });
+  applyBtn.addEventListener('click', () => {
+    refreshTriggers();
+    close();
+  });
+
+  function refreshTriggers() {
+    document.querySelectorAll('.filter-trigger').forEach(t => {
+      const f = filters[t.dataset.col];
+      const n = f ? f.selected.size : 0;
+      t.classList.toggle('active', n > 0);
+      t.innerHTML = (n > 0 ? '<span class="badge">' + n + '</span>' : '') + '⌄';
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
