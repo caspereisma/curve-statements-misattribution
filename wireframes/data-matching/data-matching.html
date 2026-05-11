@@ -30,7 +30,7 @@
     }
     .dm-body { display: grid; grid-template-columns: 1fr; min-height: 700px; }
     .dm-body.focus-open { grid-template-columns: 1fr 520px; }
-    .dm-master { overflow: hidden; }
+    .dm-master { overflow: visible; position: relative; }
     .dm-focus  { display: none;
                  border-left: var(--border-2) solid var(--color-border);
                  flex-direction: column; }
@@ -42,33 +42,79 @@
       min-width: 0; padding: 10px 10px;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    .dm-master thead th { vertical-align: middle; }
+    .th-cell { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .th-cell .th-label { flex: 1; min-width: 0;
+                         overflow: hidden; text-overflow: ellipsis; }
 
     tr.focused td  { background: var(--color-bg-tint); border-bottom-color: var(--color-bg-tint); }
-    tr.detail td   { padding: 0; background: var(--color-bg-muted); }
-    .detail-inner  { padding: 12px 16px 16px; }
-    .detail-grid   { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 24px; }
-    .detail-grid .field { display: grid; grid-template-columns: 180px 1fr;
-                          gap: 10px; padding: 6px 0;
-                          border-bottom: 1px dashed var(--color-border-subtle);
-                          font-family: var(--font-hand); font-size: var(--text-base); }
-    .detail-grid .field:last-child,
-    .detail-grid .field:nth-last-child(2) { border-bottom: 0; }
-    .detail-grid .field .label {
-      font-family: var(--font-label); font-size: var(--text-xs);
-      color: var(--color-fg-muted); text-transform: lowercase;
-      letter-spacing: var(--tracking-wide);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .detail-grid .field .value { word-break: break-word; }
-    .detail-grid .field .value.empty { color: var(--color-fg-muted); font-style: italic; }
-    .detail-grid .field .value.mono  { font-family: var(--font-mono); font-size: var(--text-sm); }
-
-    .chev      { display: inline-block; color: var(--color-fg-subtle); font-size: 16px;
-                 text-align: center; width: 100%; cursor: pointer; user-select: none;
-                 padding: 2px 0; }
-    .chev:hover { color: var(--color-fg); }
-    .chev.open { color: var(--color-fg); }
     .check { cursor: pointer; }
+
+    /* ── Collapse-duplicates dropdown ── */
+    .dup-select {
+      font-family: var(--font-hand); font-size: var(--text-base);
+      padding: 4px 22px 4px 8px;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-xs);
+      background: var(--color-bg); color: var(--color-fg);
+      cursor: pointer; appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--color-fg-muted) 50%),
+                        linear-gradient(135deg, var(--color-fg-muted) 50%, transparent 50%);
+      background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    /* ── Two-line artist cell — keeps all rows the same height ── */
+    .dm-master table.tbl td.artist-cell {
+      white-space: normal;
+      vertical-align: middle;
+    }
+    .dm-master .artist-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.25;
+      min-height: 2.5em;   /* enforces uniform 2-line row height */
+    }
+
+    /* ── Grouped (collapsed) rows ── */
+    .grp-count {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      color: var(--color-fg-muted); margin-right: 4px;
+    }
+    .tbl .cell-mixed { color: var(--color-fg-muted); font-style: italic; }
+    tr.group-row td { background: var(--color-bg-muted); }
+    tr.group-row td.grouped-col {
+      font-weight: var(--weight-semibold);
+      background: var(--color-bg);
+      cursor: pointer;
+    }
+    tr.group-row td.grouped-col.no-dupes { cursor: default; }
+    tr.group-row.expanded td.grouped-col { background: var(--color-bg-tint-2); }
+    .grp-chev { display: inline-block; color: var(--color-fg-subtle);
+                margin-right: 6px; font-size: var(--text-md);
+                transition: transform var(--duration-fast); }
+    .grp-chev.open { transform: rotate(90deg); color: var(--color-fg); }
+    .grp-chev.disabled { color: var(--color-border-subtle); cursor: default; }
+
+    /* expanded sub-table inside a group row */
+    .tbl .subtbl { width: 100%; table-layout: fixed;
+                   border: 1.5px solid var(--color-border-subtle); }
+    .tbl .subtbl th, .tbl .subtbl td {
+      min-width: 0; padding: 7px 10px;
+      font-family: var(--font-hand); font-size: var(--text-sm);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .tbl .subtbl thead th {
+      background: var(--color-bg-muted);
+      font-family: var(--font-label); font-weight: var(--weight-semibold);
+      font-size: var(--text-xs); color: var(--color-fg-muted);
+    }
+    .tbl .subtbl .cell-missing { color: var(--color-fg-muted); font-style: italic; }
+    .group-detail td { padding: 0; background: var(--color-bg-muted); }
+    .group-detail .detail-inner { padding: 12px 16px 16px; }
 
     .eye-btn { display: inline-flex; align-items: center; justify-content: center; }
     .eye-btn .icon-eye-on  { display: none; }
@@ -87,7 +133,7 @@
                 padding: 12px 24px; border-top: var(--border-2) solid var(--color-border-subtle);
                 background: var(--color-bg-muted); }
     .dm-pager .summary { font-family: var(--font-hand); font-size: var(--text-base);
-                         color: var(--color-fg-muted); }
+                         color: var(--color-fg-muted); display: flex; align-items: center; gap: 10px; }
     .dm-pager .nav { display: inline-flex; align-items: center; gap: 6px; }
     .dm-pager .pages { display: inline-flex; gap: 4px; }
     .pg { font-family: var(--font-hand); font-size: var(--text-sm);
@@ -117,6 +163,200 @@
     .panel-fields .field .value { word-break: break-word; }
     .panel-fields .field .value.empty { color: var(--color-fg-muted); font-style: italic; }
     .panel-fields .field .value.mono  { font-family: var(--font-mono); font-size: var(--text-sm); }
+    .panel-fields .field .value.editable {
+      cursor: text;
+      padding: 1px 4px;
+      margin: -1px -4px;
+      border-radius: var(--radius-xs);
+      border: 1px solid transparent;
+    }
+    .panel-fields .field .value.editable:hover {
+      border-color: var(--color-border-subtle);
+      background: var(--color-bg-muted);
+    }
+    .panel-fields .field.edited .value {
+      background: var(--color-highlight);
+    }
+    .panel-fields .field.edited .label::after {
+      content: " ·";
+      color: var(--color-primary);
+      font-weight: var(--weight-bold);
+    }
+    .field-input {
+      width: 100%; box-sizing: border-box;
+      padding: 4px 6px; margin: -5px -6px;
+      font-family: inherit; font-size: inherit; color: var(--color-fg);
+      background: var(--color-bg);
+      border: 1.5px solid var(--color-primary);
+      border-radius: var(--radius-xs);
+      outline: none;
+    }
+    .field-input.mono { font-family: var(--font-mono); font-size: var(--text-sm); }
+    .edit-hint {
+      font-family: var(--font-hand); font-size: var(--text-xs);
+      color: var(--color-fg-muted);
+      padding: 6px 18px 0;
+    }
+
+    /* ── Bulk-edit mode ── */
+    .btn[disabled], .btn[disabled]:hover { opacity: 0.4; cursor: not-allowed; }
+    .dm-focus #focus-header-bulk,
+    .dm-focus #focus-actions-bulk { display: none; }
+    .dm-focus.bulk-mode #focus-header-single,
+    .dm-focus.bulk-mode #focus-actions-single { display: none !important; }
+    .dm-focus.bulk-mode #focus-header-bulk { display: flex; }
+    .dm-focus.bulk-mode #focus-actions-bulk { display: flex; }
+
+    .panel-fields .field .value.mixed {
+      color: var(--color-fg-muted);
+      font-style: italic;
+    }
+    .panel-fields .field .value.mixed::before {
+      content: "Mixed";
+    }
+    .panel-fields .field .value.editing.mixed::before { content: ""; }
+    .panel-fields .field.set .value {
+      background: var(--color-highlight);
+    }
+    .panel-fields .field.set .label::after {
+      content: " ·";
+      color: var(--color-primary);
+      font-weight: var(--weight-bold);
+    }
+    .value-chips {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      padding: 6px 0 2px;
+    }
+    .value-chip {
+      font-family: var(--font-hand); font-size: var(--text-xs);
+      padding: 2px 8px;
+      border: 1.5px solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      background: var(--color-bg);
+      color: var(--color-fg-muted);
+      cursor: pointer;
+      max-width: 220px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .value-chip:hover { color: var(--color-fg); border-color: var(--color-border); }
+    .value-chip .ct {
+      font-family: var(--font-mono); font-size: var(--text-2xs);
+      color: var(--color-fg-subtle); margin-left: 4px;
+    }
+    .value-picker { padding: 6px 0 2px; }
+    .value-picker-select {
+      width: 100%;
+      font-family: var(--font-hand); font-size: var(--text-sm);
+      padding: 6px 26px 6px 10px;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-xs);
+      background: var(--color-bg); color: var(--color-fg);
+      cursor: pointer; appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--color-fg-muted) 50%),
+                        linear-gradient(135deg, var(--color-fg-muted) 50%, transparent 50%);
+      background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+    .value-picker-select:focus { outline: none; border-color: var(--color-primary); }
+
+    /* ── Per-column filter trigger + popover (lifted from the concept) ── */
+    .filter-trigger {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 6px; border: 1.5px solid var(--color-border-subtle);
+      border-radius: var(--radius-xs); background: var(--color-bg);
+      color: var(--color-fg-muted); cursor: pointer;
+      font-family: var(--font-mono); font-size: var(--text-2xs);
+      flex-shrink: 0;
+    }
+    .filter-trigger:hover  { color: var(--color-fg); border-color: var(--color-border); }
+    .filter-trigger.active { color: var(--color-primary-fg);
+                             background: var(--color-primary);
+                             border-color: var(--color-primary); }
+    .filter-trigger .badge {
+      font-family: var(--font-mono); font-size: var(--text-2xs);
+      padding: 0 4px; border-radius: var(--radius-xs);
+      background: var(--color-primary-fg); color: var(--color-primary);
+      min-width: 14px; text-align: center;
+    }
+
+    .popover {
+      position: absolute; z-index: 50;
+      width: 320px; background: var(--color-bg);
+      border: var(--border-2) solid var(--color-fg);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-3);
+      padding: 14px;
+      font-family: var(--font-hand); font-size: var(--text-base);
+      display: none;
+    }
+    .popover.open { display: block; }
+    .popover .input { min-width: 0; margin-bottom: 10px; padding: 6px 10px; }
+    .popover .input input { font-size: var(--text-base); }
+    .popover .opts {
+      display: flex; align-items: center; gap: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px dashed var(--color-border-subtle);
+    }
+    .popover .opts .check { font-size: var(--text-sm); }
+    .popover .suggestions {
+      max-height: 240px; overflow-y: auto;
+      margin: 8px 0;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .popover .suggestion {
+      display: grid; grid-template-columns: 18px 1fr auto;
+      gap: 8px; align-items: center;
+      padding: 5px 6px; border-radius: var(--radius-xs);
+      cursor: pointer; min-width: 0;
+    }
+    .popover .suggestion:hover { background: var(--color-bg-muted); }
+    .popover .suggestion .tick {
+      width: 14px; height: 14px;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-xs);
+      background: var(--color-bg);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .popover .suggestion.selected .tick {
+      background: var(--color-fg); border-color: var(--color-fg);
+    }
+    .popover .suggestion.selected .tick::after {
+      content: ""; width: 7px; height: 4px;
+      border-left: 1.5px solid var(--color-white);
+      border-bottom: 1.5px solid var(--color-white);
+      transform: rotate(-45deg) translate(1px,-1px);
+    }
+    .popover .suggestion .val {
+      font-size: var(--text-sm); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .popover .suggestion .count {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      color: var(--color-fg-muted);
+    }
+    .popover .empty {
+      padding: 18px 6px; text-align: center;
+      color: var(--color-fg-muted); font-family: var(--font-hand);
+      font-size: var(--text-base);
+    }
+    .popover .actions {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding-top: 8px;
+      border-top: 1.5px dashed var(--color-border-subtle);
+    }
+    .popover .actions .left {
+      font-family: var(--font-hand); font-size: var(--text-sm);
+      color: var(--color-fg-muted);
+    }
+
+    .clear-filters {
+      font-family: var(--font-hand); font-size: var(--text-sm);
+      color: var(--color-primary); text-decoration: underline dashed;
+      text-underline-offset: 3px; cursor: pointer;
+      background: transparent; border: 0; padding: 0;
+    }
+    .clear-filters:hover { color: var(--color-primary-hover); }
   </style>
 </head>
 <body>
@@ -155,17 +395,25 @@
   </div>
 
   <div class="dm-toolbar">
-    <div class="hand-s" style="display: flex; align-items: center; gap: 14px;">
+    <div class="hand-s" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
       <span class="check" id="master-check"><span class="box"></span></span>
       <span><span class="count">0</span> of <span class="total">0</span> selected</span>
       <span style="color: var(--color-fg-subtle);">·</span>
-      <span style="color: var(--color-fg-muted);">Sort: source then date</span>
-      <span style="color: var(--color-fg-subtle);">·</span>
-      <span style="color: var(--color-fg-muted);">Showing fields: 6</span>
+      <label style="display: inline-flex; align-items: center; gap: 6px; color: var(--color-fg-muted);">
+        Collapse duplicates:
+        <select id="collapse-select" class="dup-select">
+          <option value="">none</option>
+          <option value="Original Track Title">track title</option>
+          <option value="Original Track Artist">track artist</option>
+          <option value="Original ISRC">isrc</option>
+          <option value="Original Contract ID">orig. contract id</option>
+          <option value="Source">source</option>
+          <option value="Catalogue Type">cat. type</option>
+        </select>
+      </label>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button class="btn outline sm">Filter</button>
-      <button class="btn outline sm">Bulk defer</button>
+      <button class="btn outline sm" id="bulk-edit-btn" disabled>Bulk edit</button>
       <button class="btn outline sm">Export</button>
     </div>
   </div>
@@ -175,33 +423,67 @@
     <div class="dm-master">
       <table class="tbl">
         <colgroup>
-          <col style="width: 30px;">
           <col style="width: 36px;">
-          <col style="width: 140px;">
+          <col style="width: 280px;">
           <col>
           <col style="width: 110px;">
           <col style="width: 110px;">
           <col style="width: 110px;">
-          <col style="width: 70px;">
+          <col style="width: 80px;">
           <col style="width: 50px;">
         </colgroup>
         <thead>
           <tr>
             <th></th>
-            <th></th>
-            <th>track title</th>
-            <th>track artist</th>
-            <th>isrc</th>
-            <th>orig. contract id</th>
-            <th>source</th>
-            <th>cat. type</th>
+            <th><div class="th-cell"><span class="th-label">track title</span><button class="filter-trigger" data-col="Original Track Title">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label">track artist</span><button class="filter-trigger" data-col="Original Track Artist">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label">isrc</span><button class="filter-trigger" data-col="Original ISRC">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label">orig. contract id</span><button class="filter-trigger" data-col="Original Contract ID">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label">source</span><button class="filter-trigger" data-col="Source">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label">cat. type</span><button class="filter-trigger" data-col="Catalogue Type">⌄</button></div></th>
             <th></th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
+
+      <div class="popover" id="popover">
+        <div class="input">
+          <input type="text" id="q" placeholder="search values…" autocomplete="off">
+        </div>
+        <div class="opts">
+          <label class="check" id="fuzzy-toggle">
+            <span class="box"></span>
+            fuzzy match
+          </label>
+          <span style="font-family: var(--font-hand); font-size: var(--text-xs); color: var(--color-fg-muted);">
+            tolerates typos &amp; transpositions
+          </span>
+        </div>
+        <div class="opts" id="alias-row" style="display: none;">
+          <label class="check" id="alias-toggle">
+            <span class="box"></span>
+            ISRC alias only
+          </label>
+          <span style="font-family: var(--font-hand); font-size: var(--text-xs); color: var(--color-fg-muted);">
+            hides rows with valid 12-char ISRCs
+          </span>
+        </div>
+        <div class="suggestions" id="list"></div>
+        <div class="actions">
+          <span class="left" id="sel-status">0 selected · 0 shown</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn outline sm" id="clear-btn">Clear</button>
+            <button class="btn sm" id="apply-btn">Apply</button>
+          </div>
+        </div>
+      </div>
+
       <div class="dm-pager">
-        <div class="summary" id="pager-summary">…</div>
+        <div class="summary">
+          <span id="pager-summary">…</span>
+          <button class="clear-filters" id="clear-filters" style="display: none;">× clear all filters</button>
+        </div>
         <div class="nav">
           <button class="pg" id="pg-prev">‹ Prev</button>
           <span class="pages" id="pg-pages"></span>
@@ -211,7 +493,8 @@
     </div>
 
     <div class="dm-focus" id="focus-panel">
-      <div style="padding: 16px 18px; border-bottom: var(--border-2) solid var(--color-border-subtle); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+      <!-- Single-record header -->
+      <div id="focus-header-single" style="padding: 16px 18px; border-bottom: var(--border-2) solid var(--color-border-subtle); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
         <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <span class="sec-eyebrow">Focus</span>
@@ -222,13 +505,37 @@
         <button class="ibtn sm" id="focus-close" title="Close" aria-label="Close focus panel">×</button>
       </div>
 
+      <!-- Bulk-edit header -->
+      <div id="focus-header-bulk" style="padding: 16px 18px; border-bottom: var(--border-2) solid var(--color-border-subtle); align-items: flex-start; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="sec-eyebrow">Bulk edit</span>
+            <span class="hand-s" style="color: var(--color-fg-muted);"><span id="bulk-count">0</span> records</span>
+          </div>
+          <span class="hand-xs" style="color: var(--color-fg-muted); max-width: 480px; line-height: var(--leading-snug);">
+            Edits apply to all selected records. Fields left as "mixed" are not changed.
+          </span>
+        </div>
+        <button class="ibtn sm" id="bulk-close" title="Cancel bulk edit" aria-label="Cancel bulk edit">×</button>
+      </div>
+
+      <div class="edit-hint">Click any value to edit · Enter to save · Esc to cancel</div>
       <div class="panel-fields" id="panel-fields"></div>
 
-      <div class="focus-actions">
+      <!-- Single-record actions -->
+      <div class="focus-actions" id="focus-actions-single">
         <div style="display: flex; gap: 8px;">
           <button class="btn sm">Find a match</button>
           <button class="btn outline sm">Defer</button>
           <button class="btn outline sm">Mark no-match</button>
+        </div>
+      </div>
+
+      <!-- Bulk-edit actions -->
+      <div class="focus-actions" id="focus-actions-bulk">
+        <div style="display: flex; gap: 8px;">
+          <button class="btn outline sm" id="bulk-cancel">Cancel</button>
+          <button class="btn sm" id="bulk-save">Save <span id="bulk-save-count">0</span> records</button>
         </div>
       </div>
     </div>
@@ -257,60 +564,225 @@
     'Net Amount in Currency', 'Gross Amount in Currency'
   ]);
 
+  /* Pre-compute unique values + counts per filterable column, sorted desc. */
+  const COLUMN_FILTER_COLS = [
+    'Original Track Title', 'Original Track Artist', 'Original ISRC',
+    'Original Contract ID', 'Source', 'Catalogue Type'
+  ];
+  const UNIQUE_VALUES = {};
+  for (const col of COLUMN_FILTER_COLS) {
+    const idx = F(col);
+    const counts = new Map();
+    for (const r of ROWS) {
+      const v = r[idx];
+      counts.set(v, (counts.get(v) || 0) + 1);
+    }
+    UNIQUE_VALUES[col] = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([value, count]) => ({ value, count }));
+  }
+
   const PAGE_SIZE = 20;
   const state = {
     filter: 'All',
     page: 1,
-    expanded: new Set(),
     checked:  new Set(),
-    activeIdx: null
+    activeIdx: null,
+    columnFilters: {},       // colName → { selected: Set, fuzzy: bool, isrcAliasOnly?: bool }
+    editedFields: new Map(), // row_idx → Set<field_idx>  (which fields the user has touched)
+    bulkMode: false,         // true when bulk-edit panel is open
+    bulkSnapshot: [],        // row indices included in the current bulk edit
+    bulkEdits: new Map(),    // field_idx → new value (only fields the user has set)
+    groupByColumn: null,     // column name to collapse duplicates on, or null
+    groupExpanded: new Set(),// group values currently expanded
+    activeGroupValue: null   // group value whose eye is active (panel open from a group)
   };
+  function ensureColFilter(col) {
+    if (!state.columnFilters[col]) state.columnFilters[col] = { selected: new Set(), fuzzy: false, isrcAliasOnly: false };
+    return state.columnFilters[col];
+  }
+  function anyColumnFiltersActive() {
+    return Object.values(state.columnFilters).some(f => f.selected.size > 0 || f.isrcAliasOnly);
+  }
+
+  /* A valid ISRC is 12 chars: 2-letter country, 3-char alphanumeric registrant,
+     2 digits (year), 5 digits (designation). Aliases are anything else. */
+  function isValidISRC(s) {
+    return /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/.test(String(s || ''));
+  }
 
   function filteredIndices() {
-    if (state.filter === 'All') return ROWS.map((_, i) => i);
     return ROWS.reduce((acc, r, i) => {
-      if (r[CATTYPE_IDX] === state.filter) acc.push(i);
+      // Tab filter (Catalogue Type quick filter)
+      if (state.filter !== 'All' && r[CATTYPE_IDX] !== state.filter) return acc;
+      // Column filters (AND across columns, OR within a single column)
+      for (const [col, f] of Object.entries(state.columnFilters)) {
+        const idx = F(col);
+        if (f.selected.size > 0 && !f.selected.has(r[idx])) return acc;
+        // ISRC alias-only: drop rows whose ISRC matches the strict format
+        if (col === 'Original ISRC' && f.isrcAliasOnly && isValidISRC(r[idx])) return acc;
+      }
+      acc.push(i);
       return acc;
     }, []);
   }
+
+  function isGroupMode() { return state.groupByColumn != null; }
+
+  function groupedRows() {
+    // Returns [[groupValue, idxs[]], ...] sorted by group size desc, biggest first.
+    const idxs = filteredIndices();
+    const colIdx = F(state.groupByColumn);
+    const groups = new Map();
+    for (const i of idxs) {
+      const v = ROWS[i][colIdx];
+      if (!groups.has(v)) groups.set(v, []);
+      groups.get(v).push(i);
+    }
+    return [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
+  }
+  function totalItems() {
+    return isGroupMode() ? groupedRows().length : filteredIndices().length;
+  }
   function pageCount() {
-    return Math.max(1, Math.ceil(filteredIndices().length / PAGE_SIZE));
+    return Math.max(1, Math.ceil(totalItems() / PAGE_SIZE));
   }
   function pageIndices() {
     const f = filteredIndices();
     const start = (state.page - 1) * PAGE_SIZE;
     return f.slice(start, start + PAGE_SIZE);
   }
+  function pageGroups() {
+    const all = groupedRows();
+    const start = (state.page - 1) * PAGE_SIZE;
+    return all.slice(start, start + PAGE_SIZE);
+  }
+  /* Aggregate a field's value across a set of row indices.
+     'same' → all rows agree; 'empty' → all rows empty; 'mixed' → rows differ. */
+  function aggregate(idxs, fieldIdx) {
+    let firstVal = null, allSame = true, allEmpty = true;
+    for (const i of idxs) {
+      const v = ROWS[i][fieldIdx];
+      if (v !== '' && v != null) allEmpty = false;
+      if (firstVal === null) firstVal = v;
+      else if (v !== firstVal) allSame = false;
+    }
+    if (allEmpty) return { kind: 'empty', value: '' };
+    if (allSame)  return { kind: 'same',  value: firstVal };
+    return             { kind: 'mixed', value: null };
+  }
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, ch =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
-  function cellMarkup(field, value) {
-    const isEmpty = value === '' || value == null;
-    const cls = ['value'];
-    if (isEmpty) cls.push('empty');
-    if (MONO_FIELDS.has(field)) cls.push('mono');
-    return '<div class="' + cls.join(' ') + '">' + (isEmpty ? '(empty)' : esc(value)) + '</div>';
+  /* Display columns in the master table (A-F) + their FIELDS index. */
+  const MASTER_COLS = [
+    ['Original Track Title',   TITLE_IDX],
+    ['Original Track Artist',  ARTIST_IDX],
+    ['Original ISRC',          ISRC_IDX],
+    ['Original Contract ID',   ORIG_CONTRACT_ID],
+    ['Source',                 SOURCE_IDX],
+    ['Catalogue Type',         CATTYPE_IDX]
+  ];
+
+  function renderGroupParentRow(groupValue, idxs) {
+    const isExpanded = state.groupExpanded.has(groupValue);
+    const allOn  = idxs.every(i => state.checked.has(i));
+    const someOn = idxs.some(i => state.checked.has(i));
+    const isFocused = state.activeGroupValue === groupValue;
+    const groupColIdx = F(state.groupByColumn);
+
+    const cells = [
+      '<td><span class="check' + (allOn ? ' on' : someOn ? ' indet' : '') + '"><span class="box"></span></span></td>'
+    ];
+    for (const [colName, colIdx] of MASTER_COLS) {
+      const isArtistCol = (colIdx === ARTIST_IDX);
+      if (colIdx === groupColIdx) {
+        const v = (groupValue === '' || groupValue == null) ? '(empty)' : esc(groupValue);
+        const monoCls = MONO_FIELDS.has(colName) ? ' mono' : '';
+        const monoStyle = MONO_FIELDS.has(colName) ? ' style="font-size: var(--text-xs);"' : '';
+        const hasDupes = idxs.length > 1;
+        const tdClass = 'grouped-col' + monoCls + (hasDupes ? '' : ' no-dupes');
+        const chevClass = 'grp-chev' + (isExpanded ? ' open' : '') + (hasDupes ? '' : ' disabled');
+        const countPrefix = hasDupes
+          ? '<span class="grp-count">(' + idxs.length + ')</span>'
+          : '';
+        cells.push('<td class="' + tdClass + '"' + monoStyle + ' title="' + esc(groupValue || '') + '">' +
+                   '<span class="' + chevClass + '">›</span>' + countPrefix + v + '</td>');
+      } else {
+        const agg = aggregate(idxs, colIdx);
+        // Artist column wraps to 2 lines.
+        const wrapStart = isArtistCol ? '<div class="artist-clamp">' : '';
+        const wrapEnd   = isArtistCol ? '</div>' : '';
+        const artistCls = isArtistCol ? ' artist-cell' : '';
+        if (agg.kind === 'same') {
+          const v = (agg.value === '' || agg.value == null) ? '<span class="cell-missing">(empty)</span>' : esc(agg.value);
+          const monoCls = MONO_FIELDS.has(colName) ? ' mono' : '';
+          const monoStyle = MONO_FIELDS.has(colName) ? ' style="font-size: var(--text-xs);"' : '';
+          cells.push('<td class="' + (monoCls + artistCls).trim() + '"' + monoStyle + ' title="' + esc(agg.value || '') + '">' + wrapStart + v + wrapEnd + '</td>');
+        } else if (agg.kind === 'mixed') {
+          cells.push('<td class="cell-mixed' + artistCls + '">' + wrapStart + 'Mixed' + wrapEnd + '</td>');
+        } else {
+          cells.push('<td class="cell-missing' + artistCls + '">' + wrapStart + '(empty)' + wrapEnd + '</td>');
+        }
+      }
+    }
+    cells.push('<td><button class="eye-btn ibtn sm muted' + (isFocused ? ' active' : '') + '" data-group="' +
+               encodeURIComponent(groupValue) + '" aria-label="Open focus panel">' +
+               '<svg class="icon-eye-on"><use href="#i-eye-on"/></svg>' +
+               '<svg class="icon-eye-off"><use href="#i-eye-off"/></svg>' +
+               '</button></td>');
+
+    let out = '<tr class="group-row' + (isExpanded ? ' expanded' : '') + (isFocused ? ' focused' : '') + '" data-group="' +
+              encodeURIComponent(groupValue) + '">' + cells.join('') + '</tr>';
+    if (isExpanded) {
+      out += '<tr class="group-detail"><td colspan="8"><div class="detail-inner">' +
+             renderGroupDetail(idxs) + '</div></td></tr>';
+    }
+    return out;
   }
 
-  function buildDetailGrid(idx) {
-    const row = ROWS[idx];
-    return FIELDS.map((f, i) =>
-      '<div class="field"><div class="label">' + esc(f).toLowerCase() + '</div>' +
-      cellMarkup(f, row[i]) + '</div>'
-    ).join('');
+  function renderGroupDetail(idxs) {
+    const headers = MASTER_COLS.map(([name]) => '<th>' + esc(name.toLowerCase()) + '</th>').join('');
+    const body = idxs.map(i => {
+      const r = ROWS[i];
+      const cells = MASTER_COLS.map(([colName, colIdx]) => {
+        const v = r[colIdx];
+        const isEmpty = v === '' || v == null;
+        const mono = MONO_FIELDS.has(colName);
+        const isArtist = (colIdx === ARTIST_IDX);
+        const cls = (mono ? 'mono ' : '') + (isEmpty ? 'cell-missing ' : '') + (isArtist ? 'artist-cell' : '');
+        const clsAttr = cls.trim() ? ' class="' + cls.trim() + '"' : '';
+        const style = mono ? ' style="font-size: var(--text-xs);"' : '';
+        const content = isEmpty ? '(empty)' : esc(v);
+        const inner = isArtist ? '<div class="artist-clamp">' + content + '</div>' : content;
+        return '<td' + clsAttr + style + ' title="' + esc(v || '') + '">' + inner + '</td>';
+      }).join('');
+      return '<tr data-idx="' + i + '">' + cells + '</tr>';
+    }).join('');
+    return '<table class="tbl subtbl"><thead><tr>' + headers + '</tr></thead><tbody>' + body + '</tbody></table>';
   }
 
   function renderRows() {
     const tbody = document.getElementById('rows');
+
+    if (isGroupMode()) {
+      const groups = pageGroups();
+      if (groups.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records match the current filters.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = groups.map(([gv, idxs]) => renderGroupParentRow(gv, idxs)).join('');
+      return;
+    }
+
     const idxs = pageIndices();
     if (idxs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records on this page.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records match the current filters.</td></tr>';
       return;
     }
     const html = idxs.map(idx => {
       const row = ROWS[idx];
-      const isExpanded = state.expanded.has(idx);
       const isChecked  = state.checked.has(idx);
       const isFocused  = state.activeIdx === idx;
       const titleVal   = row[TITLE_IDX]  || '';
@@ -321,11 +793,9 @@
       const cattypeVal = row[CATTYPE_IDX] || '';
 
       const cells = [
-        '<td><span class="chev' + (isExpanded ? ' open' : '') + '">' +
-          (isExpanded ? '⌄' : '›') + '</span></td>',
         '<td><span class="check' + (isChecked ? ' on' : '') + '"><span class="box"></span></span></td>',
         '<td title="' + esc(titleVal)  + '">' + esc(titleVal)  + '</td>',
-        '<td title="' + esc(artistVal) + '">' + esc(artistVal) + '</td>',
+        '<td class="artist-cell" title="' + esc(artistVal) + '"><div class="artist-clamp">' + esc(artistVal) + '</div></td>',
         '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(isrcVal) + '">' + esc(isrcVal) + '</td>',
         '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(ocidVal) + '">' + esc(ocidVal) + '</td>',
         '<td title="' + esc(sourceVal) + '">' + esc(sourceVal) + '</td>',
@@ -336,30 +806,28 @@
         '</button></td>'
       ];
 
-      let out = '<tr data-idx="' + idx + '"' + (isFocused ? ' class="focused"' : '') + '>' +
-                cells.join('') + '</tr>';
-      if (isExpanded) {
-        out += '<tr class="detail"><td colspan="9"><div class="detail-inner">' +
-               '<div class="detail-grid">' + buildDetailGrid(idx) + '</div>' +
-               '</div></td></tr>';
-      }
-      return out;
+      return '<tr data-idx="' + idx + '"' + (isFocused ? ' class="focused"' : '') + '>' + cells.join('') + '</tr>';
     }).join('');
     tbody.innerHTML = html;
   }
 
   function renderPager() {
-    const total = filteredIndices().length;
+    const totalRows = filteredIndices().length;
+    const totalDisplay = isGroupMode() ? groupedRows().length : totalRows;
     const pages = pageCount();
-    const start = total === 0 ? 0 : (state.page - 1) * PAGE_SIZE + 1;
-    const end   = Math.min(state.page * PAGE_SIZE, total);
+    if (state.page > pages) state.page = pages;
+    const start = totalDisplay === 0 ? 0 : (state.page - 1) * PAGE_SIZE + 1;
+    const end   = Math.min(state.page * PAGE_SIZE, totalDisplay);
+    const filteredNote = anyColumnFiltersActive() ? ' (filtered)' : '';
+    const unit = isGroupMode() ? ' groups of ' + totalRows.toLocaleString('en-US') + ' tracks' : '';
     document.getElementById('pager-summary').textContent =
-      total === 0
-        ? 'No records'
-        : 'Showing ' + start + '–' + end + ' of ' + total + (state.filter === 'All' ? '' : ' (' + state.filter + ')');
+      totalDisplay === 0
+        ? 'No records match'
+        : 'Showing ' + start + '–' + end + ' of ' + totalDisplay + unit + (state.filter === 'All' ? '' : ' (' + state.filter + ')') + filteredNote;
+    document.getElementById('clear-filters').style.display = anyColumnFiltersActive() ? '' : 'none';
 
     document.getElementById('pg-prev').disabled = state.page === 1;
-    document.getElementById('pg-next').disabled = state.page === pages;
+    document.getElementById('pg-next').disabled = state.page === pages || pages === 0;
 
     const list = [];
     const p = state.page;
@@ -392,18 +860,33 @@
   function renderSelectionCount() {
     document.querySelector('.dm-toolbar .count').textContent =
       state.checked.size.toLocaleString('en-US');
-    const visible = pageIndices();
+    const visible = isGroupMode()
+      ? pageGroups().flatMap(([, idxs]) => idxs)
+      : pageIndices();
     const allOn  = visible.length > 0 && visible.every(i => state.checked.has(i));
     const someOn = visible.some(i => state.checked.has(i));
     const m = document.getElementById('master-check');
     m.classList.remove('on', 'indet');
     if (allOn) m.classList.add('on');
     else if (someOn) m.classList.add('indet');
+    // Toggle Bulk edit button availability
+    document.getElementById('bulk-edit-btn').disabled = state.checked.size === 0;
   }
 
   function renderFocusPanel() {
+    const body  = document.getElementById('dm-body');
+    const panel = document.getElementById('focus-panel');
+
+    // Bulk-edit mode takes precedence over single-record focus.
+    if (state.bulkMode) {
+      body.classList.add('focus-open');
+      panel.classList.add('bulk-mode');
+      renderBulkPanel();
+      return;
+    }
+    panel.classList.remove('bulk-mode');
+
     const idx = state.activeIdx;
-    const body = document.getElementById('dm-body');
     if (idx == null) {
       body.classList.remove('focus-open');
       return;
@@ -414,10 +897,200 @@
     const title   = row[TITLE_IDX]     || row[ARTIST_IDX] || '(untitled)';
     document.getElementById('focus-id').textContent    = idLabel;
     document.getElementById('focus-title').textContent = title;
-    document.getElementById('panel-fields').innerHTML = FIELDS.map((f, i) =>
-      '<div class="field"><div class="label">' + esc(f).toLowerCase() + '</div>' +
-      cellMarkup(f, row[i]) + '</div>'
-    ).join('');
+    const editedSet = state.editedFields.get(idx) || new Set();
+    document.getElementById('panel-fields').innerHTML = FIELDS.map((f, i) => {
+      const v = row[i];
+      const isEmpty = v === '' || v == null;
+      const valClasses = ['value', 'editable'];
+      if (isEmpty) valClasses.push('empty');
+      if (MONO_FIELDS.has(f)) valClasses.push('mono');
+      return '<div class="field' + (editedSet.has(i) ? ' edited' : '') + '">' +
+               '<div class="label">' + esc(f).toLowerCase() + '</div>' +
+               '<div class="' + valClasses.join(' ') + '" data-field-idx="' + i + '">' +
+               (isEmpty ? '(empty)' : esc(v)) +
+             '</div></div>';
+    }).join('');
+  }
+
+  /* ── Bulk-edit panel ── */
+  function fieldAgreement(fieldIdx) {
+    // Returns { kind: 'common'|'mixed'|'all-empty', value, distinct }
+    let firstVal = null;
+    let allSame = true, allEmpty = true;
+    const distinct = new Map();   // value → count
+    for (const rIdx of state.bulkSnapshot) {
+      const v = ROWS[rIdx][fieldIdx];
+      if (v !== '' && v != null) allEmpty = false;
+      if (firstVal === null) firstVal = v;
+      else if (v !== firstVal) allSame = false;
+      const k = v == null ? '' : v;
+      distinct.set(k, (distinct.get(k) || 0) + 1);
+    }
+    if (allEmpty)        return { kind: 'all-empty', value: '', distinct };
+    if (allSame)         return { kind: 'common',    value: firstVal, distinct };
+    return                       { kind: 'mixed',     value: null,    distinct };
+  }
+
+  function renderBulkPanel() {
+    document.getElementById('bulk-count').textContent      = state.bulkSnapshot.length.toLocaleString('en-US');
+    document.getElementById('bulk-save-count').textContent = state.bulkSnapshot.length.toLocaleString('en-US');
+
+    document.getElementById('panel-fields').innerHTML = FIELDS.map((f, i) => {
+      const agreement = fieldAgreement(i);
+      const userSet = state.bulkEdits.has(i);
+      const setValue = userSet ? state.bulkEdits.get(i) : null;
+      const isMono = MONO_FIELDS.has(f);
+
+      const valClasses = ['value', 'editable'];
+      let display = '';
+      if (userSet) {
+        const isEmpty = setValue === '' || setValue == null;
+        if (isEmpty) valClasses.push('empty');
+        display = isEmpty ? '(empty)' : esc(setValue);
+      } else if (agreement.kind === 'mixed') {
+        valClasses.push('mixed');                                   // styled via ::before "mixed"
+      } else if (agreement.kind === 'all-empty') {
+        valClasses.push('empty');
+        display = '(empty)';
+      } else {
+        display = esc(agreement.value);
+      }
+      if (isMono) valClasses.push('mono');
+
+      const fieldClasses = ['field'];
+      if (userSet) fieldClasses.push('set');
+
+      return '<div class="' + fieldClasses.join(' ') + '" data-bulk-field="' + i + '">' +
+               '<div class="label">' + esc(f).toLowerCase() + '</div>' +
+               '<div class="' + valClasses.join(' ') + '" data-field-idx="' + i + '">' +
+               display +
+             '</div></div>';
+    }).join('');
+  }
+
+  function enterBulkMode() {
+    state.bulkMode = true;
+    state.bulkSnapshot = [...state.checked].sort((a, b) => a - b);
+    state.bulkEdits = new Map();
+    state.activeIdx = null;       // clear single-record focus
+    renderRows();                  // remove focused-row tint
+    renderFocusPanel();
+  }
+  function exitBulkMode() {
+    state.bulkMode = false;
+    state.bulkSnapshot = [];
+    state.bulkEdits = new Map();
+    state.activeGroupValue = null;
+    document.getElementById('focus-panel').classList.remove('bulk-mode');
+    document.getElementById('dm-body').classList.remove('focus-open');
+  }
+
+  function startBulkEdit(valueEl) {
+    if (valueEl.classList.contains('editing')) return;
+    const fieldIdx = parseInt(valueEl.dataset.fieldIdx, 10);
+    const fieldName = FIELDS[fieldIdx];
+    const agreement = fieldAgreement(fieldIdx);
+
+    valueEl.classList.add('editing');
+    const original = state.bulkEdits.has(fieldIdx)
+      ? state.bulkEdits.get(fieldIdx)
+      : (agreement.kind === 'common' ? agreement.value : '');
+
+    const input = document.createElement('input');
+    input.className = 'field-input' + (MONO_FIELDS.has(fieldName) ? ' mono' : '');
+    input.value = original ?? '';
+    if (agreement.kind === 'mixed' && !state.bulkEdits.has(fieldIdx)) {
+      input.placeholder = 'mixed — pick a value below or type a new one';
+    }
+    valueEl.innerHTML = '';
+    valueEl.appendChild(input);
+
+    // Single-select dropdown of distinct values from the selected rows
+    let skipNextBlur = false;
+    if (agreement.distinct.size > 1) {
+      const wrap = document.createElement('div');
+      wrap.className = 'value-picker';
+      const select = document.createElement('select');
+      select.className = 'value-picker-select';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Pick one of the existing values…';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      select.appendChild(placeholder);
+      [...agreement.distinct.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([val, ct]) => {
+          const opt = document.createElement('option');
+          opt.value = val;
+          opt.textContent = (val === '' ? '(empty)' : val) + '  · ' + ct;
+          select.appendChild(opt);
+        });
+      // Suppress the input's blur-commit while the user opens the dropdown.
+      select.addEventListener('mousedown', () => { skipNextBlur = true; });
+      select.addEventListener('change', () => {
+        input.value = select.value;
+        // Commit immediately with the picked value.
+        done();
+      });
+      wrap.appendChild(select);
+      valueEl.appendChild(wrap);
+    }
+
+    input.focus();
+    input.select();
+
+    let cancelled = false;
+    let committed = false;
+    function done() {
+      if (committed) return;
+      committed = true;
+      valueEl.classList.remove('editing');
+      if (cancelled) { renderBulkPanel(); return; }
+      const newVal = input.value;
+      state.bulkEdits.set(fieldIdx, newVal);
+      renderBulkPanel();
+    }
+    input.addEventListener('blur', () => {
+      if (skipNextBlur) { skipNextBlur = false; return; }
+      done();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter')      { e.preventDefault(); done(); }
+      else if (e.key === 'Escape'){ cancelled = true; done(); }
+    });
+  }
+
+  function commitBulk() {
+    if (state.bulkEdits.size === 0) { exitBulkMode(); renderAll(); return; }
+    const touchedCols = new Set();
+    state.bulkEdits.forEach((newVal, fieldIdx) => {
+      const fieldName = FIELDS[fieldIdx];
+      state.bulkSnapshot.forEach(rIdx => {
+        ROWS[rIdx][fieldIdx] = newVal;
+        if (!state.editedFields.has(rIdx)) state.editedFields.set(rIdx, new Set());
+        state.editedFields.get(rIdx).add(fieldIdx);
+      });
+      if (COLUMN_FILTER_COLS.includes(fieldName)) touchedCols.add(fieldName);
+    });
+    touchedCols.forEach(recomputeUniques);
+    exitBulkMode();
+    renderAll();
+  }
+
+  function refreshFilterTriggers() {
+    document.querySelectorAll('.filter-trigger').forEach(t => {
+      const f = state.columnFilters[t.dataset.col];
+      const n = f ? f.selected.size : 0;
+      const aliasOnly = !!(f && f.isrcAliasOnly);
+      const isActive = n > 0 || aliasOnly;
+      t.classList.toggle('active', isActive);
+      // Badge shows selection count when > 0, otherwise "A" if only alias-only is on.
+      const badge = n > 0
+        ? '<span class="badge">' + n + '</span>'
+        : (aliasOnly ? '<span class="badge">A</span>' : '');
+      t.innerHTML = badge + '⌄';
+    });
   }
 
   function renderAll() {
@@ -425,19 +1098,62 @@
     renderPager();
     renderSelectionCount();
     renderFocusPanel();
+    refreshFilterTriggers();
   }
 
+  /* ── Row interactions ── */
   document.getElementById('rows').addEventListener('click', (e) => {
+    // Group parent rows (only present when state.groupByColumn is set)
+    const groupTr = e.target.closest('tr.group-row[data-group]');
+    if (groupTr) {
+      const groupValue = decodeURIComponent(groupTr.dataset.group);
+      if (e.target.closest('.check')) {
+        const grp = groupedRows().find(([gv]) => gv === groupValue);
+        if (!grp) return;
+        const idxs = grp[1];
+        const allOn = idxs.every(i => state.checked.has(i));
+        if (allOn) idxs.forEach(i => state.checked.delete(i));
+        else       idxs.forEach(i => state.checked.add(i));
+        renderRows();
+        renderSelectionCount();
+        return;
+      }
+      if (e.target.closest('.eye-btn')) {
+        if (state.bulkMode && state.activeGroupValue !== groupValue) return;
+        if (state.activeGroupValue === groupValue) {
+          // toggle off — close
+          exitBulkMode();
+          renderAll();
+          return;
+        }
+        const grp = groupedRows().find(([gv]) => gv === groupValue);
+        if (!grp) return;
+        state.bulkSnapshot = grp[1].slice();
+        state.bulkEdits = new Map();
+        state.bulkMode = true;
+        state.activeGroupValue = groupValue;
+        state.activeIdx = null;
+        renderAll();
+        return;
+      }
+      // Click anywhere else on the parent (e.g., the grouped-col with the chev) → toggle expansion
+      if (e.target.closest('.grouped-col') || e.target.closest('.grp-chev')) {
+        // Single-track groups have nothing to expand
+        const grp = groupedRows().find(([gv]) => gv === groupValue);
+        if (!grp || grp[1].length <= 1) return;
+        if (state.groupExpanded.has(groupValue)) state.groupExpanded.delete(groupValue);
+        else                                     state.groupExpanded.add(groupValue);
+        renderRows();
+        return;
+      }
+      return;
+    }
+
+    // Flat-mode rows
     const tr = e.target.closest('tr[data-idx]');
     if (!tr) return;
     const idx = parseInt(tr.dataset.idx, 10);
 
-    if (e.target.closest('.chev')) {
-      if (state.expanded.has(idx)) state.expanded.delete(idx);
-      else state.expanded.add(idx);
-      renderRows();
-      return;
-    }
     if (e.target.closest('.check')) {
       if (state.checked.has(idx)) state.checked.delete(idx);
       else state.checked.add(idx);
@@ -447,6 +1163,7 @@
     }
     const eye = e.target.closest('.eye-btn');
     if (eye) {
+      if (state.bulkMode) return;   // bulk-edit owns the panel; ignore eye clicks
       state.activeIdx = (state.activeIdx === idx) ? null : idx;
       renderRows();
       renderFocusPanel();
@@ -455,13 +1172,107 @@
   });
 
   document.getElementById('master-check').addEventListener('click', () => {
-    const visible = pageIndices();
+    const visible = isGroupMode()
+      ? pageGroups().flatMap(([, idxs]) => idxs)
+      : pageIndices();
     const allOn = visible.length > 0 && visible.every(i => state.checked.has(i));
     if (allOn) visible.forEach(i => state.checked.delete(i));
     else visible.forEach(i => state.checked.add(i));
     renderRows();
     renderSelectionCount();
   });
+
+  /* ── Collapse-duplicates dropdown ── */
+  document.getElementById('collapse-select').addEventListener('change', (e) => {
+    const val = e.target.value;
+    state.groupByColumn = val || null;
+    state.groupExpanded.clear();
+    state.page = 1;
+    // If a single-record focus or bulk edit is open, close it — semantics change.
+    if (state.bulkMode || state.activeIdx != null) {
+      exitBulkMode();
+      state.activeIdx = null;
+    }
+    renderAll();
+  });
+
+  /* ── Focus panel: inline edit on click ── */
+  function recomputeUniques(col) {
+    const idx = F(col);
+    const counts = new Map();
+    for (const r of ROWS) {
+      const v = r[idx];
+      counts.set(v, (counts.get(v) || 0) + 1);
+    }
+    UNIQUE_VALUES[col] = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([value, count]) => ({ value, count }));
+  }
+
+  function startEdit(valueEl) {
+    if (valueEl.classList.contains('editing')) return;
+    const rowIdx   = state.activeIdx;
+    if (rowIdx == null) return;
+    const fieldIdx = parseInt(valueEl.dataset.fieldIdx, 10);
+    const fieldName = FIELDS[fieldIdx];
+    const row = ROWS[rowIdx];
+    const original = row[fieldIdx];
+
+    valueEl.classList.add('editing');
+    const input = document.createElement('input');
+    input.className = 'field-input' + (MONO_FIELDS.has(fieldName) ? ' mono' : '');
+    input.value = original ?? '';
+    valueEl.innerHTML = '';
+    valueEl.appendChild(input);
+    input.focus();
+    input.select();
+
+    let cancelled = false;
+    function done() {
+      valueEl.classList.remove('editing');
+      const newVal = cancelled ? original : input.value;
+      const changed = !cancelled && newVal !== original;
+      if (changed) {
+        row[fieldIdx] = newVal;
+        if (!state.editedFields.has(rowIdx)) state.editedFields.set(rowIdx, new Set());
+        state.editedFields.get(rowIdx).add(fieldIdx);
+        // Keep filter autosuggest data in sync if this is a filterable column.
+        if (COLUMN_FILTER_COLS.includes(fieldName)) recomputeUniques(fieldName);
+      }
+      // Re-render the whole panel + master so the new value flows everywhere.
+      renderFocusPanel();
+      renderRows();
+      renderPager();
+      refreshFilterTriggers();
+    }
+    input.addEventListener('blur', done);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter')      { e.preventDefault(); input.blur(); }
+      else if (e.key === 'Escape'){ cancelled = true; input.blur(); }
+    });
+  }
+
+  document.getElementById('panel-fields').addEventListener('click', (e) => {
+    const v = e.target.closest('.value.editable');
+    if (!v) return;
+    if (state.bulkMode) startBulkEdit(v);
+    else                startEdit(v);
+  });
+
+  /* ── Bulk-edit triggers ── */
+  document.getElementById('bulk-edit-btn').addEventListener('click', () => {
+    if (state.checked.size === 0) return;
+    enterBulkMode();
+  });
+  document.getElementById('bulk-cancel').addEventListener('click', () => {
+    exitBulkMode();
+    renderAll();
+  });
+  document.getElementById('bulk-close').addEventListener('click', () => {
+    exitBulkMode();
+    renderAll();
+  });
+  document.getElementById('bulk-save').addEventListener('click', commitBulk);
 
   document.getElementById('pg-prev').addEventListener('click', () => {
     if (state.page > 1) { state.page--; renderAll(); }
@@ -475,7 +1286,6 @@
     state.page = parseInt(btn.dataset.page, 10);
     renderAll();
   });
-
   document.getElementById('filter-tabs').addEventListener('click', (e) => {
     const tab = e.target.closest('[data-filter]');
     if (!tab) return;
@@ -485,15 +1295,166 @@
     state.page = 1;
     renderAll();
   });
-
   document.getElementById('focus-close').addEventListener('click', () => {
     state.activeIdx = null;
     renderRows();
     renderFocusPanel();
   });
 
+  /* ── Column-filter popover ── */
+  const popover  = document.getElementById('popover');
+  const qInput   = document.getElementById('q');
+  const sugList  = document.getElementById('list');
+  const status   = document.getElementById('sel-status');
+  const applyBtn = document.getElementById('apply-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const fuzzyEl  = document.getElementById('fuzzy-toggle');
+  const clearAll = document.getElementById('clear-filters');
+
+  let openCol = null;
+
+  function substring(needle, hay) {
+    return hay.toLowerCase().includes(needle.toLowerCase());
+  }
+  function fuzzyMatch(needle, hay) {
+    needle = needle.toLowerCase(); hay = hay.toLowerCase();
+    let i = 0;
+    for (const ch of hay) {
+      if (ch === needle[i]) i++;
+      if (i === needle.length) return true;
+    }
+    return needle.length === 0;
+  }
+
+  function positionPopover(trigger) {
+    const master = document.querySelector('.dm-master');
+    const mRect = master.getBoundingClientRect();
+    const tRect = trigger.getBoundingClientRect();
+    let left = tRect.left - mRect.left;
+    const maxLeft = master.offsetWidth - popover.offsetWidth - 4;
+    if (left > maxLeft) left = maxLeft;
+    if (left < 4) left = 4;
+    const top = tRect.bottom - mRect.top + 6;
+    popover.style.left = left + 'px';
+    popover.style.top  = top + 'px';
+  }
+
+  function renderSuggestions() {
+    if (!openCol) return;
+    let items = UNIQUE_VALUES[openCol] || [];
+    const f = ensureColFilter(openCol);
+    // When ISRC alias-only is on, hide valid-format ISRCs from the suggestion list
+    // so users can't pick a contradictory combination.
+    if (openCol === 'Original ISRC' && f.isrcAliasOnly) {
+      items = items.filter(it => !isValidISRC(it.value));
+    }
+    const needle = qInput.value.trim();
+    const matcher = f.fuzzy ? fuzzyMatch : substring;
+    const filtered = needle === ''
+      ? items
+      : items.filter(it => matcher(needle, String(it.value)));
+
+    sugList.innerHTML = filtered.length === 0
+      ? '<div class="empty">No values match.</div>'
+      : filtered.map(it => {
+          const selected = f.selected.has(it.value);
+          const display = (it.value === '') ? '(empty)' : it.value;
+          const cls = 'suggestion' + (selected ? ' selected' : '');
+          return '<div class="' + cls + '" data-value="' + encodeURIComponent(it.value) + '">' +
+                 '<span class="tick"></span>' +
+                 '<span class="val" title="' + esc(display) + '">' + esc(display) + '</span>' +
+                 '<span class="count">' + it.count + '</span></div>';
+        }).join('');
+    status.textContent = f.selected.size + ' selected · ' + filtered.length + ' of ' + items.length + ' shown';
+  }
+
+  function openColumnFilter(trigger) {
+    openCol = trigger.dataset.col;
+    const f = ensureColFilter(openCol);
+    qInput.value = '';
+    fuzzyEl.classList.toggle('on', f.fuzzy);
+    // Show the ISRC-only-alias row only for the ISRC column
+    const aliasRow = document.getElementById('alias-row');
+    const aliasEl  = document.getElementById('alias-toggle');
+    if (openCol === 'Original ISRC') {
+      aliasRow.style.display = '';
+      aliasEl.classList.toggle('on', !!f.isrcAliasOnly);
+    } else {
+      aliasRow.style.display = 'none';
+    }
+    popover.classList.add('open');
+    positionPopover(trigger);
+    renderSuggestions();
+    setTimeout(() => qInput.focus(), 50);
+  }
+  function closeColumnFilter() {
+    popover.classList.remove('open');
+    openCol = null;
+  }
+
+  document.querySelector('.dm-master').addEventListener('click', (e) => {
+    const t = e.target.closest('.filter-trigger');
+    if (!t) return;
+    e.stopPropagation();
+    if (openCol === t.dataset.col) { closeColumnFilter(); return; }
+    openColumnFilter(t);
+  });
+  // Keep all clicks inside the popover sealed off so internal re-renders
+  // (suggestion list, fuzzy toggle, alias toggle) don't accidentally trigger
+  // an outside-click close. The popover only closes via Clear / Apply /
+  // clicking the same trigger again.
+  popover.addEventListener('click', (e) => { e.stopPropagation(); });
+  qInput.addEventListener('input', renderSuggestions);
+  fuzzyEl.addEventListener('click', () => {
+    if (!openCol) return;
+    const f = ensureColFilter(openCol);
+    f.fuzzy = !f.fuzzy;
+    fuzzyEl.classList.toggle('on', f.fuzzy);
+    renderSuggestions();
+  });
+  document.getElementById('alias-toggle').addEventListener('click', (e) => {
+    if (openCol !== 'Original ISRC') return;
+    const f = ensureColFilter(openCol);
+    f.isrcAliasOnly = !f.isrcAliasOnly;
+    document.getElementById('alias-toggle').classList.toggle('on', f.isrcAliasOnly);
+    state.page = 1;
+    renderSuggestions();
+    renderAll();   // re-filter the table immediately so the user sees the effect
+  });
+  sugList.addEventListener('click', (e) => {
+    const sug = e.target.closest('.suggestion');
+    if (!sug || !openCol) return;
+    const val = decodeURIComponent(sug.dataset.value);
+    const f = ensureColFilter(openCol);
+    if (f.selected.has(val)) f.selected.delete(val);
+    else f.selected.add(val);
+    renderSuggestions();
+  });
+  clearBtn.addEventListener('click', () => {
+    if (!openCol) return;
+    const f = ensureColFilter(openCol);
+    f.selected.clear();
+    if (openCol === 'Original ISRC') {
+      f.isrcAliasOnly = false;
+      document.getElementById('alias-toggle').classList.remove('on');
+    }
+    state.page = 1;
+    closeColumnFilter();
+    renderAll();
+  });
+  applyBtn.addEventListener('click', () => {
+    state.page = 1;
+    closeColumnFilter();
+    renderAll();
+  });
+  clearAll.addEventListener('click', () => {
+    state.columnFilters = {};
+    state.page = 1;
+    renderAll();
+  });
+
+  /* ── Init ── */
   renderTabCounts();
-  if (ROWS.length > 0) state.expanded.add(0);
   renderAll();
 })();
 </script>
