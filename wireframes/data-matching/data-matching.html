@@ -46,6 +46,20 @@
     .th-cell { display: flex; align-items: center; gap: 6px; min-width: 0; }
     .th-cell .th-label { flex: 1; min-width: 0;
                          overflow: hidden; text-overflow: ellipsis; }
+    .th-label.sortable { cursor: pointer; user-select: none; }
+    .th-label.sortable:hover { color: var(--color-fg); }
+    .th-label .sort-ind {
+      display: inline-block; margin-left: 4px;
+      font-family: var(--font-mono); font-size: var(--text-2xs);
+      color: var(--color-fg-subtle);
+    }
+    .th-label.sort-asc  .sort-ind { color: var(--color-primary); }
+    .th-label.sort-desc .sort-ind { color: var(--color-primary); }
+    .th-label.sort-asc  .sort-ind::before { content: "↑"; }
+    .th-label.sort-desc .sort-ind::before { content: "↓"; }
+    .th-label.sortable:not(.sort-asc):not(.sort-desc):hover .sort-ind::before {
+      content: "↕"; color: var(--color-fg-muted);
+    }
 
     tr.focused td  { background: var(--color-bg-tint); border-bottom-color: var(--color-bg-tint); }
     .check { cursor: pointer; }
@@ -435,12 +449,12 @@
         <thead>
           <tr>
             <th></th>
-            <th><div class="th-cell"><span class="th-label">track title</span><button class="filter-trigger" data-col="Original Track Title">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label">track artist</span><button class="filter-trigger" data-col="Original Track Artist">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label">isrc</span><button class="filter-trigger" data-col="Original ISRC">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label">orig. contract id</span><button class="filter-trigger" data-col="Original Contract ID">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label">source</span><button class="filter-trigger" data-col="Source">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label">cat. type</span><button class="filter-trigger" data-col="Catalogue Type">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Track Title">track title<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Track Title">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Track Artist">track artist<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Track Artist">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original ISRC">isrc<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original ISRC">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Contract ID">orig. contract id<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Contract ID">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Source">source<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Source">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Catalogue Type">cat. type<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Catalogue Type">⌄</button></div></th>
             <th></th>
           </tr>
         </thead>
@@ -595,7 +609,8 @@
     bulkEdits: new Map(),    // field_idx → new value (only fields the user has set)
     groupByColumn: null,     // column name to collapse duplicates on, or null
     groupExpanded: new Set(),// group values currently expanded
-    activeGroupValue: null   // group value whose eye is active (panel open from a group)
+    activeGroupValue: null,  // group value whose eye is active (panel open from a group)
+    sort: null               // { column: <name>, dir: 'asc'|'desc' } or null
   };
   function ensureColFilter(col) {
     if (!state.columnFilters[col]) state.columnFilters[col] = { selected: new Set(), fuzzy: false, isrcAliasOnly: false };
@@ -612,19 +627,35 @@
   }
 
   function filteredIndices() {
-    return ROWS.reduce((acc, r, i) => {
+    const acc = ROWS.reduce((a, r, i) => {
       // Tab filter (Catalogue Type quick filter)
-      if (state.filter !== 'All' && r[CATTYPE_IDX] !== state.filter) return acc;
+      if (state.filter !== 'All' && r[CATTYPE_IDX] !== state.filter) return a;
       // Column filters (AND across columns, OR within a single column)
       for (const [col, f] of Object.entries(state.columnFilters)) {
         const idx = F(col);
-        if (f.selected.size > 0 && !f.selected.has(r[idx])) return acc;
+        if (f.selected.size > 0 && !f.selected.has(r[idx])) return a;
         // ISRC alias-only: drop rows whose ISRC matches the strict format
-        if (col === 'Original ISRC' && f.isrcAliasOnly && isValidISRC(r[idx])) return acc;
+        if (col === 'Original ISRC' && f.isrcAliasOnly && isValidISRC(r[idx])) return a;
       }
-      acc.push(i);
-      return acc;
+      a.push(i);
+      return a;
     }, []);
+    // Optional sort. Empty values sort to the end regardless of direction.
+    if (state.sort) {
+      const colIdx = F(state.sort.column);
+      const sign = state.sort.dir === 'desc' ? -1 : 1;
+      acc.sort((a, b) => {
+        const va = ROWS[a][colIdx];
+        const vb = ROWS[b][colIdx];
+        const aEmpty = va === '' || va == null;
+        const bEmpty = vb === '' || vb == null;
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;
+        if (bEmpty) return -1;
+        return String(va).localeCompare(String(vb), undefined, { sensitivity: 'base', numeric: true }) * sign;
+      });
+    }
+    return acc;
   }
 
   function isGroupMode() { return state.groupByColumn != null; }
@@ -1093,12 +1124,22 @@
     });
   }
 
+  function refreshSortIndicators() {
+    document.querySelectorAll('.th-label.sortable').forEach(el => {
+      el.classList.remove('sort-asc', 'sort-desc');
+      if (state.sort && state.sort.column === el.dataset.col) {
+        el.classList.add('sort-' + state.sort.dir);
+      }
+    });
+  }
+
   function renderAll() {
     renderRows();
     renderPager();
     renderSelectionCount();
     renderFocusPanel();
     refreshFilterTriggers();
+    refreshSortIndicators();
   }
 
   /* ── Row interactions ── */
@@ -1180,6 +1221,22 @@
     else visible.forEach(i => state.checked.add(i));
     renderRows();
     renderSelectionCount();
+  });
+
+  /* ── Column sort: click header label, cycles asc → desc → off ── */
+  document.querySelectorAll('.th-label.sortable').forEach(el => {
+    el.addEventListener('click', () => {
+      const col = el.dataset.col;
+      if (state.sort && state.sort.column === col) {
+        state.sort = state.sort.dir === 'asc'
+          ? { column: col, dir: 'desc' }
+          : null;
+      } else {
+        state.sort = { column: col, dir: 'asc' };
+      }
+      state.page = 1;
+      renderAll();
+    });
   });
 
   /* ── Collapse-duplicates dropdown ── */
