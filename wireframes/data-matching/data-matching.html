@@ -535,6 +535,15 @@
             hides rows with valid 12-char ISRCs
           </span>
         </div>
+        <div class="opts" id="valid-isrc-row" style="display: none;">
+          <label class="check" id="valid-isrc-toggle">
+            <span class="box"></span>
+            12-char ISRCs only
+          </label>
+          <span style="font-family: var(--font-hand); font-size: var(--text-xs); color: var(--color-fg-muted);">
+            keeps only rows with valid 12-char ISRCs
+          </span>
+        </div>
         <div class="suggestions" id="list"></div>
         <div class="actions">
           <span class="left" id="sel-status">0 selected · 0 shown</span>
@@ -662,7 +671,7 @@
     page: 1,
     checked:  new Set(),
     activeIdx: null,
-    columnFilters: {},       // colName → { selected: Set, fuzzy: bool, isrcAliasOnly?: bool }
+    columnFilters: {},       // colName → { selected: Set, fuzzy: bool, isrcAliasOnly?: bool, isrcValidOnly?: bool }
     editedFields: new Map(), // row_idx → Set<field_idx>  (which fields the user has touched)
     bulkMode: false,         // true when bulk-edit panel is open
     bulkSnapshot: [],        // row indices included in the current bulk edit
@@ -673,11 +682,11 @@
     sort: null               // { column: <name>, dir: 'asc'|'desc' } or null
   };
   function ensureColFilter(col) {
-    if (!state.columnFilters[col]) state.columnFilters[col] = { selected: new Set(), fuzzy: false, isrcAliasOnly: false };
+    if (!state.columnFilters[col]) state.columnFilters[col] = { selected: new Set(), fuzzy: false, isrcAliasOnly: false, isrcValidOnly: false };
     return state.columnFilters[col];
   }
   function anyColumnFiltersActive() {
-    return Object.values(state.columnFilters).some(f => f.selected.size > 0 || f.isrcAliasOnly);
+    return Object.values(state.columnFilters).some(f => f.selected.size > 0 || f.isrcAliasOnly || f.isrcValidOnly);
   }
 
   /* A valid ISRC is 12 chars: 2-letter country, 3-char alphanumeric registrant,
@@ -707,6 +716,8 @@
         if (f.selected.size > 0 && !f.selected.has(r[idx])) return a;
         // ISRC alias-only: drop rows whose ISRC matches the strict format
         if (col === 'Original ISRC' && f.isrcAliasOnly && isValidISRC(r[idx])) return a;
+        // 12-char ISRC only: drop rows whose ISRC fails the strict format
+        if (col === 'Original ISRC' && f.isrcValidOnly && !isValidISRC(r[idx])) return a;
       }
       a.push(i);
       return a;
@@ -1270,12 +1281,14 @@
       const f = state.columnFilters[t.dataset.col];
       const n = f ? f.selected.size : 0;
       const aliasOnly = !!(f && f.isrcAliasOnly);
-      const isActive = n > 0 || aliasOnly;
+      const validOnly = !!(f && f.isrcValidOnly);
+      const isActive = n > 0 || aliasOnly || validOnly;
       t.classList.toggle('active', isActive);
-      // Badge shows selection count when > 0, otherwise "A" if only alias-only is on.
-      const badge = n > 0
-        ? '<span class="badge">' + n + '</span>'
-        : (aliasOnly ? '<span class="badge">A</span>' : '');
+      // Badge: selection count when > 0; "A" for alias-only; "12" for valid-only.
+      let badge = '';
+      if (n > 0)            badge = '<span class="badge">' + n + '</span>';
+      else if (aliasOnly)   badge = '<span class="badge">A</span>';
+      else if (validOnly)   badge = '<span class="badge">12</span>';
       t.innerHTML = badge + '⌄';
     });
   }
@@ -1598,9 +1611,11 @@
     let items = UNIQUE_VALUES[openCol] || [];
     const f = ensureColFilter(openCol);
     // When ISRC alias-only is on, hide valid-format ISRCs from the suggestion list
-    // so users can't pick a contradictory combination.
+    // so users can't pick a contradictory combination. Same for 12-char only.
     if (openCol === 'Original ISRC' && f.isrcAliasOnly) {
       items = items.filter(it => !isValidISRC(it.value));
+    } else if (openCol === 'Original ISRC' && f.isrcValidOnly) {
+      items = items.filter(it => isValidISRC(it.value));
     }
     const needle = qInput.value.trim();
     const matcher = f.fuzzy ? fuzzyMatch : substring;
@@ -1627,14 +1642,19 @@
     const f = ensureColFilter(openCol);
     qInput.value = '';
     fuzzyEl.classList.toggle('on', f.fuzzy);
-    // Show the ISRC-only-alias row only for the ISRC column
+    // Show the ISRC-specific rows only for the ISRC column
     const aliasRow = document.getElementById('alias-row');
     const aliasEl  = document.getElementById('alias-toggle');
+    const validRow = document.getElementById('valid-isrc-row');
+    const validEl  = document.getElementById('valid-isrc-toggle');
     if (openCol === 'Original ISRC') {
       aliasRow.style.display = '';
+      validRow.style.display = '';
       aliasEl.classList.toggle('on', !!f.isrcAliasOnly);
+      validEl.classList.toggle('on', !!f.isrcValidOnly);
     } else {
       aliasRow.style.display = 'none';
+      validRow.style.display = 'none';
     }
     popover.classList.add('open');
     positionPopover(trigger);
@@ -1670,10 +1690,29 @@
     if (openCol !== 'Original ISRC') return;
     const f = ensureColFilter(openCol);
     f.isrcAliasOnly = !f.isrcAliasOnly;
+    if (f.isrcAliasOnly) {
+      // Mutually exclusive with 12-char-only
+      f.isrcValidOnly = false;
+      document.getElementById('valid-isrc-toggle').classList.remove('on');
+    }
     document.getElementById('alias-toggle').classList.toggle('on', f.isrcAliasOnly);
     state.page = 1;
     renderSuggestions();
-    renderAll();   // re-filter the table immediately so the user sees the effect
+    renderAll();
+  });
+  document.getElementById('valid-isrc-toggle').addEventListener('click', () => {
+    if (openCol !== 'Original ISRC') return;
+    const f = ensureColFilter(openCol);
+    f.isrcValidOnly = !f.isrcValidOnly;
+    if (f.isrcValidOnly) {
+      // Mutually exclusive with alias-only
+      f.isrcAliasOnly = false;
+      document.getElementById('alias-toggle').classList.remove('on');
+    }
+    document.getElementById('valid-isrc-toggle').classList.toggle('on', f.isrcValidOnly);
+    state.page = 1;
+    renderSuggestions();
+    renderAll();
   });
   sugList.addEventListener('click', (e) => {
     const sug = e.target.closest('.suggestion');
@@ -1690,7 +1729,9 @@
     f.selected.clear();
     if (openCol === 'Original ISRC') {
       f.isrcAliasOnly = false;
+      f.isrcValidOnly = false;
       document.getElementById('alias-toggle').classList.remove('on');
+      document.getElementById('valid-isrc-toggle').classList.remove('on');
     }
     state.page = 1;
     closeColumnFilter();
