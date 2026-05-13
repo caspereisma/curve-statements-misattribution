@@ -455,6 +455,22 @@
           <option value="Track">Track</option>
         </select>
       </label>
+      <label style="display: inline-flex; align-items: center; gap: 6px; color: var(--color-fg-muted);">
+        Track ID:
+        <select id="trackid-filter" class="dup-select">
+          <option value="">all</option>
+          <option value="missing">missing</option>
+          <option value="not_missing">not missing</option>
+        </select>
+      </label>
+      <label style="display: inline-flex; align-items: center; gap: 6px; color: var(--color-fg-muted);">
+        Contract ID:
+        <select id="contractid-filter" class="dup-select">
+          <option value="">all</option>
+          <option value="missing">missing</option>
+          <option value="not_missing">not missing</option>
+        </select>
+      </label>
     </div>
     <div style="display: flex; gap: 8px;">
       <button class="btn outline sm" id="bulk-edit-btn" disabled>Bulk edit</button>
@@ -468,13 +484,15 @@
       <table class="tbl">
         <colgroup>
           <col style="width: 36px;">
-          <col style="width: 280px;">
+          <col style="width: 220px;">
           <col>
-          <col style="width: 100px;">
-          <col style="width: 100px;">
-          <col style="width: 100px;">
+          <col style="width: 90px;">
+          <col style="width: 95px;">
           <col style="width: 95px;">
           <col style="width: 90px;">
+          <col style="width: 90px;">
+          <col style="width: 85px;">
+          <col style="width: 85px;">
           <col style="width: 50px;">
         </colgroup>
         <thead>
@@ -485,6 +503,8 @@
             <th><div class="th-cell"><span class="th-label sortable" data-col="Original ISRC">isrc<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original ISRC">⌄</button></div></th>
             <th><div class="th-cell"><span class="th-label sortable" data-col="Original Contract ID">orig. contract id<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Contract ID">⌄</button></div></th>
             <th><div class="th-cell"><span class="th-label sortable" data-col="Source">source<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Source">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Track ID">track id<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Track ID">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Contract ID">contract id<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Contract ID">⌄</button></div></th>
             <th><div class="th-cell"><span class="th-label sortable" data-col="Net Amount">net amount<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Net Amount">⌄</button></div></th>
             <th><div class="th-cell"><span class="th-label sortable" data-col="Mapping Status">mapping status<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Mapping Status">⌄</button></div></th>
             <th></th>
@@ -605,6 +625,8 @@
   const SALES_FILE_ID    = F('Sales File ID');
   const MAPPING_STATUS_IDX = F('Mapping Status');
   const NET_AMOUNT_IDX   = F('Net Amount');
+  const TRACK_ID_IDX     = F('Track ID');
+  const CONTRACT_ID_IDX  = F('Contract ID');
 
   const MONO_FIELDS = new Set([
     'Sales File ID', 'Original ISRC', 'Original Contract ID',
@@ -635,6 +657,8 @@
     mappingFilter: 'All',    // Tab filter on Mapping Status ('All' | 'Mapped' | 'Unmapped')
     cattypeFilter: 'All',    // Cat. type dropdown ('All' | 'Contract' | 'Track')
     periodFilter: '',        // Target Period dropdown ('' = all)
+    trackIdFilter: '',       // Track ID presence ('' = all | 'missing' | 'not_missing')
+    contractIdFilter: '',    // Contract ID presence ('' = all | 'missing' | 'not_missing')
     page: 1,
     checked:  new Set(),
     activeIdx: null,
@@ -671,6 +695,12 @@
       if (state.cattypeFilter !== 'All' && r[CATTYPE_IDX] !== state.cattypeFilter) return a;
       // Target Period dropdown
       if (state.periodFilter && r[TARGET_PERIOD_IDX] !== state.periodFilter) return a;
+      // Track ID presence
+      if (state.trackIdFilter === 'missing'     && r[TRACK_ID_IDX]    !== '' && r[TRACK_ID_IDX]    != null) return a;
+      if (state.trackIdFilter === 'not_missing' && (r[TRACK_ID_IDX]   === '' || r[TRACK_ID_IDX]    == null)) return a;
+      // Contract ID presence
+      if (state.contractIdFilter === 'missing'     && r[CONTRACT_ID_IDX] !== '' && r[CONTRACT_ID_IDX] != null) return a;
+      if (state.contractIdFilter === 'not_missing' && (r[CONTRACT_ID_IDX] === '' || r[CONTRACT_ID_IDX] == null)) return a;
       // Column filters (AND across columns, OR within a single column)
       for (const [col, f] of Object.entries(state.columnFilters)) {
         const idx = F(col);
@@ -803,6 +833,8 @@
     ['Original ISRC',          ISRC_IDX],
     ['Original Contract ID',   ORIG_CONTRACT_ID],
     ['Source',                 SOURCE_IDX],
+    ['Track ID',               TRACK_ID_IDX],
+    ['Contract ID',            CONTRACT_ID_IDX],
     ['Net Amount',             NET_AMOUNT_IDX],
     ['Mapping Status',         MAPPING_STATUS_IDX]
   ];
@@ -863,7 +895,7 @@
     let out = '<tr class="group-row' + (isExpanded ? ' expanded' : '') + (isFocused ? ' focused' : '') + '" data-group="' +
               encodeURIComponent(groupValue) + '">' + cells.join('') + '</tr>';
     if (isExpanded) {
-      out += '<tr class="group-detail"><td colspan="9"><div class="detail-inner">' +
+      out += '<tr class="group-detail"><td colspan="11"><div class="detail-inner">' +
              renderGroupDetail(idxs) + '</div></td></tr>';
     }
     return out;
@@ -904,7 +936,7 @@
     if (isGroupMode()) {
       const groups = pageGroups();
       if (groups.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records match the current filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records match the current filters.</td></tr>';
         return;
       }
       tbody.innerHTML = groups.map(([gv, idxs]) => renderGroupParentRow(gv, idxs)).join('');
@@ -913,7 +945,7 @@
 
     const idxs = pageIndices();
     if (idxs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records match the current filters.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="padding: 40px 24px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-hand); font-size: var(--text-md);">No records match the current filters.</td></tr>';
       return;
     }
     const html = idxs.map(idx => {
@@ -925,8 +957,15 @@
       const isrcVal    = row[ISRC_IDX]   || '';
       const ocidVal    = row[ORIG_CONTRACT_ID] || '';
       const sourceVal  = row[SOURCE_IDX] || '';
+      const trackIdVal = row[TRACK_ID_IDX]    || '';
+      const contractIdVal = row[CONTRACT_ID_IDX] || '';
       const netVal     = row[NET_AMOUNT_IDX] || '';
       const mapVal     = row[MAPPING_STATUS_IDX] || '';
+
+      const emptyOrMono = (v) =>
+        (v === '' || v == null)
+          ? '<td class="cell-missing">(empty)</td>'
+          : '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(v) + '">' + esc(v) + '</td>';
 
       const cells = [
         '<td><span class="check' + (isChecked ? ' on' : '') + '"><span class="box"></span></span></td>',
@@ -935,6 +974,8 @@
         '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(isrcVal) + '">' + esc(isrcVal) + '</td>',
         '<td class="mono" style="font-size: var(--text-xs);" title="' + esc(ocidVal) + '">' + esc(ocidVal) + '</td>',
         '<td title="' + esc(sourceVal) + '">' + esc(sourceVal) + '</td>',
+        emptyOrMono(trackIdVal),
+        emptyOrMono(contractIdVal),
         '<td class="mono num-cell" style="font-size: var(--text-xs);" title="' + esc(netVal) + '">' + esc(formatAmount(netVal)) + '</td>',
         '<td class="map-status map-' + (mapVal === 'Mapped' ? 'mapped' : 'unmapped') + '">' + esc(mapVal) + '</td>',
         '<td><button class="eye-btn ibtn sm muted' + (isFocused ? ' active' : '') + '" data-idx="' + idx + '" aria-label="Open focus panel">' +
@@ -1495,6 +1536,19 @@
       renderAll();
     });
   })();
+
+  /* Track ID + Contract ID presence dropdowns */
+  document.getElementById('trackid-filter').addEventListener('change', (e) => {
+    state.trackIdFilter = e.target.value;
+    state.page = 1;
+    renderAll();
+  });
+  document.getElementById('contractid-filter').addEventListener('change', (e) => {
+    state.contractIdFilter = e.target.value;
+    state.page = 1;
+    renderAll();
+  });
+
   document.getElementById('focus-close').addEventListener('click', () => {
     state.activeIdx = null;
     renderRows();
