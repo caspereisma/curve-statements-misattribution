@@ -1,4 +1,4 @@
-# Data-matching wireframe — Ops feedback (May 12–18, 2026)
+# Misattributed lo-fi concept feedback - ongoing
 
 **Author:** Casper Eisma (synthesised from meeting transcripts by AI)
 **Created:** 2026-05-18
@@ -53,8 +53,12 @@ with three phases (track-ID matching, contract matching, NRP injection) producin
 
 ### 1. Split the workflow by ID type — phases now precise (Alice + Vitaliy)
 
-- *"We never work on contracts and tracks at the same time."* (Alice, Meeting 3.)
-- Phase scopes locked in Meeting 4:
+| Feedback                                                                                                                              | Comments |
+| ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| - [ ] *"We never work on contracts and tracks at the same time."* — never mix ID types in the same flow. (Alice, Meeting 3)           |          |
+| - [ ] Reshape the top of the wireframe around the three phases: top-level mode selector, with per-mode filters and column visibility. |          |
+
+Phase scopes locked in Meeting 4:
 
 | Phase | Scope | Output template |
 |---|---|---|
@@ -62,30 +66,33 @@ with three phases (track-ID matching, contract matching, NRP injection) producin
 | **2** | Assets with track ID but **no contract ID** — link to existing contract. | Contract-binding template (TBD). |
 | **3** | Assets that don't exist in Curve at all — ingest as new tracks. | NRP-injection template. |
 
-Reshape the top of the wireframe around these phases: top-level mode selector, with per-mode filters and column visibility.
-
 ### 2. Surface revenue prominently (Dean, strong)
 
-- Add **Net Amount column to the master view**, sortable and visible without opening the right-side panel. Ops prioritise by revenue, not by unmapped count.
-  - Real anecdote (Dean): low-value tracks ignored → performer later complained about ~€300 of cumulative missing payments.
-- **Collapsed-duplicate parent rows must show a summed Net Amount**, so ops can sort versions-of-a-title by total revenue.
-- **Currency:** don't pretend a single "EUR amount" suffices — some clients aren't on EUR. Decide how to present mixed-currency totals.
+| Feedback                                                                                                                                                                                                                                                                     | Comments                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| - [ ] Add **Net Amount column to the master view**, sortable and visible without opening the right-side panel. Ops prioritise by revenue, not by unmapped count. Anecdote: low-value tracks ignored → performer later complained about ~€300 of cumulative missing payments.                                                 |
+| - [ ] **Collapsed-duplicate parent rows must show a summed Net Amount**, so ops can sort versions-of-a-title by total revenue.                                                                                                                                               | D                                             |
+| - [ ] **Currency:** don't pretend a single "EUR amount" suffices — some clients aren't on EUR. Decide how to present mixed-currency totals.                                                                                                                                Done. Display only Net amount euros in table nly  |
 
 ### 3. Multiple match candidates with scores per record (Casper, Meeting 5)
 
-- Casper asked Vitaliy: *"could a track have multiple potential matches from the NRP?"* — Vitaliy: **yes**.
-- **Implication:** the focus panel needs to show a **ranked list of candidate matches** per unmapped record, each with its match percentage, with a recommendation highlighted. User picks one (or declines all and defers / flags for manual investigation).
-- This supersedes the simpler "show one suggestion" approach hinted at in earlier feedback.
+| Feedback | Comments |
+|---|---|
+| - [ ] Focus panel shows a **ranked list of candidate matches** per unmapped record, each with its match percentage, with a recommendation highlighted. User picks one (or declines all and defers / flags for manual investigation). Confirmed by Vitaliy: a track *can* have multiple potential matches from NRP. Supersedes the simpler "show one suggestion" approach. | |
 
 ### 4. "Golden ISRC" suggestion — deferred to iteration 2 (Alice + Dean)
 
-- For a given track title, propose the ISRC that (a) appears most often across the data and/or (b) carries the highest net amount, and offer **"map all variants to this ISRC"**.
-- **Alice explicitly deferred this to a second iteration in Meeting 4**: *"if we try and find a way to look for in curve export the ISRC's that have been used most frequently just so that we're not matching to like different ISRC's each time. But I think maybe that's like the second iteration if we try and get the fuzzy matching going first."*
-- Dean called the V2 version a **"golden recording"** — a marked canonical version when multiple legitimate ISRCs exist (e.g., *"Apologize"* + 5 remixes).
+| Feedback | Comments |
+|---|---|
+| - [ ] For a given track title, propose the ISRC that (a) appears most often across the data and/or (b) carries the highest net amount, and offer **"map all variants to this ISRC"**. Dean's V2 framing: a marked **"golden recording"** when multiple legitimate ISRCs exist (e.g. *"Apologize"* + 5 remixes). | Deferred to iteration 2 by Alice (Meeting 4) — get fuzzy matching working first. |
 
 ### 5. Three explicit unmapped categories (Vitaliy + Alice agree)
 
-Replace or augment "Mapping Status: Mapped / Unmapped" with category-aware triage — it determines the right action and matches the phase scopes in §b.1:
+| Feedback | Comments |
+|---|---|
+| - [ ] Replace or augment "Mapping Status: Mapped / Unmapped" with the category-aware triage below — update the top tab pills, the Mapping Status column, and the filter logic. Today's two-state pill is too coarse. | |
+
+Category triage — matches the phase scopes in §b.1:
 
 | Category | Meaning | Phase | Action |
 |---|---|---|---|
@@ -94,31 +101,32 @@ Replace or augment "Mapping Status: Mapped / Unmapped" with category-aware triag
 | **Track ID but no Contract ID** | Exists in Curve, no contract link | **2** | Link to contract |
 | **Missing both** | Rarest; needs investigation | **3** | NRP injection |
 
-Today's two-state pill is too coarse — update the top tab pills, the Mapping Status column, and the filter logic.
-
 ### 6. Show match-context inline (Alice, Meeting 4)
 
-- The review surface (whether spreadsheet or wireframe) must let the user compare side-by-side:
-  - **From Curve export:** alias, track title, artist (and version when present).
-  - **From NRP prod:** ISRC, track title, artist.
-  - **Match percentage.**
-- Implication for the focus panel: rather than just showing the unmapped record's fields, show **a two-column comparison** for each candidate match, with the score.
+| Feedback | Comments |
+|---|---|
+| - [ ] Review surface (spreadsheet or wireframe) must let the user compare side-by-side: **Curve** (alias, track title, artist, version when present) vs. **NRP** (ISRC, track title, artist), with the match percentage. Focus panel = two-column comparison per candidate. | |
 
 ### 7. Audit history / persistent alias log (Dean + Casper)
 
-- Every mapping decision must be timestamped and reversible — *"you need to know that you did this action at some point right to this recording"* (Dean, Meeting 1) — for dispute resolution downstream.
-- Casper in Meeting 5: *"I think we should be holding this alias ourselves."* Vitaliy agreed to store the ISRC↔alias mapping history on the prod side in parallel with the Curve upload, as a safety net and to enable future automated matching.
+| Feedback | Comments |
+|---|---|
+| - [ ] Every mapping decision must be timestamped and reversible — *"you need to know that you did this action at some point right to this recording"* (Dean, Meeting 1) — for dispute resolution downstream. | |
+| - [ ] Store the ISRC↔alias mapping history on the prod side in parallel with the Curve upload, as a safety net and to enable future automated matching. (Casper + Vitaliy, Meeting 5) | |
 
 ### 8. Output file shape (Alice, locked Meeting 4)
 
-- **Phase 1 export = the "January 10th" Curve upload template**, 2-column format (ISRC + alias). Template is stable; Alice and Filip confirmed they don't plan to change it.
-- Phase 2 export = contract-binding template (format TBD).
-- Phase 3 export = NRP-injection template (format TBD — Vitaliy mentioned this in Meeting 5).
+| Feedback | Comments |
+|---|---|
+| - [ ] **Phase 1 export** = the "January 10th" Curve upload template, 2-column format (ISRC + alias). Template is stable; Alice and Filip confirmed they don't plan to change it. | |
+| - [ ] **Phase 2 export** = contract-binding template (format TBD). | |
+| - [ ] **Phase 3 export** = NRP-injection template (format TBD — Vitaliy, Meeting 5). | |
 
 ### 9. Fuzzy matching algorithm is real now (Meeting 4)
 
-- The match suggestions in the prototype were stubbed (*"At this moment it's just made up. There's no logic behind it."* — Casper, Meeting 1).
-- Vitaliy has now implemented the real Phase 1 matcher (Meeting 5) and was testing it the day of writing. See §e for the algorithm.
+| Feedback | Comments |
+|---|---|
+| - [ ] The match suggestions in the prototype were stubbed (*"At this moment it's just made up. There's no logic behind it."* — Casper, Meeting 1). Vitaliy has now implemented the real Phase 1 matcher and was testing it on 2026-05-18. | See §e for the locked algorithm. |
 
 ---
 
