@@ -491,27 +491,28 @@
     .value-picker-select:focus { outline: none; border-color: var(--color-primary); }
 
     /* ── Per-column filter trigger + popover (lifted from the concept) ── */
+    /* Column filter triggers — live in the toolbar (not in column headers). */
     .filter-trigger {
-      display: none; align-items: center; gap: 4px;
-      padding: 2px 6px; border: 1.5px solid var(--color-border-subtle);
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px;
+      border: 1.5px solid var(--color-border);
       border-radius: var(--radius-xs); background: var(--color-bg);
-      color: var(--color-fg-muted); cursor: pointer;
-      font-family: var(--font-mono); font-size: var(--text-2xs);
+      color: var(--color-fg); cursor: pointer;
+      font-family: var(--font-hand); font-size: var(--text-base);
       flex-shrink: 0;
     }
-    /* Wireframe-level fix for the chevron clipping the header label: hide
-       the filter trigger at rest, reveal on header hover or when active. */
-    .th-cell:hover .filter-trigger,
-    .filter-trigger.active { display: inline-flex; }
-    .filter-trigger:hover  { color: var(--color-fg); border-color: var(--color-border); }
+    .filter-trigger:hover  { border-color: var(--color-fg); }
     .filter-trigger.active { color: var(--color-primary-fg);
                              background: var(--color-primary);
                              border-color: var(--color-primary); }
     .filter-trigger .badge {
       font-family: var(--font-mono); font-size: var(--text-2xs);
       padding: 0 4px; border-radius: var(--radius-xs);
-      background: var(--color-primary-fg); color: var(--color-primary);
+      background: var(--color-bg-tint); color: var(--color-fg);
       min-width: 14px; text-align: center;
+    }
+    .filter-trigger.active .badge {
+      background: var(--color-primary-fg); color: var(--color-primary);
     }
 
     .popover {
@@ -700,6 +701,15 @@
         <span class="chip-check" aria-hidden="true">✓</span>
         Hide processed
       </button>
+      <span style="color: var(--color-fg-subtle);">·</span>
+      <span style="color: var(--color-fg-muted);">Column filters:</span>
+      <button class="filter-trigger" data-col="Original Track Title">title</button>
+      <button class="filter-trigger" data-col="Original Track Artist">artist</button>
+      <button class="filter-trigger" data-col="Original ISRC">isrc</button>
+      <button class="filter-trigger" data-col="Original Contract ID">client</button>
+      <button class="filter-trigger" data-col="Source">cmo</button>
+      <button class="filter-trigger" data-col="Net Amount">amount €</button>
+      <button class="filter-trigger" data-col="NRP match">nrp match</button>
     </div>
     <div style="display: flex; gap: 8px;">
       <button class="btn outline sm" id="bulk-edit-btn" disabled>Bulk view (<span id="bulk-edit-count">0</span>)</button>
@@ -727,15 +737,15 @@
         <thead>
           <tr>
             <th></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Track Title">title<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Track Title">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Track Artist">artist<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Track Artist">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Original ISRC">isrc<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original ISRC">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Contract ID">client<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Original Contract ID">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Source">cmo<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Source">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Track ID">track id<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Track ID">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Contract ID">contract id<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Contract ID">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="Net Amount">amount €<span class="sort-ind"></span></span><button class="filter-trigger" data-col="Net Amount">⌄</button></div></th>
-            <th><div class="th-cell"><span class="th-label sortable" data-col="NRP match">nrp match<span class="sort-ind"></span></span><button class="filter-trigger" data-col="NRP match">⌄</button></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Track Title">title<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Track Artist">artist<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original ISRC">isrc<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Original Contract ID">client<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Source">cmo<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Track ID">track id<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Contract ID">contract id<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="Net Amount">amount €<span class="sort-ind"></span></span></div></th>
+            <th><div class="th-cell"><span class="th-label sortable" data-col="NRP match">nrp match<span class="sort-ind"></span></span></div></th>
             <th><div class="th-cell"><span class="th-label sortable" data-col="Processed">processed<span class="sort-ind"></span></span></div></th>
           </tr>
         </thead>
@@ -2023,6 +2033,7 @@
   function refreshFilterTriggers() {
     document.querySelectorAll('.filter-trigger').forEach(t => {
       const col = t.dataset.col;
+      const colLabel = esc(label(col));
       if (col === 'NRP match') {
         const mf = state.matchFilter;
         const isActive = mf.min != null || mf.max != null;
@@ -2033,7 +2044,7 @@
           const hi = mf.max == null ? '99' : mf.max;
           badge = '<span class="badge">' + lo + '–' + hi + '</span>';
         }
-        t.innerHTML = badge + '⌄';
+        t.innerHTML = colLabel + badge + '<span class="chev">⌄</span>';
         return;
       }
       const f = state.columnFilters[col];
@@ -2047,7 +2058,7 @@
       if (n > 0)            badge = '<span class="badge">' + n + '</span>';
       else if (aliasOnly)   badge = '<span class="badge">A</span>';
       else if (validOnly)   badge = '<span class="badge">12</span>';
-      t.innerHTML = badge + '⌄';
+      t.innerHTML = colLabel + badge + '<span class="chev">⌄</span>';
     });
   }
 
@@ -2656,11 +2667,16 @@
     openCol = null;
   }
 
-  document.querySelector('.dm-master').addEventListener('click', (e) => {
+  /* Filter triggers now live in the toolbar (not in column headers), so the
+     click delegation hangs off `.page` to cover both the toolbar and the
+     master table. The popovers themselves still anchor inside `.dm-master`
+     (position-absolute relative to it) — `.dm-master` has overflow:visible
+     so a negative `top` value renders the popover above the master, just
+     below its toolbar trigger. */
+  document.querySelector('.page').addEventListener('click', (e) => {
     const t = e.target.closest('.filter-trigger');
     if (!t) return;
     e.stopPropagation();
-    /* NRP match has a dedicated range-filter popover (numeric, not a value list). */
     if (t.dataset.col === 'NRP match') {
       if (matchPopoverOpen) closeMatchPopover();
       else                  openMatchPopover(t);
