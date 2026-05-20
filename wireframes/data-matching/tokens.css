@@ -1,50 +1,99 @@
 /* ─────────────────────────────────────────────────────────────
-   LO-FI WIREFRAME · DESIGN TOKENS
-   The single source of truth for color, type, space, radius,
-   border, shadow, motion. Imported by styles.css.
-   Group → category → role → step
+   MUI v6 · DESIGN TOKENS (Nunito Sans, gray primary)
+   Mirrors the Figma "NR Working" / Misattributed design library.
+   Imported by styles.css.
    ───────────────────────────────────────────────────────────── */
 
 :root{
   /* ── COLOR · primitives ──────────────────────── */
-  --color-white:        #ffffff;
-  --color-black:        #000000;
-  --color-ink-900:      #111111;
-  --color-ink-700:      #767676;
-  --color-ink-500:      #aaaaaa;
-  --color-ink-400:      #bfbfbf;
-  --color-ink-300:      #d9d9d9;
-  --color-ink-200:      #eeeeee;
-  --color-ink-100:      #fafafa;
-  --color-blue-600:     #074ee8;
-  --color-blue-500:     #0066ff;
-  --color-blue-50:      #ebf3ff;
-  --color-blue-25:      #edf4ff;
-  --color-yellow-200:   rgba(255,235,59,0.55);
-  --color-danger-500:   #d2204c;
+  --color-white:            #ffffff;
+  --color-black:            #000000;
+  --color-gray-900:         #212121;
+  --color-gray-800:         #424242;
+  --color-gray-700:         #616161;
+  --color-gray-600:         #757575;
+  --color-gray-500:         #9e9e9e;
+  --color-gray-400:         #bdbdbd;
+  --color-gray-300:         #e0e0e0;
+  --color-gray-200:         #eeeeee;
+  --color-gray-100:         #f5f5f5;
+  --color-gray-50:          #fafafa;
 
-  /* ── COLOR · semantic roles ──────────────────── */
-  --color-fg:                   var(--color-ink-900);
-  --color-fg-muted:             var(--color-ink-700);
-  --color-fg-subtle:            var(--color-ink-500);
-  --color-fg-on-primary:        var(--color-white);
-  --color-bg:                   var(--color-white);
-  --color-bg-muted:             var(--color-ink-100);
-  --color-bg-page:              var(--color-ink-200);
-  --color-bg-tint:              var(--color-blue-50);
-  --color-bg-tint-2:            var(--color-blue-25);
-  --color-bg-inverse:           var(--color-ink-900);
-  --color-border:               var(--color-ink-500);
-  --color-border-strong:        var(--color-ink-400);
-  --color-border-subtle:        var(--color-ink-300);
-  --color-primary:              var(--color-blue-500);
-  --color-primary-hover:        var(--color-blue-600);
-  --color-primary-fg:           var(--color-white);
-  --color-primary-tint:         var(--color-blue-50);
-  --color-danger:               var(--color-danger-500);
-  --color-highlight:            var(--color-yellow-200);
+  /* MUI alpha layers (on white) */
+  --color-text-primary:     rgba(0,0,0,0.87);
+  --color-text-secondary:   rgba(0,0,0,0.60);
+  --color-text-disabled:    rgba(0,0,0,0.38);
+  --color-action-active:    rgba(0,0,0,0.56);
+  --color-action-hover:     rgba(0,0,0,0.04);
+  --color-action-selected:  rgba(0,0,0,0.08);
+  --color-action-focus:     rgba(0,0,0,0.12);
+  --color-action-disabled-bg: rgba(0,0,0,0.12);
+  --color-divider:          rgba(0,0,0,0.12);
+  --color-outlined-border:  rgba(0,0,0,0.23);
 
-  /* legacy aliases (kept so existing class names still resolve) */
+  /* Brand */
+  --color-primary-main:     #424242;
+  --color-primary-dark:     #212121;
+  --color-primary-light:    #616161;
+  --color-primary-contrast: #ffffff;
+  --color-primary-outlined: rgba(64,64,65,0.5);
+  --color-primary-hover-bg: rgba(66,66,66,0.04);
+  --color-primary-selected-bg: rgba(66,66,66,0.08);
+
+  /* Status */
+  --color-success-main:     #2e7d32;
+  --color-success-light:    #4caf50;
+  --color-success-bg:       #edf7ed;
+  --color-success-tint:     rgba(76,175,80,0.12);
+  --color-warning-main:     #ed6c02;
+  --color-warning-bg:       #fff4e5;
+  --color-error-main:       #d32f2f;
+  --color-error-light:      #ef5350;
+  --color-error-bg:         #fdecea;
+  --color-error-tint:       rgba(211,47,47,0.08);
+  --color-info-main:        #0288d1;
+  --color-info-bg:          #e5f6fd;
+
+  /* Surfaces */
+  --color-bg:               #ffffff;
+  --color-bg-paper:         #ffffff;
+  --color-bg-default:       #ffffff;
+  --color-bg-page:          #f5f5f5;
+  --color-bg-elevated:      #ffffff;
+  --color-bg-tint:          rgba(66,66,66,0.04);
+  --color-bg-tint-2:        rgba(66,66,66,0.06);
+  --color-bg-match:         var(--color-success-tint);
+  --color-bg-mismatch:      var(--color-error-tint);
+  --color-highlight:        #fff4c2;
+
+  /* ── Legacy aliases — keep so existing class names resolve. ── */
+  --color-fg:               var(--color-text-primary);
+  --color-fg-muted:         var(--color-text-secondary);
+  --color-fg-subtle:        var(--color-text-disabled);
+  --color-fg-on-primary:    var(--color-primary-contrast);
+  --color-bg-muted:         var(--color-gray-50);
+  --color-bg-inverse:       var(--color-gray-900);
+  --color-border:           var(--color-outlined-border);
+  --color-border-strong:    var(--color-text-secondary);
+  --color-border-subtle:    var(--color-divider);
+  --color-primary:          var(--color-primary-main);
+  --color-primary-hover:    var(--color-primary-dark);
+  --color-primary-fg:       var(--color-primary-contrast);
+  --color-primary-tint:     var(--color-primary-hover-bg);
+  --color-danger:           var(--color-error-main);
+  --color-danger-500:       var(--color-error-main);
+  --color-yellow-200:       var(--color-highlight);
+  --color-ink-900:          var(--color-text-primary);
+  --color-ink-700:          var(--color-text-secondary);
+  --color-ink-500:          var(--color-text-disabled);
+  --color-ink-400:          var(--color-gray-400);
+  --color-ink-300:          var(--color-gray-300);
+  --color-ink-200:          var(--color-gray-200);
+  --color-ink-100:          var(--color-gray-100);
+  --color-blue-600:         var(--color-primary-dark);
+  --color-blue-500:         var(--color-primary-main);
+  --color-blue-50:          var(--color-bg-tint-2);
+  --color-blue-25:          var(--color-bg-tint);
   --ink: var(--color-fg);
   --ink-2: var(--color-fg-muted);
   --ink-3: var(--color-fg-subtle);
@@ -61,28 +110,29 @@
   --highlight: var(--color-highlight);
 
   /* ── TYPE · families ─────────────────────────── */
-  --font-hand:      'Kalam', 'Caveat', 'Comic Neue', cursive;
-  --font-label:     'Inter', system-ui, sans-serif;
-  --font-mono:      'JetBrains Mono', ui-monospace, monospace;
-  --font-redacted:  'Redacted Script', cursive;
+  --font-sans:      'Nunito Sans', 'Inter', Roboto, system-ui, sans-serif;
+  --font-mono:      'Roboto Mono', 'JetBrains Mono', ui-monospace, monospace;
 
   /* legacy aliases */
-  --hand: var(--font-hand);
-  --label: var(--font-label);
+  --font-hand: var(--font-sans);
+  --font-label: var(--font-sans);
+  --font-redacted: var(--font-sans);
+  --hand: var(--font-sans);
+  --label: var(--font-sans);
   --mono: var(--font-mono);
 
-  /* ── TYPE · scale (px) ───────────────────────── */
+  /* ── TYPE · MUI scale ────────────────────────── */
   --text-2xs:   10px;
-  --text-xs:    12px;
-  --text-sm:    13px;
-  --text-base:  14px;
-  --text-md:    16px;
+  --text-xs:    12px;   /* caption, input/label */
+  --text-sm:    13px;   /* chip, button.small */
+  --text-base:  14px;   /* body2, button.medium, table header */
+  --text-md:    16px;   /* body1, input value */
   --text-lg:    18px;
-  --text-xl:    24px;
-  --text-2xl:   32px;
-  --text-3xl:   48px;
-  --text-4xl:   56px;
-  --text-5xl:   96px;
+  --text-xl:    20px;   /* h6 */
+  --text-2xl:   24px;   /* h5 */
+  --text-3xl:   34px;   /* h4 */
+  --text-4xl:   48px;
+  --text-5xl:   60px;
 
   /* ── TYPE · weight ───────────────────────────── */
   --weight-regular:  400;
@@ -92,19 +142,19 @@
   --weight-black:    800;
 
   /* ── TYPE · line-height ──────────────────────── */
-  --leading-tight:   1.0;
-  --leading-snug:    1.15;
-  --leading-normal:  1.4;
-  --leading-relaxed: 1.55;
+  --leading-tight:   1.2;
+  --leading-snug:    1.4;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.66;
 
   /* ── TYPE · tracking ─────────────────────────── */
-  --tracking-tight:  -0.5px;
-  --tracking-normal: 0;
-  --tracking-wide:   0.04em;
-  --tracking-wider:  0.1em;
-  --tracking-widest: 0.16em;
+  --tracking-tight:  0;
+  --tracking-normal: 0.15px;
+  --tracking-wide:   0.17px;
+  --tracking-wider:  0.4px;
+  --tracking-widest: 1px;
 
-  /* ── SPACING · 4-pt scale ────────────────────── */
+  /* ── SPACING · MUI 8-pt scale ────────────────── */
   --space-0:   0;
   --space-1:   4px;
   --space-2:   8px;
@@ -124,45 +174,49 @@
   --radius-none:  0;
   --radius-xs:    2px;
   --radius-sm:    4px;
-  --radius-md:    6px;
+  --radius-md:    4px;
   --radius-lg:    8px;
   --radius-xl:    12px;
-  --radius-pill:  999px;
+  --radius-pill:  16px;   /* MUI chip uses 16 (24 height / 2) */
   --radius-full:  9999px;
 
   /* ── BORDER · stroke weights ─────────────────── */
   --border-1:   1px;
-  --border-1-5: 1.5px;
-  --border-2:   2px;
-  --border-3:   3px;
+  --border-1-5: 1px;
+  --border-2:   1px;
+  --border-3:   2px;
 
-  /* ── SHADOW ──────────────────────────────────── */
-  --shadow-1: 0 1px 0 rgba(0,0,0,.06);
-  --shadow-2: 0 2px 4px rgba(0,0,0,.10);
-  --shadow-3: 0 8px 24px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.18);
-  --shadow-page: 0 1px 0 rgba(0,0,0,.04), 0 24px 80px rgba(0,0,0,.08);
-  --ring-focus: 0 0 0 3px rgba(0,102,255,.15);
+  /* ── SHADOW · MUI elevations ─────────────────── */
+  --shadow-1: 0 2px 1px -1px rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 1px 3px 0 rgba(0,0,0,0.12);
+  --shadow-2: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12);
+  --shadow-3: 0 3px 3px -2px rgba(0,0,0,0.2), 0 3px 4px 0 rgba(0,0,0,0.14), 0 1px 8px 0 rgba(0,0,0,0.12);
+  --shadow-4: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12);
+  --shadow-8: 0 5px 5px -3px rgba(0,0,0,0.2), 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12);
+  --shadow-16: 0 8px 10px -5px rgba(0,0,0,0.2), 0 16px 24px 2px rgba(0,0,0,0.14), 0 6px 30px 5px rgba(0,0,0,0.12);
+  --shadow-page: var(--shadow-1);
+  --ring-focus: 0 0 0 2px rgba(66,66,66,0.2);
 
   /* ── MOTION ──────────────────────────────────── */
   --duration-instant: 80ms;
   --duration-fast:    150ms;
-  --duration-base:    240ms;
-  --easing-standard:  cubic-bezier(.2,.0,.0,1);
-  --easing-emphasized:cubic-bezier(.2,.0,.0,1.2);
+  --duration-base:    225ms;
+  --easing-standard:  cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ── LAYOUT ──────────────────────────────────── */
-  --layout-page-max:    1280px;
-  --layout-section-pad: var(--space-18);
-  --layout-section-pady-top: var(--space-14);
-  --layout-section-pady-bottom: var(--space-16);
+  --layout-page-max:    1440px;
+  --layout-section-pad: var(--space-6);
+  --layout-section-pady-top: var(--space-6);
+  --layout-section-pady-bottom: var(--space-8);
+  --appbar-height:      64px;
 
   /* ── COMPONENT TOKENS ────────────────────────── */
-  --control-height-sm: 32px;
-  --control-height-md: 40px;
+  --control-height-sm: 30px;   /* MUI button.small */
+  --control-height-md: 40px;   /* MUI input.medium */
   --control-height-lg: 48px;
   --control-radius:    var(--radius-sm);
-  --control-border:    var(--border-2);
-  --control-pad-x-sm:  12px;
+  --control-border:    1px;
+  --control-pad-x-sm:  10px;
   --control-pad-x-md:  16px;
-  --control-pad-x-lg:  18px;
+  --control-pad-x-lg:  22px;
 }
