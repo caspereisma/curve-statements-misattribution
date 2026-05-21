@@ -1,2 +1,11 @@
 .DS_Store
 references/Data/
+
+# Node / pnpm
+node_modules/
+.pnpm-store/
+
+# Playwright runtime output (baselines + archive ARE committed)
+playwright-report/
+test-results/
+screenshots/diffs/
