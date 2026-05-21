@@ -1,0 +1,32 @@
+{
+  "slug": "setup-baseline",
+  "summary": "Initial visual-regression setup — two-card focus panel + per-row Add-to-Aliases",
+  "date": "2026-05-21",
+  "captured_at": "2026-05-21T12:05:21.077Z",
+  "page_url": "http://127.0.0.1:4321/data-matching.html",
+  "git": {
+    "branch": "chore/visual-regression-setup",
+    "commit": "63e8084",
+    "remote": "https://github.com/caspereisma/curve-statements-misattribution.git"
+  },
+  "captures": [
+    {
+      "viewport": "desktop-1440",
+      "file": "desktop-1440.png",
+      "width": 1440,
+      "height": 1024
+    },
+    {
+      "viewport": "tablet-768",
+      "file": "tablet-768.png",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "viewport": "mobile-375",
+      "file": "mobile-375.png",
+      "width": 375,
+      "height": 812
+    }
+  ]
+}
