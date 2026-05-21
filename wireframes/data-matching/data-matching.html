@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
 
-  <link rel="stylesheet" href="styles.css?v=mui16">
+  <link rel="stylesheet" href="styles.css?v=mui21">
 
   <style>
     /* ────────────────────────────────────────────────────────────
@@ -134,11 +134,202 @@
                  flex-direction: column;
                  position: absolute;
                  top: 0; right: 0; bottom: 0;
-                 width: 560px;
-                 background: var(--color-bg-paper);
+                 width: 620px;
+                 background: var(--color-bg-page);
                  z-index: 5;
                  box-shadow: var(--shadow-4);
+                 padding: 16px;
+                 gap: 12px;
+                 overflow-y: auto;
                }
+    /* ── Two-card focus layout (Figma 10146:2471) ── */
+    .focus-panel-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 4px 4px 0;
+    }
+    .focus-panel-title {
+      flex: 1; min-width: 0; margin: 0;
+      font-family: var(--font-sans);
+      font-size: 20px;
+      font-weight: var(--weight-medium);
+      line-height: 1.6;
+      letter-spacing: 0.15px;
+      color: var(--color-text-primary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .focus-panel-header .ibtn.lg { width: 48px; height: 48px; }
+
+    .focus-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .focus-card {
+      background: var(--color-bg-paper);
+      border: 1px solid var(--color-divider);
+      border-radius: var(--radius-sm);
+      display: flex; flex-direction: column;
+    }
+    .focus-card-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+    .focus-card-title {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: var(--weight-semibold);
+      letter-spacing: 0.15px;
+      color: var(--color-text-primary);
+      flex: 1; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .focus-match-nav { justify-content: space-between; }
+    .focus-match-nav .nav-btn {
+      width: 32px; height: 32px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: none; border-radius: 50%;
+      color: var(--color-action-active);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .focus-match-nav .nav-btn svg { width: 20px; height: 20px; }
+    .focus-match-nav .nav-btn:hover:not(:disabled) {
+      background: var(--color-action-hover);
+      color: var(--color-text-primary);
+    }
+    .focus-match-nav .nav-btn:disabled { color: var(--color-text-disabled); cursor: default; }
+    .focus-match-nav .match-label {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: var(--weight-semibold);
+      letter-spacing: 0.15px;
+      color: var(--color-text-primary);
+    }
+    .focus-match-nav .score-chip {
+      display: inline-flex; align-items: center;
+      height: 24px; padding: 0 10px;
+      border: none; border-radius: 12px;
+      background: var(--color-bg-paper);
+      color: #1b5e20;
+      font-family: var(--font-sans); font-size: 13px;
+      line-height: 18px; letter-spacing: 0.16px;
+    }
+    .focus-match-nav.no-candidates .score-chip {
+      color: var(--color-text-secondary); font-style: italic;
+    }
+
+    .focus-card-fields {
+      display: flex; flex-direction: column;
+    }
+    .focus-card-fields .field {
+      display: grid; grid-template-columns: 110px 1fr; gap: 8px;
+      align-items: center;
+      padding: 10px 16px;
+      min-height: 44px;
+      border-bottom: 1px solid #ededed;
+      font-family: var(--font-sans);
+    }
+    .focus-card-fields .field:last-child { border-bottom: none; }
+    .focus-card-fields .field .label {
+      font-size: 12px;
+      line-height: 1.66;
+      letter-spacing: 0.4px;
+      color: var(--color-text-secondary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .focus-card-fields .field .value {
+      font-size: 14px;
+      font-weight: var(--weight-medium);
+      line-height: 1.43;
+      letter-spacing: 0.17px;
+      color: var(--color-text-primary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      padding: 4px 6px; margin: -4px -6px;
+      border-radius: var(--radius-xs);
+    }
+    .focus-card-fields .field .value.empty {
+      font-size: 14px;
+      font-weight: var(--weight-regular);
+      color: var(--color-text-secondary);
+      font-style: italic;
+    }
+    .focus-card-fields .field .value.mono {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: var(--weight-regular);
+    }
+    .focus-card-fields .field .value.match {
+      background: rgba(46,125,50,0.12);
+      color: var(--color-text-primary);
+    }
+    .focus-card-fields .field .value.mismatch {
+      background: rgba(239,108,0,0.12);
+      color: var(--color-text-primary);
+    }
+    .focus-card-fields .field.mixed .value { color: var(--color-text-secondary); font-style: italic; }
+
+    .focus-card-expand {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; margin: 0;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-top: 1px solid var(--color-divider);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      letter-spacing: 0.17px;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      text-align: left;
+    }
+    .focus-card-expand:hover { background: var(--color-action-hover); }
+    .focus-card-expand .chev {
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      color: var(--color-action-active);
+      transition: transform var(--duration-fast);
+    }
+    .focus-card-expand.on .chev { transform: rotate(90deg); color: var(--color-text-primary); }
+
+    .match-search {
+      display: flex; align-items: center; gap: 4px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--color-divider);
+      background: var(--color-bg-paper);
+    }
+    .match-search svg {
+      width: 20px; height: 20px;
+      color: var(--color-action-active);
+      flex-shrink: 0;
+    }
+    .match-search input {
+      flex: 1; min-width: 0;
+      height: 32px;
+      padding: 4px 8px;
+      border: 1px solid var(--color-outlined-border);
+      border-radius: var(--radius-sm);
+      background: var(--color-bg);
+      color: var(--color-text-primary);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+    }
+    .match-search input:focus {
+      border-color: var(--color-primary-main);
+      box-shadow: 0 0 0 1px var(--color-primary-main) inset;
+    }
+
+    /* Footer action row sits flush left, sticky-feeling at the bottom. */
+    .dm-focus .focus-actions {
+      display: flex; gap: 12px;
+      padding: 0;
+      border-top: none;
+      background: transparent;
+    }
+    .dm-focus .focus-actions .btn svg { margin-right: 4px; }
     .dm-master tbody tr[data-idx] { cursor: pointer; }
     .dm-master tbody tr[data-idx]:hover td { background: var(--color-action-hover); }
     .dm-master tbody tr[data-idx].focused:hover td { background: var(--color-action-selected); }
@@ -431,6 +622,13 @@
       font-weight: var(--weight-regular);
       line-height: 18px;
       letter-spacing: 0.16px;
+    }
+    .score-count {
+      margin-top: 2px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      color: var(--color-text-secondary);
     }
     .score-empty {
       color: var(--color-text-secondary);
@@ -946,12 +1144,8 @@
       color: var(--color-text-disabled);
       border-color: var(--color-action-disabled-bg);
     }
-    .dm-focus #focus-header-bulk,
-    .dm-focus #focus-actions-bulk { display: none; }
-    .dm-focus.bulk-mode #focus-header-single,
-    .dm-focus.bulk-mode #focus-actions-single { display: none !important; }
-    .dm-focus.bulk-mode #focus-header-bulk { display: flex; }
-    .dm-focus.bulk-mode #focus-actions-bulk { display: flex; }
+    /* Bulk mode visibility is handled in JS (renderFocusPanel toggles the
+       single vs. bulk Add buttons inline). */
 
     .panel-fields .field .value.mixed {
       color: var(--color-text-disabled);
@@ -1439,7 +1633,7 @@
           </div>
           <span class="toolbar-spacer"></span>
           <button class="btn outline sm" id="unprocessed-bulk-btn" disabled>Bulk view (<span id="unprocessed-bulk-count">0</span>)</button>
-          <button class="btn sm" id="unprocessed-export-btn">Export</button>
+          <button class="btn sm" id="unprocessed-bulk-add-btn" disabled>Bulk add to track aliases (<span id="unprocessed-bulk-add-count">0</span>)</button>
         </div>
         <div class="toolbar-row">
           <div class="unprocessed-select">
@@ -1489,8 +1683,7 @@
             <col style="width: 90px;">  <!-- CMO -->
             <col style="width: 90px;">  <!-- Amount -->
             <col style="width: 140px;"> <!-- Unprocessed chip -->
-            <col style="width: 40px;">  <!-- ✓ check -->
-            <col style="width: 40px;">  <!-- ⋮ menu -->
+            <col style="width: 40px;">  <!-- ✓ confirm-add -->
           </colgroup>
           <thead>
             <tr>
@@ -1501,7 +1694,6 @@
               <th rowspan="2"><span class="unp-th-label sortable" data-sort-col="Original Contract ID">Client<span class="sort-ind"></span></span></th>
               <th rowspan="2"><span class="unp-th-label sortable" data-sort-col="Source">CMO<span class="sort-ind"></span></span></th>
               <th rowspan="2"><span class="unp-th-label sortable" data-sort-col="Net Amount">Amount<span class="sort-ind"></span></span></th>
-              <th rowspan="2"></th>
               <th rowspan="2"></th>
               <th rowspan="2"></th>
             </tr>
@@ -1594,49 +1786,57 @@
     </div>
 
     <div class="dm-focus" id="focus-panel">
-      <!-- Single-record header -->
-      <div id="focus-header-single" class="focus-header" style="padding: 20px 24px 16px; border-bottom: 1px solid var(--color-divider); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
-        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1;">
-          <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-            <span class="focus-caption">Sales ID</span>
-            <span class="mono focus-caption" id="focus-id" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;"></span>
-            <span style="flex: 1; min-width: 0;"></span>
+      <header class="focus-panel-header">
+        <h2 class="focus-panel-title">NRP Matching</h2>
+        <button class="ibtn lg" id="focus-close" type="button" title="Close" aria-label="Close focus panel" style="font-size: 28px; line-height: 1;">×</button>
+      </header>
+      <div class="focus-cards">
+        <!-- Sales line (Curve / source row) -->
+        <section class="focus-card focus-card-sales">
+          <header class="focus-card-header">
+            <span class="focus-card-title" id="sales-card-title">Sales line</span>
             <span class="status-pill" id="focus-status"></span>
+          </header>
+          <div class="focus-card-fields" id="sales-fields"></div>
+          <button class="focus-card-expand" id="sales-expand" type="button">
+            <span class="chev">›</span>
+            <span class="label">Show 6 more fields</span>
+          </button>
+        </section>
+
+        <!-- Match card (NRP candidate) -->
+        <section class="focus-card focus-card-match" id="match-card">
+          <header class="focus-card-header focus-match-nav">
+            <button class="nav-btn" id="match-prev" type="button" aria-label="Previous match">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <span class="match-label">Candidate <span id="match-idx">0/0</span></span>
+            <span class="score-chip" id="match-score">—</span>
+            <button class="nav-btn" id="match-next" type="button" aria-label="Next match">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </header>
+          <div class="focus-card-fields" id="match-fields"></div>
+          <button class="focus-card-expand" id="match-expand" type="button">
+            <span class="chev">›</span>
+            <span class="label">Show 18 more fields</span>
+          </button>
+          <div class="match-search">
+            <svg viewBox="0 0 24 24"><use href="#i-search"></use></svg>
+            <input type="text" id="match-search-input" placeholder="Search NRP" autocomplete="off">
           </div>
-          <span class="focus-body2" id="focus-cmo" style="overflow: hidden; text-overflow: ellipsis;"></span>
-          <span class="focus-h5" id="focus-title" style="overflow: hidden; text-overflow: ellipsis;"></span>
-        </div>
-        <button class="ibtn" id="focus-close" title="Close" aria-label="Close focus panel" style="font-size: 24px; line-height: 1;">×</button>
+        </section>
       </div>
 
-      <!-- Bulk view header -->
-      <div id="focus-header-bulk" class="focus-header" style="padding: 20px 24px 16px; border-bottom: 1px solid var(--color-divider); align-items: flex-start; justify-content: space-between; gap: 12px;">
-        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1;">
-          <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-            <span class="focus-caption">Bulk view</span>
-            <span class="focus-caption"><span id="bulk-count">0</span> records</span>
-            <span style="flex: 1; min-width: 0;"></span>
-            <span class="status-pill" id="bulk-status"></span>
-          </div>
-        </div>
-        <button class="ibtn" id="bulk-close" title="Close bulk view" aria-label="Close bulk view" style="font-size: 24px; line-height: 1;">×</button>
-      </div>
-
-      <div class="panel-fields" id="panel-fields"></div>
-
-      <!-- Single-record actions -->
-      <div class="focus-actions" id="focus-actions-single">
-        <div style="display: flex; gap: 8px;">
-          <button class="btn sm" id="add-track-alias-btn">Add to track aliases</button>
-        </div>
-      </div>
-
-      <!-- Bulk view actions -->
-      <div class="focus-actions" id="focus-actions-bulk">
-        <div style="display: flex; gap: 8px;">
-          <button class="btn outline sm" id="bulk-cancel">Close</button>
-          <button class="btn sm" id="bulk-add-alias-btn">Add <span id="bulk-add-count">0</span> to track aliases</button>
-        </div>
+      <div class="focus-actions">
+        <button class="btn sm" id="add-track-alias-btn" type="button">
+          <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>
+          Add to track aliases
+        </button>
+        <button class="btn sm" id="bulk-add-alias-btn" type="button" style="display: none;">
+          <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>
+          Add <span id="bulk-add-count">0</span> to track aliases
+        </button>
       </div>
     </div>
   </div>
@@ -2107,6 +2307,53 @@
   /* Single-record focus panel uses a richer 3-column structure: each row
      declares the human label, the Curve data key, and the NRP slim-field
      key. Either side may be null for fields that only exist on one side. */
+  // Two-card focus layout (Figma 10146:2471): each side has its own field
+  // list. NRP fields highlight against the matching Sales field below.
+  const SALES_HEAD = [
+    { label: 'Title',        key: 'Original Track Title',  matchAs: 'title' },
+    { label: 'Artist',       key: 'Original Track Artist', matchAs: 'artist' },
+    { label: 'ISRC (alias)', key: 'Original ISRC',         matchAs: 'isrc',     mono: true },
+    { label: 'Source',       key: 'Source' },
+    { label: 'Amount',       key: 'Net Amount',            formatter: 'eur' },
+    { label: 'Contract ID',  key: 'Contract ID',           mono: true },
+  ];
+  const SALES_COLLAPSED = [
+    { label: 'Sales date',     key: 'Sale Date' },
+    { label: 'Transaction',    key: 'Transaction Date' },
+    { label: 'Period',         key: 'Target Period' },
+    { label: 'Track ID',       key: 'Track ID',                  mono: true },
+    { label: 'Amount (orig.)', key: 'Net Amount in Currency',    formatter: 'origCurrency' },
+    { label: 'Mapping status', key: 'Mapping Status' },
+  ];
+  const MATCH_HEAD = [
+    { label: 'Asset title',         key: 'asset_title',          matchAs: 'title' },
+    { label: 'Version',             key: 'asset_version' },
+    { label: 'primary artist',      key: 'primary_artist',       matchAs: 'artist' },
+    { label: 'secondary artist',    key: 'secondary_artist' },
+    { label: 'display artist name', key: 'display_artist_name',  matchAs: 'artist' },
+    { label: 'ISRC (alias)',        key: 'isrc_code',            matchAs: 'isrc',  mono: true },
+  ];
+  const MATCH_COLLAPSED = [
+    { label: 'Content type',           key: 'content_type' },
+    { label: 'Duration',               key: 'duration' },
+    { label: 'Recording date',         key: 'recording_date' },
+    { label: 'Recording year',         key: 'recording_year' },
+    { label: 'Recording country',      key: 'recording_country' },
+    { label: 'Commissioning country',  key: 'comissioning_country' },
+    { label: 'P name',                 key: 'p_name' },
+    { label: 'P year',                 key: 'p_year' },
+    { label: 'C year',                 key: 'c_year' },
+    { label: 'Is remastered',          key: 'is_remastered' },
+    { label: 'Medley',                 key: 'medley' },
+    { label: 'Is active',              key: 'is_active' },
+    { label: 'Fuga asset id',          key: 'fuga_asset_id',    mono: true },
+    { label: 'NRP id',                 key: 'nrp_id',           mono: true },
+    { label: 'Asset curve id',         key: 'asset_curve_id',   mono: true },
+    { label: 'Asset id',               key: 'asset_id',         mono: true },
+    { label: 'Asset created date',     key: 'asset_created_date' },
+    { label: 'Asset last modified',    key: 'asset_last_modified' },
+  ];
+
   const PANEL_FIELDS_HEAD = [
     { label: 'title',                curveKey: 'Original Track Title',  nrpKey: 'asset_title' },
     { label: 'version',              curveKey: null,                    nrpKey: 'asset_version' },
@@ -2405,10 +2652,17 @@
   function renderTabCounts() {
     const total    = ROWS.length;
     // Unprocessed tab restricts to Catalogue Type = Track AND no Track ID,
-    // so the badge count reflects what the table actually shows.
-    const unmapped = ROWS.filter(r => r[MAPPING_STATUS_IDX] === 'Unmapped' &&
-                                       r[CATTYPE_IDX] === 'Track' &&
-                                       (r[TRACK_ID_IDX] === '' || r[TRACK_ID_IDX] == null)).length;
+    // AND excludes rows the user has already added to Track Aliases
+    // (state.processed). So the badge decrements 1-for-1 as new aliases land.
+    let unmapped = 0;
+    for (let i = 0; i < ROWS.length; i++) {
+      const r = ROWS[i];
+      if (r[MAPPING_STATUS_IDX] !== 'Unmapped') continue;
+      if (r[CATTYPE_IDX] !== 'Track') continue;
+      if (r[TRACK_ID_IDX] !== '' && r[TRACK_ID_IDX] != null) continue;
+      if (state.processed.has(i)) continue;
+      unmapped++;
+    }
     const fmt = n => n.toLocaleString('en-US');
     document.getElementById('ct-all').textContent              = fmt(total);
     document.getElementById('ct-unmapped').textContent         = fmt(unmapped);
@@ -2440,6 +2694,23 @@
     document.getElementById('bulk-edit-count').textContent = state.checked.size;
   }
 
+  // Pull a value from a Curve row for the SALES_* field defs.
+  function salesValueFor(row, f) {
+    if (f.formatter === 'eur') {
+      const v = row[F(f.key)];
+      if (v === '' || v == null) return null;
+      return '€ ' + Number(v).toFixed(4);
+    }
+    if (f.formatter === 'origCurrency') {
+      const v = row[F(f.key)];
+      if (v === '' || v == null) return null;
+      const cur = row[ORIG_CURRENCY_IDX];
+      return (cur ? cur + ' ' : '') + v;
+    }
+    const v = row[F(f.key)];
+    return (v === '' || v == null) ? null : v;
+  }
+
   function renderFocusPanel() {
     const body  = document.getElementById('dm-body');
     const panel = document.getElementById('focus-panel');
@@ -2452,6 +2723,8 @@
       return;
     }
     panel.classList.remove('bulk-mode');
+    document.getElementById('add-track-alias-btn').style.display = '';
+    document.getElementById('bulk-add-alias-btn').style.display  = 'none';
 
     const idx = state.activeIdx;
     if (idx == null) {
@@ -2460,89 +2733,96 @@
     }
     body.classList.add('focus-open');
     const row = ROWS[idx];
-    const idLabel = row[SALES_FILE_ID] || row[ISRC_IDX] || '(no id)';
-    const title   = row[TITLE_IDX]     || row[ARTIST_IDX] || '(untitled)';
-    const cmoVal  = row[SOURCE_IDX]    || '';
-    document.getElementById('focus-id').textContent    = idLabel;
-    document.getElementById('focus-cmo').textContent   = cmoVal;
-    document.getElementById('focus-title').textContent = title;
+
+    // Sales line card header
+    document.getElementById('sales-card-title').textContent = 'Sales line';
     const procDone = state.processed.has(idx);
     const statusEl = document.getElementById('focus-status');
     statusEl.textContent = procDone ? 'Processed' : 'Unprocessed';
     statusEl.classList.toggle('done', procDone);
-    const editedSet = state.editedFields.get(idx) || new Set();
 
-    /* Pull NRP candidates for this row + clamp the navigation index in
-       case the focused row's candidate list is shorter than the previous one. */
+    // NRP candidates + nav clamp
     const candidates = nrpCandidatesFor(idx);
     if (candidates.length === 0) state.candidateIdx = 0;
     else if (state.candidateIdx >= candidates.length) state.candidateIdx = candidates.length - 1;
     if (state.candidateIdx < 0) state.candidateIdx = 0;
     const candidate = candidates.length > 0 ? candidates[state.candidateIdx] : null;
 
-    /* Single field row: 3 cells (label / Curve / NRP). The Curve cell stays
-       editable like before; the NRP cell is read-only. */
-    const NRP_MONO_FIELDS = new Set(['isrc_code', 'asset_id', 'fuga_asset_id', 'nrp_id', 'asset_curve_id']);
-    const renderField = (f) => {
-      const curveFi  = f.curveKey ? F(f.curveKey) : -1;
-      const curveVal = f.curveKey ? row[curveFi] : null;
-      const nrpVal   = (f.nrpKey && candidate) ? candidate.n[f.nrpKey] : null;
-      const cEmpty   = curveVal === '' || curveVal == null;
-      const nEmpty   = nrpVal   === '' || nrpVal   == null;
+    // Match nav header
+    const nav = document.querySelector('.focus-match-nav');
+    const matchIdxEl   = document.getElementById('match-idx');
+    const matchScoreEl = document.getElementById('match-score');
+    const prevBtn = document.getElementById('match-prev');
+    const nextBtn = document.getElementById('match-next');
+    matchIdxEl.textContent = candidates.length === 0 ? '0/0' : (state.candidateIdx + 1) + '/' + candidates.length;
+    matchScoreEl.textContent = candidate ? candidate.score + '%' : '—';
+    prevBtn.disabled = state.candidateIdx <= 0;
+    nextBtn.disabled = state.candidateIdx >= candidates.length - 1;
+    nav.classList.toggle('no-candidates', candidates.length === 0);
 
-      let cDisplay;
-      if (!f.curveKey)            cDisplay = '';
-      else if (cEmpty)            cDisplay = '(empty)';
-      else if (f.curveKey === 'Net Amount in Currency') {
-        const cur = row[ORIG_CURRENCY_IDX];
-        cDisplay = (cur ? esc(cur) + ' ' : '') + esc(curveVal);
-      } else                      cDisplay = esc(curveVal);
+    // Build a quick lookup of Sales values by matchAs (so the match card can
+    // tint its corresponding NRP fields green / orange).
+    const salesByMatch = {};
+    [...SALES_HEAD, ...SALES_COLLAPSED].forEach(f => {
+      if (!f.matchAs) return;
+      const v = salesValueFor(row, f);
+      if (v == null) return;
+      if (!salesByMatch[f.matchAs]) salesByMatch[f.matchAs] = [];
+      salesByMatch[f.matchAs].push(String(v).trim().toLowerCase());
+    });
 
-      const nDisplay = (!f.nrpKey || !candidate) ? '' : (nEmpty ? '(empty)' : esc(nrpVal));
-
-      const cClasses = ['value'];
-      if (!f.curveKey || cEmpty) cClasses.push('empty');
-      if (f.curveKey && MONO_FIELDS.has(f.curveKey)) cClasses.push('mono');
-
-      const nClasses = ['value', 'nrp-readonly'];
-      if (!f.nrpKey || !candidate || nEmpty) nClasses.push('empty');
-      if (f.nrpKey && NRP_MONO_FIELDS.has(f.nrpKey)) nClasses.push('mono');
-
-      // Match / mismatch tinting (when both columns have values).
-      if (!cEmpty && !nEmpty && f.curveKey && f.nrpKey && candidate) {
-        const same = String(curveVal).trim().toLowerCase()
-                  === String(nrpVal).trim().toLowerCase();
-        if (same) {
-          cClasses.push('match');
-          nClasses.push('match');
-        } else {
-          nClasses.push('mismatch');
-        }
-      }
-
-      const editedClass = (curveFi >= 0 && editedSet.has(curveFi)) ? ' edited' : '';
-      const curveData   = (curveFi >= 0) ? ' data-field-idx="' + curveFi + '"' : '';
-
-      return '<div class="field' + editedClass + '">' +
+    const renderSalesField = (f) => {
+      const v = salesValueFor(row, f);
+      const empty = v == null;
+      const cls = ['value'];
+      if (empty) cls.push('empty');
+      if (f.mono && !empty) cls.push('mono');
+      return '<div class="field">' +
                '<div class="label" title="' + esc(f.label) + '">' + esc(f.label) + '</div>' +
-               '<div class="' + cClasses.join(' ') + '"' + curveData + '>' + (cDisplay || '&nbsp;') + '</div>' +
-               '<div class="' + nClasses.join(' ') + '">' + (nDisplay || '&nbsp;') + '</div>' +
+               '<div class="' + cls.join(' ') + '">' + (empty ? '(empty)' : esc(v)) + '</div>' +
              '</div>';
     };
 
-    const colsHeader   = renderPanelColsHeader(candidates.length, state.candidateIdx, candidate);
-    const headHtml     = PANEL_FIELDS_HEAD.map(renderField).join('');
-    const curveToggle  = renderFocusToggle('focus-toggle-curve', state.curveExpanded,
-                                            PANEL_FIELDS_CURVE_COLLAPSED.length, 'curve fields');
-    const curveSection = state.curveExpanded
-      ? PANEL_FIELDS_CURVE_COLLAPSED.map(renderField).join('') : '';
-    const nrpToggle    = renderFocusToggle('focus-toggle-nrp', state.nrpExpanded,
-                                            PANEL_FIELDS_NRP_COLLAPSED.length, 'NRP fields');
-    const nrpSection   = state.nrpExpanded
-      ? PANEL_FIELDS_NRP_COLLAPSED.map(renderField).join('') : '';
+    const renderMatchField = (f) => {
+      const v = candidate ? candidate.n[f.key] : null;
+      const empty = v === '' || v == null;
+      const cls = ['value'];
+      if (empty) cls.push('empty');
+      if (f.mono && !empty) cls.push('mono');
+      // Match / mismatch highlighting (only on the candidate side).
+      if (!empty && f.matchAs && salesByMatch[f.matchAs]) {
+        const nv = String(v).trim().toLowerCase();
+        const matched = salesByMatch[f.matchAs].some(sv => sv === nv);
+        cls.push(matched ? 'match' : 'mismatch');
+      }
+      return '<div class="field">' +
+               '<div class="label" title="' + esc(f.label) + '">' + esc(f.label) + '</div>' +
+               '<div class="' + cls.join(' ') + '">' + (empty ? '(empty)' : esc(v)) + '</div>' +
+             '</div>';
+    };
 
-    document.getElementById('panel-fields').innerHTML =
-      colsHeader + headHtml + curveToggle + curveSection + nrpToggle + nrpSection;
+    // Sales card body
+    const salesHeadHTML     = SALES_HEAD.map(renderSalesField).join('');
+    const salesCollapsedHTML= state.curveExpanded ? SALES_COLLAPSED.map(renderSalesField).join('') : '';
+    document.getElementById('sales-fields').innerHTML = salesHeadHTML + salesCollapsedHTML;
+    const salesExpand = document.getElementById('sales-expand');
+    salesExpand.classList.toggle('on', state.curveExpanded);
+    salesExpand.querySelector('.label').textContent =
+      state.curveExpanded ? 'Hide ' + SALES_COLLAPSED.length + ' fields'
+                          : 'Show ' + SALES_COLLAPSED.length + ' more fields';
+
+    // Match card body
+    const matchHeadHTML      = candidate ? MATCH_HEAD.map(renderMatchField).join('') : '';
+    const matchCollapsedHTML = (candidate && state.nrpExpanded) ? MATCH_COLLAPSED.map(renderMatchField).join('') : '';
+    document.getElementById('match-fields').innerHTML =
+      candidate ? (matchHeadHTML + matchCollapsedHTML)
+                : '<div class="field"><div class="label">—</div><div class="value empty">No NRP matches for this row.</div></div>';
+    const matchExpand = document.getElementById('match-expand');
+    matchExpand.classList.toggle('on', state.nrpExpanded);
+    matchExpand.querySelector('.label').textContent =
+      state.nrpExpanded ? 'Hide ' + MATCH_COLLAPSED.length + ' fields'
+                        : 'Show ' + MATCH_COLLAPSED.length + ' more fields';
+    matchExpand.style.display = candidate ? '' : 'none';
   }
 
   /* Header row for the 3-column comparison view, including the NRP
@@ -2591,107 +2871,102 @@
   }
 
   function renderBulkPanel() {
-    document.getElementById('bulk-count').textContent    = state.bulkSnapshot.length.toLocaleString('en-US');
-    document.getElementById('bulk-add-count').textContent = state.bulkSnapshot.length.toLocaleString('en-US');
+    const n = state.bulkSnapshot.length;
+    document.getElementById('add-track-alias-btn').style.display = 'none';
+    document.getElementById('bulk-add-alias-btn').style.display  = '';
+    document.getElementById('bulk-add-count').textContent = n.toLocaleString('en-US');
 
-    /* Processed status of the selection (all, some, or none). */
+    // Sales line card header — "Bulk view · N records" + status
+    document.getElementById('sales-card-title').textContent = 'Bulk view · ' + n + ' record' + (n === 1 ? '' : 's');
     const processedCount = state.bulkSnapshot.filter(i => state.processed.has(i)).length;
-    const statusEl = document.getElementById('bulk-status');
-    if (processedCount === state.bulkSnapshot.length && state.bulkSnapshot.length > 0) {
+    const statusEl = document.getElementById('focus-status');
+    if (n > 0 && processedCount === n) {
       statusEl.textContent = 'All processed';
       statusEl.className = 'status-pill done';
     } else if (processedCount > 0) {
-      statusEl.textContent = processedCount + '/' + state.bulkSnapshot.length + ' processed';
+      statusEl.textContent = processedCount + '/' + n + ' processed';
       statusEl.className = 'status-pill';
     } else {
       statusEl.textContent = 'Unprocessed';
       statusEl.className = 'status-pill';
     }
 
-    /* NRP candidates for the bulk selection (same when all rows share a
-       title, empty otherwise). Reuse state.candidateIdx for navigation. */
     const candidates = nrpCandidatesForBulk(state.bulkSnapshot);
     if (candidates.length === 0) state.candidateIdx = 0;
     else if (state.candidateIdx >= candidates.length) state.candidateIdx = candidates.length - 1;
     if (state.candidateIdx < 0) state.candidateIdx = 0;
     const candidate = candidates.length > 0 ? candidates[state.candidateIdx] : null;
 
-    /* Disable the bulk "Add to track aliases" button when there is no
-       candidate (mixed-title selection or no NRP matches found). */
     document.getElementById('bulk-add-alias-btn').disabled = !candidate;
 
-    const NRP_MONO_FIELDS = new Set(['isrc_code', 'asset_id', 'fuga_asset_id', 'nrp_id', 'asset_curve_id']);
+    // Match nav
+    const nav = document.querySelector('.focus-match-nav');
+    document.getElementById('match-idx').textContent = candidates.length === 0 ? '0/0' : (state.candidateIdx + 1) + '/' + candidates.length;
+    document.getElementById('match-score').textContent = candidate ? candidate.score + '%' : '—';
+    document.getElementById('match-prev').disabled = state.candidateIdx <= 0;
+    document.getElementById('match-next').disabled = state.candidateIdx >= candidates.length - 1;
+    nav.classList.toggle('no-candidates', candidates.length === 0);
 
-    /* Render a row: 3 cells (label / Curve aggregate / NRP candidate). */
-    const renderField = (f) => {
-      const curveFi  = f.curveKey ? F(f.curveKey) : -1;
-      const nrpVal   = (f.nrpKey && candidate) ? candidate.n[f.nrpKey] : null;
-
-      // ─ Curve cell: aggregate across the bulk snapshot ────────────────
-      const cClasses = ['value'];
-      let cDisplay  = '';
-      let cMono     = f.curveKey && MONO_FIELDS.has(f.curveKey);
-      if (!f.curveKey) {
-        cDisplay = '';
-        cClasses.push('empty');
-      } else if (SUM_FIELDS.has(f.curveKey)) {
-        // Sum: shown with the existing Σ prefix styling.
-        cClasses.push('mono', 'sum-value');
-        let sumDisplay = esc(formatAmount(sumAmount(state.bulkSnapshot, curveFi)));
-        if (f.curveKey === 'Net Amount in Currency') {
-          const curAg = fieldAgreement(ORIG_CURRENCY_IDX);
-          if (curAg.kind === 'common' && curAg.value) {
-            sumDisplay = esc(curAg.value) + ' ' + sumDisplay;
-          }
-        }
-        cDisplay = sumDisplay;
+    // Aggregate Sales values across the snapshot for each SALES_* field.
+    const renderBulkSalesField = (f) => {
+      const fi = F(f.key);
+      const cls = ['value'];
+      let display;
+      if (SUM_FIELDS && SUM_FIELDS.has(f.key)) {
+        const sum = sumAmount ? sumAmount(state.bulkSnapshot, fi) : 0;
+        if (f.formatter === 'eur') display = '€ ' + Number(sum).toFixed(4);
+        else                       display = String(sum);
+        cls.push('mono');
       } else {
-        const agreement = fieldAgreement(curveFi);
-        if (agreement.kind === 'all-empty') {
-          cClasses.push('empty');
-          cDisplay = '(empty)';
-        } else if (agreement.kind === 'mixed') {
-          cClasses.push('mixed');                                   // styled via ::before "mixed"
-        } else {
-          cDisplay = esc(agreement.value);
+        const agreement = fieldAgreement(fi);
+        if (agreement.kind === 'all-empty') { cls.push('empty'); display = '(empty)'; }
+        else if (agreement.kind === 'mixed') { cls.push('empty'); display = 'Mixed'; }
+        else {
+          display = String(agreement.value);
+          if (f.formatter === 'eur') display = '€ ' + Number(agreement.value).toFixed(4);
+          if (f.mono) cls.push('mono');
         }
       }
-      if (cMono) cClasses.push('mono');
-
-      // ─ NRP cell: same as single focus ────────────────────────────────
-      const nClasses = ['value', 'nrp-readonly'];
-      const nEmpty   = nrpVal === '' || nrpVal == null;
-      let nDisplay   = '';
-      if (!f.nrpKey || !candidate) {
-        nClasses.push('empty');
-      } else if (nEmpty) {
-        nClasses.push('empty');
-        nDisplay = '(empty)';
-      } else {
-        nDisplay = esc(nrpVal);
-      }
-      if (f.nrpKey && NRP_MONO_FIELDS.has(f.nrpKey)) nClasses.push('mono');
-
       return '<div class="field">' +
                '<div class="label" title="' + esc(f.label) + '">' + esc(f.label) + '</div>' +
-               '<div class="' + cClasses.join(' ') + '">' + (cDisplay || '&nbsp;') + '</div>' +
-               '<div class="' + nClasses.join(' ') + '">' + (nDisplay || '&nbsp;') + '</div>' +
+               '<div class="' + cls.join(' ') + '">' + esc(display) + '</div>' +
              '</div>';
     };
 
-    const colsHeader   = renderPanelColsHeader(candidates.length, state.candidateIdx, candidate);
-    const headHtml     = PANEL_FIELDS_HEAD.map(renderField).join('');
-    const curveToggle  = renderFocusToggle('focus-toggle-curve', state.curveExpanded,
-                                            PANEL_FIELDS_CURVE_COLLAPSED.length, 'curve fields');
-    const curveSection = state.curveExpanded
-      ? PANEL_FIELDS_CURVE_COLLAPSED.map(renderField).join('') : '';
-    const nrpToggle    = renderFocusToggle('focus-toggle-nrp', state.nrpExpanded,
-                                            PANEL_FIELDS_NRP_COLLAPSED.length, 'NRP fields');
-    const nrpSection   = state.nrpExpanded
-      ? PANEL_FIELDS_NRP_COLLAPSED.map(renderField).join('') : '';
+    const renderMatchField = (f) => {
+      const v = candidate ? candidate.n[f.key] : null;
+      const empty = v === '' || v == null;
+      const cls = ['value'];
+      if (empty) cls.push('empty');
+      if (f.mono && !empty) cls.push('mono');
+      return '<div class="field">' +
+               '<div class="label" title="' + esc(f.label) + '">' + esc(f.label) + '</div>' +
+               '<div class="' + cls.join(' ') + '">' + (empty ? '(empty)' : esc(v)) + '</div>' +
+             '</div>';
+    };
 
-    document.getElementById('panel-fields').innerHTML =
-      colsHeader + headHtml + curveToggle + curveSection + nrpToggle + nrpSection;
+    document.getElementById('sales-fields').innerHTML =
+      SALES_HEAD.map(renderBulkSalesField).join('') +
+      (state.curveExpanded ? SALES_COLLAPSED.map(renderBulkSalesField).join('') : '');
+    const salesExpand = document.getElementById('sales-expand');
+    salesExpand.classList.toggle('on', state.curveExpanded);
+    salesExpand.querySelector('.label').textContent =
+      state.curveExpanded ? 'Hide ' + SALES_COLLAPSED.length + ' fields'
+                          : 'Show ' + SALES_COLLAPSED.length + ' more fields';
+
+    document.getElementById('match-fields').innerHTML =
+      candidate
+        ? MATCH_HEAD.map(renderMatchField).join('') +
+          (state.nrpExpanded ? MATCH_COLLAPSED.map(renderMatchField).join('') : '')
+        : '<div class="field"><div class="label">—</div><div class="value empty">' +
+          (n > 0 ? 'No shared NRP match across this selection.' : 'No rows selected.') +
+          '</div></div>';
+    const matchExpand = document.getElementById('match-expand');
+    matchExpand.classList.toggle('on', state.nrpExpanded);
+    matchExpand.querySelector('.label').textContent =
+      state.nrpExpanded ? 'Hide ' + MATCH_COLLAPSED.length + ' fields'
+                        : 'Show ' + MATCH_COLLAPSED.length + ' more fields';
+    matchExpand.style.display = candidate ? '' : 'none';
   }
 
   function enterBulkMode() {
@@ -2865,6 +3140,7 @@
     pageSize: 10,
     sort: null,             // { column: <col>, dir: 'asc'|'desc' }
     hideDuplicates: false,  // Merge identical ISRC alias rows (not 12-char ISRCs)
+    groupBy: '',            // Column name to collapse-duplicates on, or ''.
   };
 
   // Returns a comparator value for a row index for a given sort column.
@@ -2967,6 +3243,23 @@
         return true;
       });
     }
+    // Group dropdown: keep only the first row of each group key. Empty / null
+    // values are kept individually (every "missing" row stays visible).
+    if (unprocessedState.groupBy) {
+      const groupCol = unprocessedState.groupBy;
+      const groupIdx = F(groupCol);
+      if (groupIdx >= 0) {
+        const seen = new Set();
+        filtered = filtered.filter(i => {
+          const v = ROWS[i][groupIdx];
+          if (v === '' || v == null) return true;
+          const key = String(v).trim().toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+    }
     return filtered;
   }
 
@@ -3010,7 +3303,7 @@
     const pageRows = rows.slice(start, end);
 
     if (pageRows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="11" style="padding: 40px 24px; text-align: center; color: var(--color-text-secondary);">No unprocessed records match the current filters.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="padding: 40px 24px; text-align: center; color: var(--color-text-secondary);">No unprocessed records match the current filters.</td></tr>';
     } else {
       tbody.innerHTML = pageRows.map(i => {
         const r = ROWS[i];
@@ -3023,7 +3316,9 @@
         // Amount column always shows euros (regardless of the row's original
         // currency). Rounded to 4 decimal places.
         const amount = '€ ' + Number(r[NET_AMOUNT_IDX] || 0).toFixed(4);
-        const cand   = bestNrpFor(i);
+        const allCands = nrpCandidatesFor(i);
+        const cand     = allCands[0] || null;
+        const matchCount = allCands.length;
         const nrpTitle  = cand ? (cand.n.asset_title || cand.n.title || '') : '';
         const nrpArtist = cand ? (cand.n.display_artist_name || cand.n.primary_artist || '') : '';
         const score = cand ? cand.score + '%' : null;
@@ -3046,8 +3341,12 @@
             ) +
           '</td>' +
           '<td class="col-nrp-score">' +
-            (score ? '<span class="score-chip">' + score + '</span>'
-                   : '<span class="score-empty">—</span>') +
+            (score
+              ? '<span class="score-chip">' + score + '</span>' +
+                '<div class="score-count">' +
+                  matchCount + (matchCount === 1 ? ' match' : ' matches') +
+                '</div>'
+              : '<span class="score-empty">—</span>') +
           '</td>' +
           '<td title="' + esc(client) + '">' + esc(client) + '</td>' +
           '<td title="' + esc(cmo) + '">' + esc(cmo) + '</td>' +
@@ -3058,13 +3357,8 @@
             '</span>' +
           '</td>' +
           '<td class="col-actions">' +
-            '<button class="row-action-btn" type="button" data-unp-action="confirm" aria-label="Mark processed">' +
+            '<button class="row-action-btn" type="button" data-unp-action="confirm" aria-label="Add to track aliases">' +
               '<svg viewBox="0 0 24 24"><use href="#i-check"></use></svg>' +
-            '</button>' +
-          '</td>' +
-          '<td class="col-actions">' +
-            '<button class="row-action-btn" type="button" data-unp-action="more" aria-label="More actions">' +
-              '<svg viewBox="0 0 24 24"><use href="#i-more-vert"></use></svg>' +
             '</button>' +
           '</td>' +
           '</tr>';
@@ -3087,6 +3381,11 @@
     const bulkCount = document.getElementById('unprocessed-bulk-count');
     if (bulkBtn)   bulkBtn.disabled = state.checked.size === 0;
     if (bulkCount) bulkCount.textContent = state.checked.size;
+    // Bulk add to track aliases: same disable rule + count.
+    const bulkAddBtn   = document.getElementById('unprocessed-bulk-add-btn');
+    const bulkAddCount = document.getElementById('unprocessed-bulk-add-count');
+    if (bulkAddBtn)   bulkAddBtn.disabled = state.checked.size === 0;
+    if (bulkAddCount) bulkAddCount.textContent = state.checked.size;
 
     // Pagination summary + nav state
     const rangeEl = document.getElementById('unprocessed-range');
@@ -3519,54 +3818,31 @@
     });
   }
 
-  document.getElementById('panel-fields').addEventListener('click', (e) => {
-    /* NRP candidate navigation (prev / next) — single-record focus only. */
-    if (e.target.closest('#nrp-prev')) {
-      if (state.candidateIdx > 0) { state.candidateIdx--; renderFocusPanel(); }
-      return;
-    }
-    if (e.target.closest('#nrp-next')) {
-      const cands = state.activeIdx != null ? nrpCandidatesFor(state.activeIdx) : [];
-      if (state.candidateIdx < cands.length - 1) { state.candidateIdx++; renderFocusPanel(); }
-      return;
-    }
-    /* Single-focus collapse toggles (Curve metadata + NRP metadata). */
-    if (e.target.closest('#focus-toggle-curve')) {
-      state.curveExpanded = !state.curveExpanded;
-      renderFocusPanel();
-      return;
-    }
-    if (e.target.closest('#focus-toggle-nrp')) {
-      state.nrpExpanded = !state.nrpExpanded;
-      renderFocusPanel();
-      return;
-    }
-    /* Bulk-mode collapse toggle (the older one — only used in bulk mode). */
-    if (e.target.closest('#panel-expand-toggle')) {
-      state.panelExpanded = !state.panelExpanded;
-      if (state.bulkMode) renderBulkPanel();
-      else                renderFocusPanel();
-      return;
-    }
-    /* Inline edit: only on the Curve cell (NRP cells carry .nrp-readonly). */
-    const v = e.target.closest('.value.editable');
-    if (!v || v.classList.contains('nrp-readonly')) return;
-    if (state.bulkMode) startBulkEdit(v);
-    else                startEdit(v);
+  // NRP candidate navigation (← / →)
+  document.getElementById('match-prev').addEventListener('click', () => {
+    if (state.candidateIdx > 0) { state.candidateIdx--; renderFocusPanel(); }
+  });
+  document.getElementById('match-next').addEventListener('click', () => {
+    const cands = state.bulkMode
+      ? nrpCandidatesForBulk(state.bulkSnapshot)
+      : (state.activeIdx != null ? nrpCandidatesFor(state.activeIdx) : []);
+    if (state.candidateIdx < cands.length - 1) { state.candidateIdx++; renderFocusPanel(); }
+  });
+  // Sales card "Show N more fields" toggle
+  document.getElementById('sales-expand').addEventListener('click', () => {
+    state.curveExpanded = !state.curveExpanded;
+    renderFocusPanel();
+  });
+  // Match card "Show N more fields" toggle
+  document.getElementById('match-expand').addEventListener('click', () => {
+    state.nrpExpanded = !state.nrpExpanded;
+    renderFocusPanel();
   });
 
   /* ── Bulk-edit triggers ── */
   document.getElementById('bulk-edit-btn').addEventListener('click', () => {
     if (state.checked.size === 0) return;
     enterBulkMode();
-  });
-  document.getElementById('bulk-cancel').addEventListener('click', () => {
-    exitBulkMode();
-    renderAll();
-  });
-  document.getElementById('bulk-close').addEventListener('click', () => {
-    exitBulkMode();
-    renderAll();
   });
   /* Bulk "Add to track aliases" — pushes one alias entry per selected row,
      all pointing at the currently-shown NRP candidate's ISRC. Marks every
@@ -3716,9 +3992,9 @@
     unprocessedState.page = 1;
     renderUnprocessedView();
   });
-  document.getElementById('unprocessed-group').addEventListener('change', () => {
-    // Grouping is a visual no-op in this lo-fi pass; rerender to make the
-    // selection feel responsive once it's wired up later.
+  document.getElementById('unprocessed-group').addEventListener('change', (e) => {
+    unprocessedState.groupBy = e.target.value;
+    unprocessedState.page = 1;
     renderUnprocessedView();
   });
   document.querySelectorAll('.dm-unprocessed-toolbar .filter-chip').forEach(btn => {
@@ -3767,6 +4043,27 @@
     if (state.checked.size === 0) return;
     enterBulkMode();
   });
+
+  // Bulk add to track aliases — pushes one alias per checked row using its
+  // own top NRP candidate, marks each as processed. Unlike the focus panel's
+  // bulk-add (which requires all rows to share a title), this works across
+  // mixed-title selections by handling each row independently.
+  document.getElementById('unprocessed-bulk-add-btn').addEventListener('click', () => {
+    if (state.checked.size === 0) return;
+    for (const idx of [...state.checked]) {
+      const row = ROWS[idx];
+      if (!row) continue;
+      const curveIsrc = row[ISRC_IDX] || '';
+      const cands = nrpCandidatesFor(idx);
+      const cand  = cands[0];
+      const nrpIsrc = cand ? (cand.n.isrc_code || '') : '';
+      TRACK_ALIASES.unshift({ i: nrpIsrc, a: curveIsrc, t: nowStamp(), u: CURRENT_USER, p: CURRENT_PERIOD, s: 'not_exported' });
+      state.processed.add(idx);
+    }
+    state.checked.clear();
+    renderTabCounts();
+    renderAll();
+  });
   document.getElementById('unp-pg-prev').addEventListener('click', () => {
     if (unprocessedState.page > 1) {
       unprocessedState.page--;
@@ -3795,18 +4092,25 @@
   });
 
   document.getElementById('unprocessed-rows').addEventListener('click', (e) => {
-    // 1) Row action button (✓ confirm / ⋮ menu) — handle and stop, don't open panel.
+    // 1) Row ✓ action — same effect as the focus panel's "Add to track aliases"
+    //    button: push (top NRP ISRC → Curve ISRC) into TRACK_ALIASES + mark
+    //    the row processed.
     const btn = e.target.closest('[data-unp-action]');
     if (btn) {
       const trA  = btn.closest('tr[data-unp-idx]');
       if (!trA) return;
       const idxA = parseInt(trA.dataset.unpIdx, 10);
       if (btn.dataset.unpAction === 'confirm') {
-        if (state.processed.has(idxA)) state.processed.delete(idxA);
-        else state.processed.add(idxA);
+        const row = ROWS[idxA];
+        const curveIsrc = row[ISRC_IDX] || '';
+        const cands = nrpCandidatesFor(idxA);
+        const cand  = cands[0];
+        const nrpIsrc = cand ? (cand.n.isrc_code || '') : '';
+        TRACK_ALIASES.unshift({ i: nrpIsrc, a: curveIsrc, t: nowStamp(), u: CURRENT_USER, p: CURRENT_PERIOD, s: 'not_exported' });
+        state.processed.add(idxA);
+        renderTabCounts();
         renderAll();
       }
-      // 'more' has no UI yet — placeholder
       e.stopPropagation();
       return;
     }
@@ -3830,9 +4134,10 @@
   });
 
   document.getElementById('focus-close').addEventListener('click', () => {
+    if (state.bulkMode) { exitBulkMode(); renderAll(); return; }
     state.activeIdx = null;
-    renderRows();
-    renderFocusPanel();
+    document.getElementById('dm-body').classList.remove('focus-open');
+    renderAll();
   });
 
   /* ── Column-filter popover ── */
