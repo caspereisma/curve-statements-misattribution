@@ -1,0 +1,36 @@
+{
+  "slug": "all-tab-mui-restyle",
+  "summary": "All tab — MUI v6 restyle landed; AppBar, status chips per row, ArrowDropDown filter chips, MUI tabs",
+  "date": "2026-05-22",
+  "captured_at": "2026-05-22T15:40:43.657Z",
+  "page_url": "http://127.0.0.1:4321/data-matching.html",
+  "tab": "All",
+  "git": {
+    "branch": "feat/mui-restyle-unprocessed-tab",
+    "commit": "57a80d1",
+    "remote": "https://github.com/caspereisma/curve-statements-misattribution.git"
+  },
+  "captures": [
+    {
+      "viewport": "desktop-1440",
+      "file": "desktop-1440.png",
+      "width": 1440,
+      "height": 1024,
+      "tab": "All"
+    },
+    {
+      "viewport": "tablet-768",
+      "file": "tablet-768.png",
+      "width": 768,
+      "height": 1024,
+      "tab": "All"
+    },
+    {
+      "viewport": "mobile-375",
+      "file": "mobile-375.png",
+      "width": 375,
+      "height": 812,
+      "tab": "All"
+    }
+  ]
+}

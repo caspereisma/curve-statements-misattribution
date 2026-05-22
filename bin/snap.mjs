@@ -74,28 +74,57 @@ async function ensureServer() {
   return child;
 }
 
-async function captureAll(targetDir) {
+// Optional sub-tab clicks per tab so captures land on a meaningful state.
+const SUB_TAB_CLICK = {
+  NewTracksCurve: '[data-sub-tab="Track"]',          // default to Track sub-tab
+  NewTracksCurveRights: '[data-sub-tab="TrackRights"]',
+};
+
+// Map convenience aliases (used on the CLI) onto the actual `data-tab` value.
+const TAB_ALIAS = {
+  All: 'All',
+  Unprocessed: 'Unmapped',
+  TrackAliases: 'TrackAliases',
+  NewTracksCurve: 'NewTracksCurve',
+  NewTracksCurveRights: 'NewTracksCurve',  // same tab, different sub-tab
+};
+
+async function captureAll(targetDir, tab) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   const captures = [];
+  const tabAttr = tab ? TAB_ALIAS[tab] : null;
   for (const vp of VIEWPORTS) {
     await page.setViewportSize({ width: vp.width, height: vp.height });
     await page.goto(PAGE_URL);
+    // The All-tab body is the safest "page ready" probe — it always renders.
     await page.waitForSelector('.dm-master tbody tr[data-idx]');
     await page.evaluate(() => document.fonts.ready);
+    // Switch to the requested tab + sub-tab (if any).
+    if (tabAttr && tabAttr !== 'All') {
+      await page.click(`[data-tab="${tabAttr}"]`);
+      if (SUB_TAB_CLICK[tab]) await page.click(SUB_TAB_CLICK[tab]);
+      // Tiny settle delay so the new view renders before we capture.
+      await page.waitForTimeout(150);
+    }
     const out = join(targetDir, vp.name + '.png');
     await page.screenshot({ path: out, fullPage: true });
     captures.push({ viewport: vp.name, file: vp.name + '.png',
-                    width: vp.width, height: vp.height });
+                    width: vp.width, height: vp.height, tab: tab || 'All' });
   }
   await browser.close();
   return captures;
 }
 
 async function main() {
-  const [slug, ...summaryParts] = process.argv.slice(2);
-  if (!slug) bail('usage: pnpm snap <slug> "<summary>"');
+  // Optional third arg is the tab to target (alias as in TAB_ALIAS). When
+  // omitted, captures the All tab (default page load state).
+  const args = process.argv.slice(2);
+  if (args.length < 1) bail('usage: pnpm snap <slug> "<summary>" [tab]');
+  const slug = args[0];
+  const tab  = args.length > 2 && TAB_ALIAS[args[args.length - 1]] ? args[args.length - 1] : null;
+  const summaryParts = args.slice(1, tab ? -1 : undefined);
   const summary = summaryParts.join(' ').trim();
   const date = todayStamp();
   const folder = `${date}_${slug}`;
@@ -106,12 +135,13 @@ async function main() {
   console.log(`snap: capturing into ${targetDir} …`);
 
   await ensureServer();
-  const captures = await captureAll(targetDir);
+  const captures = await captureAll(targetDir, tab);
 
   const meta = {
     slug, summary, date,
     captured_at: new Date().toISOString(),
     page_url: PAGE_URL,
+    tab: tab || 'All',
     git: gitInfo(),
     captures,
   };

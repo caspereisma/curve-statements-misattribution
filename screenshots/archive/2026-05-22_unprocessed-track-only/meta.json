@@ -1,0 +1,36 @@
+{
+  "slug": "unprocessed-track-only",
+  "summary": "Unprocessed tab — Track-only + no Track ID locked, hide-duplicates switch, Bulk add to track aliases button",
+  "date": "2026-05-22",
+  "captured_at": "2026-05-22T15:40:53.814Z",
+  "page_url": "http://127.0.0.1:4321/data-matching.html",
+  "tab": "Unprocessed",
+  "git": {
+    "branch": "feat/mui-restyle-unprocessed-tab",
+    "commit": "57a80d1",
+    "remote": "https://github.com/caspereisma/curve-statements-misattribution.git"
+  },
+  "captures": [
+    {
+      "viewport": "desktop-1440",
+      "file": "desktop-1440.png",
+      "width": 1440,
+      "height": 1024,
+      "tab": "Unprocessed"
+    },
+    {
+      "viewport": "tablet-768",
+      "file": "tablet-768.png",
+      "width": 768,
+      "height": 1024,
+      "tab": "Unprocessed"
+    },
+    {
+      "viewport": "mobile-375",
+      "file": "mobile-375.png",
+      "width": 375,
+      "height": 812,
+      "tab": "Unprocessed"
+    }
+  ]
+}
