@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
 
-  <link rel="stylesheet" href="styles.css?v=mui21">
+  <link rel="stylesheet" href="styles.css?v=mui22">
 
   <style>
     /* ────────────────────────────────────────────────────────────
@@ -343,10 +343,12 @@
     .dm-body .dm-master,
     .dm-body .dm-alias-view,
     .dm-body .dm-empty-view,
-    .dm-body .dm-unprocessed-view { display: none; }
+    .dm-body .dm-unprocessed-view,
+    .dm-body .dm-new-curve-view { display: none; }
     .dm-body.tab-master .dm-master { display: block; }
     .dm-body.tab-unprocessed .dm-unprocessed-view { display: block; }
     .dm-body.tab-alias  .dm-alias-view { display: block; }
+    .dm-body.tab-new-curve .dm-new-curve-view { display: block; }
     .dm-body.tab-empty  .dm-empty-view { display: block; }
 
     .dm-alias-view { padding: 0 24px; }
@@ -376,6 +378,38 @@
     .dm-alias-view table.alias-tbl td.alias-actions { text-align: center; padding: 0 4px; }
     .dm-alias-view table.alias-tbl td.alias-actions .row-action-btn:hover {
       color: var(--color-error-main);
+    }
+
+    /* ── New tracks Curve view (Figma 10193:13128 / 10193:14949) ─────── */
+    .dm-new-curve-view { background: var(--color-bg-paper); }
+    .dm-new-curve-view .sub-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+    .dm-new-curve-view .sub-tab {
+      display: inline-flex; align-items: center;
+      height: 42px;
+      padding: 0 16px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: var(--weight-medium);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color var(--duration-fast) var(--easing-standard),
+                  background var(--duration-fast) var(--easing-standard);
+    }
+    .dm-new-curve-view .sub-tab:hover {
+      color: var(--color-text-primary);
+      background: var(--color-action-hover);
+    }
+    .dm-new-curve-view .sub-tab.on {
+      color: var(--color-primary-main);
+      border-bottom-color: var(--color-primary-main);
     }
 
     .dm-empty-view {
@@ -1444,7 +1478,7 @@
       <span data-tab="Unmapped">Unprocessed<span class="ct" id="ct-unmapped">…</span></span>
       <span data-tab="TrackAliases">Track Aliases<span class="ct" id="ct-track-aliases">…</span></span>
       <span data-tab="ContractAliases" style="display: none;">Contract Aliases<span class="ct" id="ct-contract-aliases">…</span></span>
-      <span data-tab="NewTracksCurve" style="display: none;">New tracks Curve<span class="ct" id="ct-new-curve">…</span></span>
+      <span data-tab="NewTracksCurve">New tracks Curve<span class="ct" id="ct-new-curve">…</span></span>
       <span data-tab="NewTracksNRP" style="display: none;">New tracks NRP<span class="ct" id="ct-new-nrp">…</span></span>
     </div>
   </div>
@@ -1775,6 +1809,147 @@
         </thead>
         <tbody id="alias-rows"></tbody>
       </table>
+    </div>
+
+    <!-- New tracks Curve tab — Track + Track Rights sub-tabs (Figma 10193:13128, 10193:14949) -->
+    <div class="dm-new-curve-view" id="dm-new-curve-view">
+      <!-- Sub-tab strip -->
+      <div class="sub-tabs" id="nc-sub-tabs">
+        <span class="sub-tab on" data-sub-tab="Track">TRACK</span>
+        <span class="sub-tab"    data-sub-tab="TrackRights">TRACK RIGHTS</span>
+      </div>
+
+      <!-- TRACK sub-tab content -->
+      <div class="nc-sub" id="nc-sub-track">
+        <div class="dm-unprocessed-toolbar">
+          <div class="toolbar-row">
+            <div class="unprocessed-select">
+              <span class="float-label">Collapse duplicates</span>
+              <select id="nc-track-collapse">
+                <option value="">none</option>
+                <option value="artist">artist</option>
+                <option value="isrc">isrc</option>
+              </select>
+            </div>
+            <div class="unprocessed-select">
+              <span class="float-label">Status</span>
+              <select id="nc-track-status">
+                <option value="exported" selected>Exported</option>
+                <option value="not_exported">Not exported</option>
+                <option value="">All</option>
+              </select>
+            </div>
+            <div class="unprocessed-select">
+              <span class="float-label">Period</span>
+              <select id="nc-track-period">
+                <option value="">All</option>
+                <option value="2026Q2">2026Q2</option>
+                <option value="2026Q1">2026Q1</option>
+                <option value="2025Q4">2025Q4</option>
+              </select>
+            </div>
+            <span class="toolbar-spacer"></span>
+            <button class="btn sm" id="nc-track-export-btn">Export</button>
+          </div>
+        </div>
+        <div class="unprocessed-tbl-wrap">
+          <table class="unprocessed-tbl nc-track-tbl">
+            <colgroup>
+              <col style="width: 40px;">    <!-- checkbox -->
+              <col>                         <!-- Track -->
+              <col>                         <!-- Artist -->
+              <col style="width: 140px;">   <!-- ISRC -->
+              <col style="width: 110px;">   <!-- Amount -->
+              <col style="width: 130px;">   <!-- Status chip -->
+            </colgroup>
+            <thead>
+              <tr>
+                <th><span class="check" id="nc-track-master-check"><span class="box"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="track">Track<span class="sort-ind"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="artist">Artist<span class="sort-ind"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="isrc">ISRC<span class="sort-ind"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="amount">Amount<span class="sort-ind"></span></span></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="nc-track-rows"></tbody>
+          </table>
+        </div>
+        <div class="dm-pager">
+          <span class="rows-per-page" style="display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-sm); color: var(--color-text-primary); letter-spacing: 0.17px;">
+            Rows per page:
+            <select id="nc-track-page-size" style="border: none; background: transparent; font-family: var(--font-sans); font-size: var(--text-sm); padding: 4px 22px 4px 4px; appearance: none; cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, var(--color-action-active) 50%), linear-gradient(135deg, var(--color-action-active) 50%, transparent 50%); background-position: calc(100% - 9px) 50%, calc(100% - 4px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+            </select>
+          </span>
+          <span id="nc-track-range" style="font-size: var(--text-sm); color: var(--color-text-primary); letter-spacing: 0.17px;">1-5 of 13</span>
+          <div class="nav">
+            <button class="pg pg-arrow" id="nc-track-pg-prev" aria-label="Previous page">‹</button>
+            <button class="pg pg-arrow" id="nc-track-pg-next" aria-label="Next page">›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRACK RIGHTS sub-tab content -->
+      <div class="nc-sub" id="nc-sub-rights" style="display: none;">
+        <div class="dm-unprocessed-toolbar">
+          <div class="toolbar-row">
+            <div class="unprocessed-select">
+              <span class="float-label">Group</span>
+              <select id="nc-rights-group">
+                <option value="">none</option>
+                <option value="artist">artist</option>
+              </select>
+            </div>
+            <div class="unprocessed-select">
+              <span class="float-label">Status</span>
+              <select id="nc-rights-status">
+                <option value="exported" selected>Exported</option>
+                <option value="not_exported">Not exported</option>
+                <option value="">All</option>
+              </select>
+            </div>
+            <div class="unprocessed-select">
+              <span class="float-label">Period</span>
+              <select id="nc-rights-period">
+                <option value="">All</option>
+                <option value="2026Q2">2026Q2</option>
+                <option value="2026Q1">2026Q1</option>
+              </select>
+            </div>
+            <span class="toolbar-spacer"></span>
+            <button class="btn sm" id="nc-rights-export-btn">Export</button>
+          </div>
+        </div>
+        <div class="unprocessed-tbl-wrap">
+          <table class="unprocessed-tbl nc-rights-tbl">
+            <colgroup>
+              <col style="width: 40px;">    <!-- checkbox -->
+              <col style="width: 220px;">   <!-- ISRC -->
+              <col>                         <!-- Artist -->
+              <col style="width: 140px;">   <!-- Contract % -->
+            </colgroup>
+            <thead>
+              <tr>
+                <th><span class="check" id="nc-rights-master-check"><span class="box"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="isrc">ISRC<span class="sort-ind"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="artist">Artist<span class="sort-ind"></span></span></th>
+                <th><span class="unp-th-label sortable" data-nc-sort-col="contract">Contract %<span class="sort-ind"></span></span></th>
+              </tr>
+            </thead>
+            <tbody id="nc-rights-rows"></tbody>
+          </table>
+        </div>
+        <div class="dm-pager">
+          <span id="nc-rights-range" style="font-size: var(--text-sm); color: var(--color-text-primary); letter-spacing: 0.17px;">1-10 of 13</span>
+          <div class="nav">
+            <button class="pg pg-arrow" id="nc-rights-pg-prev" aria-label="Previous page">‹</button>
+            <button class="pg pg-arrow" id="nc-rights-pg-next" aria-label="Next page">›</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Empty placeholder (New tracks Curve / New tracks NRP tabs) -->
@@ -2671,7 +2846,7 @@
        increment the badge. */
     document.getElementById('ct-track-aliases').textContent    = fmt(Math.max(0, TRACK_ALIASES.length    - TRACK_ALIASES_INITIAL_COUNT));
     document.getElementById('ct-contract-aliases').textContent = fmt(Math.max(0, CONTRACT_ALIASES.length - CONTRACT_ALIASES_INITIAL_COUNT));
-    document.getElementById('ct-new-curve').textContent        = fmt(0);
+    document.getElementById('ct-new-curve').textContent        = fmt(5);
     document.getElementById('ct-new-nrp').textContent          = fmt(0);
     document.querySelector('.dm-toolbar .total').textContent   = fmt(total);
   }
@@ -3126,7 +3301,8 @@
   const MASTER_TABS = new Set(['All']);
   const UNPROCESSED_TABS = new Set(['Unmapped']);
   const ALIAS_TABS  = { TrackAliases: 'track', ContractAliases: 'contract' };
-  const EMPTY_TABS  = new Set(['NewTracksCurve', 'NewTracksNRP']);
+  const NEW_CURVE_TABS = new Set(['NewTracksCurve']);
+  const EMPTY_TABS  = new Set(['NewTracksNRP']);
 
   /* ── Unprocessed view ─────────────────────────────────────────
      Renders the Unprocessed tab table per the Figma "Unmapped tab"
@@ -3395,6 +3571,180 @@
     document.getElementById('unp-pg-next').disabled = end >= total;
   }
 
+  /* ── New tracks Curve tab ────────────────────────────────────────
+     Two sub-tabs (Track + Track Rights) with independent toolbars and
+     tables. Per Figma 10193:13128 (Track) + 10193:14949 (Track Rights).
+     The data is mocked here — these tabs surface tracks that have been
+     "newly added to Curve" and are pending export to NRP. */
+  const NC_TRACK_ROWS = [
+    { track: 'TELEFONO',                artist: 'JASON MRAZ',                                  isrc: 'USSUB0300134', amount: 0.0013, status: 'not_exported', period: '2026Q2' },
+    { track: "WHAT'S MY NAME",          artist: 'SOFIA CARSON',                                isrc: 'GBAYE6800011', amount: 0.1300, status: 'not_exported', period: '2026Q2' },
+    { track: "CHILLIN' LIKE A VILLAIN", artist: 'ALESSO, RYAN TEDDER & SEBASTIAN INGROSSO',    isrc: 'NL8RL2434503', amount: 0.0323, status: 'not_exported', period: '2026Q1' },
+    { track: "I'M YOURS",               artist: 'CHINA ANNE MCCLAIN',                          isrc: 'USRC17607839', amount: 7.7193, status: 'not_exported', period: '2026Q2' },
+    { track: 'CALLING (LOSE MY MIND)',  artist: 'AITANA & LELE PONS',                          isrc: 'USRC19999999', amount: 0.1040, status: 'not_exported', period: '2026Q1' },
+    { track: 'GOLDEN HOUR',             artist: 'JVKE',                                        isrc: 'QM4TX2200234', amount: 2.4501, status: 'exported',     period: '2025Q4' },
+    { track: 'AS IT WAS',               artist: 'HARRY STYLES',                                isrc: 'GBUM72202152', amount: 5.1108, status: 'exported',     period: '2025Q4' },
+    { track: 'FLOWERS',                 artist: 'MILEY CYRUS',                                 isrc: 'USSM12211220', amount: 8.0223, status: 'exported',     period: '2025Q4' },
+    { track: 'KILL BILL',               artist: 'SZA',                                         isrc: 'USRC12206421', amount: 3.4407, status: 'exported',     period: '2025Q3' },
+    { track: 'CRUEL SUMMER',            artist: 'TAYLOR SWIFT',                                isrc: 'USUM71909305', amount: 12.0890,status: 'exported',     period: '2025Q3' },
+    { track: 'GREEDY',                  artist: 'TATE MCRAE',                                  isrc: 'GBUM72308031', amount: 1.7706, status: 'exported',     period: '2025Q3' },
+    { track: 'PAINT THE TOWN RED',      artist: 'DOJA CAT',                                    isrc: 'USRC12303441', amount: 4.2102, status: 'exported',     period: '2025Q2' },
+    { track: 'WATER',                   artist: 'TYLA',                                        isrc: 'ZAA012300018', amount: 6.9904, status: 'exported',     period: '2025Q2' },
+  ];
+
+  const NC_RIGHTS_ROWS = [
+    { isrc: 'USEV12300007', artist: 'Goo Eyed Music',              contract: 100, status: 'exported',     period: '2025Q4' },
+    { isrc: 'GBCBR1600169', artist: 'DOWNTOWN SUSPENSE ACCOUNT',   contract: 100, status: 'exported',     period: '2025Q4' },
+    { isrc: 'USWD11780638', artist: 'Antonina Armato',             contract: 100, status: 'exported',     period: '2025Q3' },
+    { isrc: 'GBCBR1600170', artist: 'DOWNTOWN SUSPENSE ACCOUNT',   contract: 100, status: 'exported',     period: '2025Q3' },
+    { isrc: 'USWD11780640', artist: 'Ryan Tedder - RT/1R Music IP, L.P.', contract: 100, status: 'exported', period: '2025Q3' },
+    { isrc: 'GBUV72000370', artist: 'Tyron Kaymone Frampton',      contract: 100, status: 'exported',     period: '2025Q2' },
+    { isrc: 'ES1701800250', artist: 'Antonina Armato',             contract: 100, status: 'exported',     period: '2025Q2' },
+    { isrc: 'USWBV2300804', artist: 'Ryan Benjamin Tedder',        contract: 100, status: 'exported',     period: '2025Q2' },
+    { isrc: 'SEUV71200020', artist: 'Eleonora Pons',               contract: 100, status: 'exported',     period: '2025Q1' },
+    { isrc: 'USWBV2101552', artist: 'Bryce Christopher Ross-Johnson', contract: 100, status: 'exported',  period: '2025Q1' },
+    { isrc: 'GBCEN2100012', artist: 'Charli XCX',                  contract: 100, status: 'not_exported', period: '2026Q2' },
+    { isrc: 'USRC12410001', artist: 'Sabrina Carpenter',           contract: 100, status: 'not_exported', period: '2026Q1' },
+    { isrc: 'USSM12309876', artist: 'Olivia Rodrigo',              contract: 100, status: 'not_exported', period: '2026Q1' },
+  ];
+
+  const ncState = {
+    sub: 'Track',                            // 'Track' | 'TrackRights'
+    track: { statusF: 'exported', periodF: '', page: 1, pageSize: 10, checked: new Set(), sort: null },
+    rights:{ statusF: 'exported', periodF: '', page: 1, pageSize: 10, checked: new Set(), sort: null },
+  };
+
+  function ncStatusChip(s) {
+    const isExported = s === 'exported';
+    const cls   = 'status-pill' + (isExported ? ' done' : '');
+    const label = isExported ? 'Exported' : 'Not exported';
+    return '<span class="' + cls + '">' + label + '</span>';
+  }
+
+  function ncFilteredTrack() {
+    let rows = NC_TRACK_ROWS.slice();
+    const { statusF, periodF, sort } = ncState.track;
+    if (statusF) rows = rows.filter(r => r.status === statusF);
+    if (periodF) rows = rows.filter(r => r.period === periodF);
+    if (sort) {
+      const sign = sort.dir === 'desc' ? -1 : 1;
+      rows.sort((a, b) => {
+        const va = a[sort.column]; const vb = b[sort.column];
+        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sign;
+        return String(va).localeCompare(String(vb), undefined, { numeric: true }) * sign;
+      });
+    }
+    return rows;
+  }
+
+  function ncFilteredRights() {
+    let rows = NC_RIGHTS_ROWS.slice();
+    const { statusF, periodF, sort } = ncState.rights;
+    if (statusF) rows = rows.filter(r => r.status === statusF);
+    if (periodF) rows = rows.filter(r => r.period === periodF);
+    if (sort) {
+      const sign = sort.dir === 'desc' ? -1 : 1;
+      rows.sort((a, b) => {
+        const va = a[sort.column]; const vb = b[sort.column];
+        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sign;
+        return String(va).localeCompare(String(vb), undefined, { numeric: true }) * sign;
+      });
+    }
+    return rows;
+  }
+
+  function refreshNcSortIndicators() {
+    document.querySelectorAll('.dm-new-curve-view .unp-th-label.sortable').forEach(el => {
+      el.classList.remove('sort-asc', 'sort-desc');
+    });
+    if (ncState.sub === 'Track' && ncState.track.sort) {
+      const el = document.querySelector('#nc-sub-track .unp-th-label[data-nc-sort-col="' + ncState.track.sort.column + '"]');
+      if (el) el.classList.add(ncState.track.sort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    } else if (ncState.sub === 'TrackRights' && ncState.rights.sort) {
+      const el = document.querySelector('#nc-sub-rights .unp-th-label[data-nc-sort-col="' + ncState.rights.sort.column + '"]');
+      if (el) el.classList.add(ncState.rights.sort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  }
+
+  function renderNewCurveView() {
+    // Toggle the two sub-panels.
+    document.getElementById('nc-sub-track').style.display  = ncState.sub === 'Track'       ? '' : 'none';
+    document.getElementById('nc-sub-rights').style.display = ncState.sub === 'TrackRights' ? '' : 'none';
+    document.querySelectorAll('#nc-sub-tabs .sub-tab').forEach(t => {
+      t.classList.toggle('on', t.dataset.subTab === ncState.sub);
+    });
+
+    refreshNcSortIndicators();
+
+    // ─── TRACK sub-tab body ───────────────────────────────────────
+    const trackRows = ncFilteredTrack();
+    const ts = ncState.track;
+    const tStart = (ts.page - 1) * ts.pageSize;
+    const tEnd   = Math.min(tStart + ts.pageSize, trackRows.length);
+    const tPage  = trackRows.slice(tStart, tEnd);
+    const tBody  = document.getElementById('nc-track-rows');
+    tBody.innerHTML = tPage.length === 0
+      ? '<tr><td colspan="6" style="padding: 40px 24px; text-align: center; color: var(--color-text-secondary);">No tracks match the current filters.</td></tr>'
+      : tPage.map((r, i) => {
+          const idx = NC_TRACK_ROWS.indexOf(r);
+          const checked = ts.checked.has(idx);
+          return '<tr data-nc-track-idx="' + idx + '">' +
+            '<td><span class="check' + (checked ? ' on' : '') + '" data-nc-action="track-toggle"><span class="box"></span></span></td>' +
+            '<td title="' + esc(r.track) + '">' + esc(r.track) + '</td>' +
+            '<td title="' + esc(r.artist) + '">' + esc(r.artist) + '</td>' +
+            '<td><span class="mono" style="font-family: var(--font-mono); font-size: 13px;">' + esc(r.isrc) + '</span></td>' +
+            '<td>€ ' + r.amount.toFixed(4) + '</td>' +
+            '<td class="col-status">' + ncStatusChip(r.status) + '</td>' +
+          '</tr>';
+        }).join('');
+
+    // Track master check
+    const tMaster = document.getElementById('nc-track-master-check');
+    if (tMaster) {
+      const allOn  = tPage.length > 0 && tPage.every(r => ts.checked.has(NC_TRACK_ROWS.indexOf(r)));
+      const someOn = tPage.some(r => ts.checked.has(NC_TRACK_ROWS.indexOf(r)));
+      tMaster.classList.remove('on', 'indet');
+      if (allOn) tMaster.classList.add('on');
+      else if (someOn) tMaster.classList.add('indet');
+    }
+    document.getElementById('nc-track-range').textContent =
+      (trackRows.length === 0 ? 0 : (tStart + 1)) + '-' + tEnd + ' of ' + trackRows.length;
+    document.getElementById('nc-track-pg-prev').disabled = ts.page <= 1;
+    document.getElementById('nc-track-pg-next').disabled = tEnd >= trackRows.length;
+
+    // ─── TRACK RIGHTS sub-tab body ────────────────────────────────
+    const rightsRows = ncFilteredRights();
+    const rs = ncState.rights;
+    const rStart = (rs.page - 1) * rs.pageSize;
+    const rEnd   = Math.min(rStart + rs.pageSize, rightsRows.length);
+    const rPage  = rightsRows.slice(rStart, rEnd);
+    const rBody  = document.getElementById('nc-rights-rows');
+    rBody.innerHTML = rPage.length === 0
+      ? '<tr><td colspan="4" style="padding: 40px 24px; text-align: center; color: var(--color-text-secondary);">No track rights match the current filters.</td></tr>'
+      : rPage.map((r) => {
+          const idx = NC_RIGHTS_ROWS.indexOf(r);
+          const checked = rs.checked.has(idx);
+          return '<tr data-nc-rights-idx="' + idx + '">' +
+            '<td><span class="check' + (checked ? ' on' : '') + '" data-nc-action="rights-toggle"><span class="box"></span></span></td>' +
+            '<td><span class="mono" style="font-family: var(--font-mono); font-size: 13px;">' + esc(r.isrc) + '</span></td>' +
+            '<td>' + esc(r.artist) + '</td>' +
+            '<td>' + r.contract + '%</td>' +
+          '</tr>';
+        }).join('');
+    const rMaster = document.getElementById('nc-rights-master-check');
+    if (rMaster) {
+      const allOn  = rPage.length > 0 && rPage.every(r => rs.checked.has(NC_RIGHTS_ROWS.indexOf(r)));
+      const someOn = rPage.some(r => rs.checked.has(NC_RIGHTS_ROWS.indexOf(r)));
+      rMaster.classList.remove('on', 'indet');
+      if (allOn) rMaster.classList.add('on');
+      else if (someOn) rMaster.classList.add('indet');
+    }
+    document.getElementById('nc-rights-range').textContent =
+      (rightsRows.length === 0 ? 0 : (rStart + 1)) + '-' + rEnd + ' of ' + rightsRows.length;
+    document.getElementById('nc-rights-pg-prev').disabled = rs.page <= 1;
+    document.getElementById('nc-rights-pg-next').disabled = rEnd >= rightsRows.length;
+  }
+
   function renderActiveView() {
     const body    = document.getElementById('dm-body');
     const toolbar = document.querySelector('.dm-toolbar');
@@ -3402,6 +3752,7 @@
     body.classList.toggle('tab-master', MASTER_TABS.has(t));
     body.classList.toggle('tab-unprocessed', UNPROCESSED_TABS.has(t));
     body.classList.toggle('tab-alias',  t in ALIAS_TABS);
+    body.classList.toggle('tab-new-curve', NEW_CURVE_TABS.has(t));
     body.classList.toggle('tab-empty',  EMPTY_TABS.has(t));
     // The shared master toolbar only renders on the All tab; the
     // Unprocessed tab has its own dedicated toolbar inside the view.
@@ -3417,6 +3768,7 @@
     }
     if (t in ALIAS_TABS) renderAliasTable(ALIAS_TABS[t]);
     if (UNPROCESSED_TABS.has(t)) renderUnprocessedView();
+    if (NEW_CURVE_TABS.has(t)) renderNewCurveView();
   }
 
   function renderAliasTable(kind) {
@@ -4074,8 +4426,102 @@
     unprocessedState.page++;
     renderUnprocessedView();
   });
+
+  /* ── New tracks Curve handlers ────────────────────────────────── */
+  // Sub-tab switching
+  document.getElementById('nc-sub-tabs').addEventListener('click', (e) => {
+    const t = e.target.closest('.sub-tab');
+    if (!t) return;
+    ncState.sub = t.dataset.subTab;
+    renderNewCurveView();
+  });
+  // Track sub-tab filters
+  document.getElementById('nc-track-status').addEventListener('change', (e) => {
+    ncState.track.statusF = e.target.value; ncState.track.page = 1; renderNewCurveView();
+  });
+  document.getElementById('nc-track-period').addEventListener('change', (e) => {
+    ncState.track.periodF = e.target.value; ncState.track.page = 1; renderNewCurveView();
+  });
+  document.getElementById('nc-track-page-size').addEventListener('change', (e) => {
+    ncState.track.pageSize = parseInt(e.target.value, 10) || 10;
+    ncState.track.page = 1; renderNewCurveView();
+  });
+  document.getElementById('nc-track-pg-prev').addEventListener('click', () => {
+    if (ncState.track.page > 1) { ncState.track.page--; renderNewCurveView(); }
+  });
+  document.getElementById('nc-track-pg-next').addEventListener('click', () => {
+    ncState.track.page++; renderNewCurveView();
+  });
+  // Track Rights sub-tab filters
+  document.getElementById('nc-rights-status').addEventListener('change', (e) => {
+    ncState.rights.statusF = e.target.value; ncState.rights.page = 1; renderNewCurveView();
+  });
+  document.getElementById('nc-rights-period').addEventListener('change', (e) => {
+    ncState.rights.periodF = e.target.value; ncState.rights.page = 1; renderNewCurveView();
+  });
+  document.getElementById('nc-rights-pg-prev').addEventListener('click', () => {
+    if (ncState.rights.page > 1) { ncState.rights.page--; renderNewCurveView(); }
+  });
+  document.getElementById('nc-rights-pg-next').addEventListener('click', () => {
+    ncState.rights.page++; renderNewCurveView();
+  });
+  // Row + master checkboxes (delegated)
+  document.getElementById('nc-track-rows').addEventListener('click', (e) => {
+    const span = e.target.closest('[data-nc-action="track-toggle"]');
+    if (!span) return;
+    const tr = span.closest('tr[data-nc-track-idx]');
+    if (!tr) return;
+    const idx = parseInt(tr.dataset.ncTrackIdx, 10);
+    if (ncState.track.checked.has(idx)) ncState.track.checked.delete(idx);
+    else                                 ncState.track.checked.add(idx);
+    renderNewCurveView();
+  });
+  document.getElementById('nc-track-master-check').addEventListener('click', () => {
+    const visible = ncFilteredTrack();
+    const start = (ncState.track.page - 1) * ncState.track.pageSize;
+    const page = visible.slice(start, start + ncState.track.pageSize);
+    const allOn = page.length > 0 && page.every(r => ncState.track.checked.has(NC_TRACK_ROWS.indexOf(r)));
+    if (allOn) page.forEach(r => ncState.track.checked.delete(NC_TRACK_ROWS.indexOf(r)));
+    else       page.forEach(r => ncState.track.checked.add(NC_TRACK_ROWS.indexOf(r)));
+    renderNewCurveView();
+  });
+  document.getElementById('nc-rights-rows').addEventListener('click', (e) => {
+    const span = e.target.closest('[data-nc-action="rights-toggle"]');
+    if (!span) return;
+    const tr = span.closest('tr[data-nc-rights-idx]');
+    if (!tr) return;
+    const idx = parseInt(tr.dataset.ncRightsIdx, 10);
+    if (ncState.rights.checked.has(idx)) ncState.rights.checked.delete(idx);
+    else                                  ncState.rights.checked.add(idx);
+    renderNewCurveView();
+  });
+  document.getElementById('nc-rights-master-check').addEventListener('click', () => {
+    const visible = ncFilteredRights();
+    const start = (ncState.rights.page - 1) * ncState.rights.pageSize;
+    const page = visible.slice(start, start + ncState.rights.pageSize);
+    const allOn = page.length > 0 && page.every(r => ncState.rights.checked.has(NC_RIGHTS_ROWS.indexOf(r)));
+    if (allOn) page.forEach(r => ncState.rights.checked.delete(NC_RIGHTS_ROWS.indexOf(r)));
+    else       page.forEach(r => ncState.rights.checked.add(NC_RIGHTS_ROWS.indexOf(r)));
+    renderNewCurveView();
+  });
+  // Sort: click a sortable header, cycles asc → desc → cleared
+  document.querySelectorAll('.dm-new-curve-view .unp-th-label.sortable').forEach(label => {
+    label.addEventListener('click', () => {
+      const col = label.dataset.ncSortCol;
+      const bucket = label.closest('#nc-sub-track') ? ncState.track : ncState.rights;
+      const cur = bucket.sort;
+      if (!cur || cur.column !== col) bucket.sort = { column: col, dir: 'asc' };
+      else if (cur.dir === 'asc')      bucket.sort = { column: col, dir: 'desc' };
+      else                              bucket.sort = null;
+      bucket.page = 1;
+      renderNewCurveView();
+    });
+  });
+
   // Sort by clicking a sortable header. Cycles: none → asc → desc → none.
-  document.querySelectorAll('.unp-th-label.sortable').forEach(label => {
+  // Scoped to the Unprocessed table so it doesn't double-fire on the
+  // New-tracks-Curve view which has its own data-nc-sort-col handler.
+  document.querySelectorAll('.unprocessed-tbl .unp-th-label.sortable[data-sort-col]').forEach(label => {
     label.addEventListener('click', () => {
       const col = label.dataset.sortCol;
       const cur = unprocessedState.sort;
